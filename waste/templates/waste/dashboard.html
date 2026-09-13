@@ -1,0 +1,733 @@
+{% extends "base.html" %}
+{% block title %}Executive Dashboard - SWMS Carigara{% endblock %}
+{% block content %}
+<style>
+    /* Dashboard-specific styles */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        gap: var(--spacing-lg);
+    }
+
+    .dashboard-title {
+        flex: 1;
+    }
+
+    .dashboard-title h1 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        margin-bottom: var(--spacing-sm);
+        color: var(--black);
+        letter-spacing: -0.01em;
+    }
+
+    .dashboard-title p {
+        color: var(--gray-600);
+        font-size: 0.95rem;
+    }
+
+    .dashboard-search {
+        display: flex;
+        gap: var(--spacing-sm);
+        width: 300px;
+    }
+
+    .dashboard-search input {
+        flex: 1;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        transition: border-color var(--transition-fast);
+    }
+
+    .dashboard-search input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.14);
+    }
+
+    .search-btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .search-btn:hover {
+        background: var(--accent-secondary);
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .kpi-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        transition: all var(--transition-base);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .kpi-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--gray-300);
+    }
+
+    .kpi-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .kpi-info {
+        flex: 1;
+    }
+
+    .kpi-icon {
+        font-size: 1.05rem;
+        color: var(--green-700);
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--black);
+        margin: var(--spacing-sm) 0;
+    }
+
+    .kpi-label {
+        font-size: 0.78rem;
+        color: var(--gray-500);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .kpi-trend {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        margin-top: var(--spacing-sm);
+        font-size: 0.8rem;
+    }
+
+    .kpi-trend.positive {
+        color: var(--green-700);
+    }
+
+    .kpi-trend.negative {
+        color: var(--accent-danger);
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .dashboard-grid-wide {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    @media (min-width: 900px) {
+        .dashboard-grid-wide {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .dashboard-grid-wide .table-responsive {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .dashboard-grid-wide table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .dashboard-grid-wide td,
+    .dashboard-grid-wide th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Widgets */
+    .widget {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow-sm);
+        min-width: 0;
+    }
+
+    .widget-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: var(--spacing-md);
+    }
+
+    .widget-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--black);
+    }
+
+    .widget-action {
+        font-size: 0.85rem;
+    }
+
+    .widget-action a {
+        color: var(--accent-primary);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+
+    .widget-action a:hover {
+        color: var(--accent-secondary);
+    }
+
+    /* Activity Timeline */
+    .activity-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .activity-item {
+        display: flex;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        border-left: 3px solid var(--accent-primary);
+        background: var(--gray-50);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .activity-item:hover {
+        background: var(--green-50);
+        padding-left: var(--spacing-lg);
+    }
+
+    a.activity-item {
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    /* Clickable table rows */
+    tr.row-clickable {
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+
+    tr.row-clickable:hover {
+        background: var(--green-50);
+    }
+
+    .activity-icon {
+        font-size: 1.1rem;
+        color: var(--green-700);
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-title {
+        font-weight: 600;
+        color: var(--black);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .activity-subtitle {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+    }
+
+    .activity-time {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+    }
+
+    .table-responsive {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: var(--text-secondary);
+        background: transparent;
+    }
+
+    .table thead th {
+        background: var(--green-50);
+        color: var(--green-800);
+        font-weight: 700;
+        padding: 0.85rem 0.9rem;
+        text-align: left;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--green-100);
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .table tbody td {
+        padding: 0.85rem 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Chart Container */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: var(--spacing-lg) 0;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .status-in-progress {
+        background: #DBEAFE;
+        color: #1D4ED8;
+    }
+
+    .status-resolved {
+        background: var(--green-100);
+        color: var(--green-800);
+    }
+
+    /* Notification Badge */
+    .notification-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-danger);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* Stat Row */
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md) 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .dashboard-search {
+            width: 100%;
+        }
+
+        .kpi-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="dashboard-title">
+        <h1>Dashboard</h1>
+        <p>Welcome back, <strong>{{ user.first_name|default:user.username }}</strong>. Here's an overview of solid waste management activities in your assigned barangay.</p>
+    </div>
+    <div class="dashboard-search">
+        <input type="text" placeholder="Search records..." id="searchInput">
+        <button class="search-btn"><i class="fas fa-search"></i></button>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <!-- Total Collections -->
+    <div class="kpi-card">
+        <div class="kpi-content">
+            <div class="kpi-info">
+                <div class="kpi-label">Collections</div>
+                <div class="kpi-value">{{ total_collections }}</div>
+                <div class="kpi-trend positive">
+                    <i class="fas fa-arrow-up"></i> All-time total
+                </div>
+            </div>
+            <div class="kpi-icon">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Weight -->
+    <div class="kpi-card">
+        <div class="kpi-content">
+            <div class="kpi-info">
+                <div class="kpi-label">Waste Collected</div>
+                <div class="kpi-value">{{ total_weight|floatformat:0 }}<span style="font-size: 0.7em;">kg</span></div>
+                <div class="kpi-trend positive">
+                    <i class="fas fa-arrow-up"></i> Cumulative
+                </div>
+            </div>
+            <div class="kpi-icon">
+                <i class="fas fa-weight"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Complaints -->
+    <div class="kpi-card">
+        <div class="kpi-content">
+            <div class="kpi-info">
+                <div class="kpi-label">Complaints</div>
+                <div class="kpi-value">{{ total_complaints }}</div>
+                <div class="kpi-trend {% if pending_complaints > 0 %}negative{% else %}positive{% endif %}">
+                    <i class="fas fa-exclamation-circle"></i> {{ pending_complaints }} pending
+                </div>
+            </div>
+            <div class="kpi-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accomplishments -->
+    <div class="kpi-card">
+        <div class="kpi-content">
+            <div class="kpi-info">
+                <div class="kpi-label">Accomplishments</div>
+                <div class="kpi-value">{{ total_accomplishments }}</div>
+                <div class="kpi-trend positive">
+                    <i class="fas fa-check-circle"></i> Completed
+                </div>
+            </div>
+            <div class="kpi-icon">
+                <i class="fas fa-thumbs-up"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard Grid -->
+<div class="dashboard-grid">
+    <!-- Recent Activity -->
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-history"></i> Recent Activity</div>
+            <div class="widget-action"><a href="{% url 'collection_list' %}">View All</a></div>
+        </div>
+        <div class="activity-timeline">
+            {% for c in recent_collections %}
+            <a href="{% url 'collection_detail' c.id %}" class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Collection Recorded</div>
+                    <div class="activity-subtitle">
+                        {{ c.waste_type }} from {{ c.barangay }} - {{ c.weight_kg }} kg by {{ c.collector }}
+                    </div>
+                    <div class="activity-time">{{ c.date_collected|date:"M d, Y H:i" }}</div>
+                </div>
+            </a>
+            {% empty %}
+            <div style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">
+                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                <p>No recent collections yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title">
+                <i class="fas fa-bell"></i> Notifications
+                {% if pending_complaints > 0 %}<span class="notification-badge">{{ pending_complaints }}</span>{% endif %}
+            </div>
+            <div class="widget-action"><a href="{% url 'complaint_list' %}">View All</a></div>
+        </div>
+        <div class="activity-timeline">
+            {% if pending_complaints > 0 %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Pending Complaints</div>
+                    <div class="activity-subtitle">
+                        You have <strong>{{ pending_complaints }}</strong> complaint(s) awaiting resolution
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if total_collections > 0 %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Collections Active</div>
+                    <div class="activity-subtitle">
+                        {{ total_collections }} collection records logged in the system
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if total_accomplishments > 0 %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Recent Accomplishments</div>
+                    <div class="activity-subtitle">
+                        {{ total_accomplishments }} accomplishment(s) have been logged
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if pending_complaints == 0 and total_collections == 0 and total_accomplishments == 0 %}
+            <div style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">
+                <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                <p>All caught up! No notifications.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Data Tables -->
+<div class="dashboard-grid dashboard-grid-wide">
+    <!-- Recent Complaints -->
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-comments"></i> Recent Complaints</div>
+            <div class="widget-action"><a href="{% url 'complaint_list' %}">View All</a></div>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Barangay</th>
+                        <th>Resident</th>
+                        <th>Status</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in recent_complaints %}
+                    <tr class="row-clickable" onclick="window.location='{% url 'complaint_detail' c.id %}'">
+                        <td>{{ c.date_filed|date:"M d, Y" }}</td>
+                        <td>{{ c.barangay }}</td>
+                        <td>{{ c.resident_name }}</td>
+                        <td>
+                            <span class="status-badge status-{{ c.status|slugify|lower }}">
+                                {{ c.status }}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <a href="{% url 'complaint_update_status' c.id %}" class="btn btn-sm btn-outline" style="font-size: 0.8rem;" onclick="event.stopPropagation();">
+                                Update
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">
+                            <i class="fas fa-inbox" style="margin-right: var(--spacing-sm);"></i>No complaints filed yet
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Accomplishments -->
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-check-circle"></i> Recent Accomplishments</div>
+            <div class="widget-action"><a href="{% url 'accomplishment_list' %}">View All</a></div>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Title</th>
+                        <th>Barangay</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in recent_accomplishments %}
+                    <tr class="row-clickable" onclick="window.location='{% url 'accomplishment_detail' a.id %}'">
+                        <td>{{ a.date_accomplished|date:"M d, Y" }}</td>
+                        <td><strong>{{ a.title }}</strong></td>
+                        <td>{{ a.barangay|default:"Municipal-wide" }}</td>
+                        <td style="text-align: center;">
+                            <a href="{% url 'accomplishment_edit' a.id %}" class="btn btn-sm btn-outline" style="font-size: 0.8rem;" onclick="event.stopPropagation();">
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">
+                            <i class="fas fa-inbox" style="margin-right: var(--spacing-sm);"></i>No accomplishments logged yet
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js for interactive charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            const query = this.value;
+            if (query.trim()) {
+                // Implement search navigation
+                console.log('Searching for:', query);
+                // You can redirect to a search results page or filter current page
+            }
+        }
+    });
+
+    // Dark mode awareness for charts
+    function getChartDefaults() {
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        return {
+            textColor: isDark ? '#cbd5e1' : '#0f172a',
+            gridColor: isDark ? '#334155' : '#e2e8f0',
+            accentColor: '#14b8a6'
+        };
+    }
+
+    // Statistics counter animation
+    function animateCounter(element, target, duration = 1000) {
+        let current = 0;
+        const increment = target / (duration / 16);
+        const interval = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(interval);
+            }
+            element.textContent = Math.round(current);
+        }, 16);
+    }
+
+    // Refresh data every 5 minutes
+    setInterval(function() {
+        console.log('Refreshing dashboard data...');
+        // You can add AJAX refresh here
+    }, 5 * 60 * 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Delete Action Plan - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner danger">
+        <div class="entity-banner-icon"><i class="fas fa-trash"></i></div>
+        <h2>Delete Action Plan #{{ action_plan.id }}?</h2>
+        <p>This will permanently remove this record.</p>
+    </div>
+    <div class="entity-body">
+        <div class="confirm-summary">
+            <strong>Title:</strong> {{ action_plan.title }}<br>
+            <strong>Barangay:</strong> {{ action_plan.barangay|default:"Municipal-wide" }}<br>
+            <strong>Target Date:</strong> {{ action_plan.target_date|date:"M d, Y" }}<br>
+            <strong>Status:</strong> {{ action_plan.status }}<br>
+            <strong>Responsible:</strong> {{ action_plan.responsible_person|default:"-" }}
+        </div>
+        <div class="confirm-warning">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span>This action cannot be undone.</span>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url 'action_plan_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-delete"><i class="fas fa-trash"></i> Yes, Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

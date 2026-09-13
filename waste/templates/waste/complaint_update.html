@@ -1,0 +1,593 @@
+{% extends "base.html" %}
+{% block title %}Update Complaint #{{ complaint.id }} - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============ PAGE HEADER ============ */
+    .uc-header {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .uc-breadcrumb {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-bottom: var(--spacing-md);
+        transition: color var(--transition-fast);
+    }
+
+    .uc-breadcrumb:hover {
+        color: var(--green-700);
+        text-decoration: none;
+    }
+
+    .uc-breadcrumb i {
+        font-size: 0.75rem;
+    }
+
+    .uc-header-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+    }
+
+    .uc-header-titles {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .uc-header-icon {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-lg);
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+        color: var(--green-700);
+        font-size: 1.25rem;
+    }
+
+    .uc-header-titles .page-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .uc-header-titles .page-subtitle {
+        margin: 0;
+    }
+
+    .uc-ref-chip {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        box-shadow: var(--shadow-sm);
+        white-space: nowrap;
+    }
+
+    .uc-ref-chip .uc-ref-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .uc-ref-chip .uc-ref-num {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1rem;
+    }
+
+    .uc-ref-divider {
+        width: 1px;
+        height: 28px;
+        background: var(--gray-200);
+    }
+
+    /* ============ LAYOUT ============ */
+    .uc-container {
+        max-width: 760px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+
+    /* ============ COMPLAINT DETAILS CARD ============ */
+    .uc-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .uc-card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .uc-card-header i {
+        color: var(--green-700);
+        font-size: 1.05rem;
+    }
+
+    .uc-card-header h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .uc-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    .uc-info-item {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .uc-info-item:nth-child(odd) {
+        border-right: 1px solid var(--gray-100);
+    }
+
+    .uc-info-icon {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        background: var(--gray-50);
+        border: 1px solid var(--gray-100);
+        color: var(--gray-500);
+        font-size: 0.9rem;
+    }
+
+    .uc-info-text {
+        min-width: 0;
+    }
+
+    .uc-info-label {
+        display: block;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+    }
+
+    .uc-info-value {
+        display: block;
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.45;
+        word-break: break-word;
+    }
+
+    .uc-info-item.uc-info-full {
+        grid-column: 1 / -1;
+        border-right: none;
+    }
+
+    .uc-info-item.uc-info-full:last-child,
+    .uc-info-item:nth-last-child(-n+2) {
+        border-bottom: none;
+    }
+
+    @media (max-width: 640px) {
+        .uc-info-grid {
+            grid-template-columns: 1fr;
+        }
+        .uc-info-item:nth-child(odd) {
+            border-right: none;
+        }
+        .uc-info-item {
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .uc-info-item:last-child {
+            border-bottom: none;
+        }
+    }
+
+    /* ============ STATUS PROGRESSION ============ */
+    .uc-progress {
+        padding: var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .uc-progress-track {
+        display: flex;
+        align-items: center;
+    }
+
+    .uc-progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .uc-progress-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gray-100);
+        color: var(--gray-500);
+        border: 2px solid var(--gray-200);
+        font-size: 0.75rem;
+        font-weight: 700;
+        transition: all var(--transition-base);
+        flex-shrink: 0;
+    }
+
+    .uc-progress-step.done .uc-progress-dot {
+        background: var(--green-600);
+        border-color: var(--green-600);
+        color: #fff;
+    }
+
+    .uc-progress-step.current .uc-progress-dot {
+        background: var(--white);
+        border-color: var(--green-600);
+        color: var(--green-700);
+        box-shadow: 0 0 0 4px var(--green-50);
+    }
+
+    .uc-progress-label {
+        margin-top: var(--spacing-sm);
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .uc-progress-step.done .uc-progress-label,
+    .uc-progress-step.current .uc-progress-label {
+        color: var(--text-primary);
+    }
+
+    .uc-progress-line {
+        flex: 1;
+        height: 2px;
+        background: var(--gray-200);
+        margin-bottom: 22px;
+        transition: background var(--transition-base);
+    }
+
+    .uc-progress-line.done {
+        background: var(--green-600);
+    }
+
+    @media (max-width: 480px) {
+        .uc-progress-label { font-size: 0.62rem; white-space: normal; }
+    }
+
+    /* ============ STATUS UPDATE FORM ============ */
+    .uc-form-section {
+        padding: var(--spacing-xl);
+    }
+
+    .uc-form-section-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.2rem;
+    }
+
+    .uc-form-section-subtitle {
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .uc-current-status-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        background: var(--gray-50);
+        border: 1px solid var(--gray-100);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .uc-current-status-row span.uc-cs-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    #uc-live-badge {
+        margin-left: auto;
+    }
+
+    .uc-select-wrap {
+        position: relative;
+    }
+
+    .uc-select-wrap select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 2.75rem;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .uc-select-wrap::after {
+        content: '\f078';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        right: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+        font-size: 0.8rem;
+        pointer-events: none;
+    }
+
+    .uc-select-wrap:focus-within::after {
+        color: var(--green-600);
+    }
+
+    /* ============ ACTIONS ============ */
+    .uc-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-top: 1px solid var(--gray-100);
+        background: var(--gray-50);
+    }
+
+    .uc-actions .btn {
+        min-width: 180px;
+    }
+
+    .uc-btn-submit[disabled] {
+        opacity: 0.75;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    @media (max-width: 560px) {
+        .uc-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+        .uc-actions .btn {
+            width: 100%;
+            min-width: 0;
+        }
+        .uc-ref-chip {
+            width: 100%;
+            justify-content: space-between;
+        }
+        .uc-header-row {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="uc-header">
+    <a href="{% url 'complaint_list' %}" class="uc-breadcrumb">
+        <i class="fas fa-arrow-left"></i> Back to Complaints
+    </a>
+    <div class="uc-header-row">
+        <div class="uc-header-titles">
+            <div class="uc-header-icon"><i class="fas fa-pen"></i></div>
+            <div>
+                <h1 class="page-title">Update Complaint</h1>
+                <p class="page-subtitle">Manage and update the status of this complaint.</p>
+            </div>
+        </div>
+        <div class="uc-ref-chip">
+            <div>
+                <span class="uc-ref-label">Complaint</span>
+                <span class="uc-ref-num">#{{ complaint.id }}</span>
+            </div>
+            <div class="uc-ref-divider"></div>
+            <div>
+                <span class="uc-ref-label">Status</span>
+                <span class="status-badge status-{{ complaint.status|slugify|lower }}">{{ complaint.status }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="uc-container">
+
+    <!-- COMPLAINT DETAILS -->
+    <div class="uc-card">
+        <div class="uc-card-header">
+            <i class="fas fa-circle-info"></i>
+            <h3>Complaint Details</h3>
+        </div>
+        <div class="uc-info-grid">
+            <div class="uc-info-item">
+                <div class="uc-info-icon"><i class="fas fa-user"></i></div>
+                <div class="uc-info-text">
+                    <span class="uc-info-label">Resident</span>
+                    <span class="uc-info-value">{{ complaint.resident_name }}</span>
+                </div>
+            </div>
+            <div class="uc-info-item">
+                <div class="uc-info-icon"><i class="fas fa-map-location-dot"></i></div>
+                <div class="uc-info-text">
+                    <span class="uc-info-label">Barangay</span>
+                    <span class="uc-info-value">{{ complaint.barangay }}</span>
+                </div>
+            </div>
+            <div class="uc-info-item">
+                <div class="uc-info-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                <div class="uc-info-text">
+                    <span class="uc-info-label">Issue</span>
+                    <span class="uc-info-value">{{ complaint.issue }}</span>
+                </div>
+            </div>
+            <div class="uc-info-item">
+                <div class="uc-info-icon"><i class="fas fa-calendar-day"></i></div>
+                <div class="uc-info-text">
+                    <span class="uc-info-label">Submitted</span>
+                    <span class="uc-info-value">{{ complaint.date_filed|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            <div class="uc-info-item uc-info-full">
+                <div class="uc-info-icon"><i class="fas fa-flag"></i></div>
+                <div class="uc-info-text">
+                    <span class="uc-info-label">Current Status</span>
+                    <span class="uc-info-value">
+                        <span class="status-badge status-{{ complaint.status|slugify|lower }}">
+                            <i class="fas fa-check"></i> {{ complaint.status }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS UPDATE -->
+    <div class="uc-card">
+        <form method="post" id="uc-status-form" novalidate>
+            {% csrf_token %}
+
+            <!-- Status progression (visual only; reflects the statuses already supported by the backend) -->
+            <div class="uc-progress">
+                <div class="uc-progress-track">
+                    <div class="uc-progress-step {% if complaint.status == 'Pending' %}current{% else %}done{% endif %}">
+                        <div class="uc-progress-dot">
+                            {% if complaint.status == 'Pending' %}<span>1</span>{% else %}<i class="fas fa-check"></i>{% endif %}
+                        </div>
+                        <span class="uc-progress-label">Pending</span>
+                    </div>
+                    <div class="uc-progress-line {% if complaint.status == 'In Progress' or complaint.status == 'Resolved' %}done{% endif %}"></div>
+                    <div class="uc-progress-step {% if complaint.status == 'In Progress' %}current{% elif complaint.status == 'Resolved' %}done{% endif %}">
+                        <div class="uc-progress-dot">
+                            {% if complaint.status == 'Resolved' %}<i class="fas fa-check"></i>{% else %}<span>2</span>{% endif %}
+                        </div>
+                        <span class="uc-progress-label">In Progress</span>
+                    </div>
+                    <div class="uc-progress-line {% if complaint.status == 'Resolved' %}done{% endif %}"></div>
+                    <div class="uc-progress-step {% if complaint.status == 'Resolved' %}current{% endif %}">
+                        <div class="uc-progress-dot"><span>3</span></div>
+                        <span class="uc-progress-label">Resolved</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="uc-form-section">
+                <h3 class="uc-form-section-title">Update Complaint Status</h3>
+                <p class="uc-form-section-subtitle">Select the current status of this complaint.</p>
+
+                <div class="uc-current-status-row">
+                    <span class="uc-cs-label">Current status:</span>
+                    <span id="uc-live-badge" class="status-badge status-{{ complaint.status|slugify|lower }}">
+                        <i class="fas fa-check"></i> {{ complaint.status }}
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}"><i class="fas fa-list-check"></i> Status</label>
+                    <div class="uc-select-wrap">
+                        {{ form.status }}
+                    </div>
+                    {% if form.status.errors %}
+                        <div class="alert alert-danger" style="margin-top: var(--spacing-sm);">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ form.status.errors|striptags }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="uc-actions">
+                <a href="{% url 'complaint_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Complaints
+                </a>
+                <button type="submit" class="btn btn-add uc-btn-submit" id="uc-submit-btn">
+                    <i class="fas fa-check"></i> <span>Update Status</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const statusSelect = document.getElementById('{{ form.status.id_for_label }}');
+        const liveBadge = document.getElementById('uc-live-badge');
+        const form = document.getElementById('uc-status-form');
+        const submitBtn = document.getElementById('uc-submit-btn');
+
+        const slugify = (value) => (value || '')
+            .toString()
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+        // Live-update the status badge preview as the admin changes the
+        // dropdown - purely cosmetic, does not touch backend/form logic.
+        if (statusSelect && liveBadge) {
+            const updateBadge = () => {
+                const opt = statusSelect.options[statusSelect.selectedIndex];
+                const label = opt ? opt.text : '';
+                liveBadge.className = 'status-badge status-' + slugify(label);
+                liveBadge.innerHTML = '<i class="fas fa-check"></i> ' + label;
+            };
+            statusSelect.addEventListener('change', updateBadge);
+        }
+
+        // Prevent accidental double submission and show a loading state.
+        if (form && submitBtn) {
+            form.addEventListener('submit', () => {
+                submitBtn.setAttribute('disabled', 'disabled');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Updating&hellip;</span>';
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+{% block title %}Collections - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============ PAGE HEADER ============ */
+    .cl-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .cl-header-titles {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .cl-header-titles .page-title {
+        font-size: 1.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .cl-header-titles .page-subtitle {
+        margin: 0;
+        max-width: 640px;
+    }
+
+    /* ============ STAT CARDS ============ */
+    .cl-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .cl-stat {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+
+    .cl-stat:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--gray-300);
+    }
+
+    .cl-stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .cl-stat-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .cl-stat-icon {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+    }
+
+    .cl-stat-icon.total { background: var(--gray-100); color: var(--gray-600); }
+    .cl-stat-icon.completed { background: var(--green-100); color: var(--green-800); }
+    .cl-stat-icon.ongoing { background: #DBEAFE; color: #1D4ED8; }
+    .cl-stat-icon.scheduled { background: var(--gray-100); color: var(--gray-600); }
+
+    .cl-stat-value {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .cl-stat-sub {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+    }
+
+    @media (max-width: 900px) {
+        .cl-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+        .cl-stats { grid-template-columns: 1fr; }
+    }
+
+    /* ============ FILTER PANEL ============ */
+    .cl-filter-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .cl-filter-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .cl-filter-title i {
+        color: var(--green-700);
+    }
+
+    .cl-filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        align-items: flex-end;
+    }
+
+    .cl-filter-field {
+        flex: 1 1 200px;
+        min-width: 160px;
+    }
+
+    .cl-filter-field label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .cl-filter-field select,
+    .cl-filter-field .barangay-locked-display {
+        min-height: 44px;
+    }
+
+    @media (max-width: 640px) {
+        .cl-filter-form { flex-direction: column; align-items: stretch; }
+        .cl-filter-field { min-width: 0; }
+    }
+
+    /* ============ TABLE CARD ============ */
+    .cl-table-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .cl-table-card-header h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .cl-search-wrap {
+        position: relative;
+        min-width: 240px;
+    }
+
+    .cl-search-wrap i {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+        font-size: 0.85rem;
+        pointer-events: none;
+    }
+
+    .cl-search-wrap input {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 var(--spacing-md) 0 2.25rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        color: var(--text-primary);
+        font-size: 0.88rem;
+    }
+
+    .cl-search-wrap input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16);
+    }
+
+    @media (max-width: 640px) {
+        .cl-search-wrap { width: 100%; }
+    }
+
+    /* ============ TABLE CELLS ============ */
+    thead th {
+        color: var(--green-800);
+    }
+
+    .cl-date-strong {
+        display: block;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+    .cl-date-muted {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+    }
+
+    .cl-weight {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .cl-weight-empty {
+        color: var(--text-tertiary);
+    }
+
+    .cl-collector {
+        color: var(--text-secondary);
+    }
+
+    /* ============ STATUS BADGES (collection-specific) ============ */
+    .status-badge.status-scheduled {
+        background: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    .status-badge.status-ongoing {
+        background: #DBEAFE;
+        color: #1D4ED8;
+    }
+
+    /* ============ COMPACT ICON ACTIONS ============ */
+    .cl-actions {
+        display: flex;
+        gap: var(--spacing-xs);
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+    }
+
+    .cl-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        background: var(--white);
+        color: var(--text-secondary);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        font-size: 0.85rem;
+        position: relative;
+    }
+
+    .cl-icon-btn:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .cl-icon-btn.edit:hover {
+        background: #EFF6FF;
+        border-color: #BFDBFE;
+        color: #1D4ED8;
+    }
+
+    .cl-icon-btn.delete:hover {
+        background: #FEF2F2;
+        border-color: #FECACA;
+        color: #B91C1C;
+    }
+
+    .cl-icon-btn.status {
+        width: auto;
+        padding: 0 var(--spacing-md);
+        gap: var(--spacing-xs);
+        color: var(--green-700);
+        border-color: var(--green-100);
+        background: var(--green-50);
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .cl-icon-btn.status:hover {
+        background: var(--green-100);
+    }
+
+    /* Tooltip */
+    .cl-icon-btn[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        background: var(--black);
+        color: #fff;
+        font-size: 0.72rem;
+        padding: 0.3rem 0.55rem;
+        border-radius: var(--radius-sm);
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: all var(--transition-fast);
+        z-index: 5;
+    }
+
+    .cl-icon-btn[data-tooltip]:hover::after,
+    .cl-icon-btn[data-tooltip]:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    /* ============ EMPTY STATE ============ */
+    .cl-empty-actions {
+        margin-top: var(--spacing-md);
+    }
+
+    /* ============ DELETE MODAL ============ */
+    .cl-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+    }
+
+    .cl-modal-overlay.active {
+        display: flex;
+        animation: clFadeIn var(--transition-base);
+    }
+
+    @keyframes clFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .cl-modal {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        max-width: 420px;
+        width: 100%;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        animation: clPopIn var(--transition-base);
+    }
+
+    @keyframes clPopIn {
+        from { transform: translateY(10px) scale(0.98); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .cl-modal-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #FEF2F2;
+        color: #DC2626;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin: var(--spacing-xl) auto 0;
+    }
+
+    .cl-modal-body {
+        padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-xl);
+        text-align: center;
+    }
+
+    .cl-modal-body h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: var(--spacing-md) 0 var(--spacing-xs);
+    }
+
+    .cl-modal-body p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.15rem;
+    }
+
+    .cl-modal-body .cl-modal-warn {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .cl-modal-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+
+    .cl-modal-actions .btn {
+        flex: 1;
+    }
+
+    /* ============ PAGINATION ============ */
+    .cl-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-lg);
+        flex-wrap: wrap;
+    }
+
+    .cl-pagination span {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="cl-header">
+    <div class="cl-header-titles">
+        <div class="page-icon-badge"><i class="fas fa-trash-alt"></i></div>
+        <div>
+            <h1 class="page-title">Collection Schedule &amp; Monitoring</h1>
+            <p class="page-subtitle">Monitor scheduled waste collections and track completion status across barangays.</p>
+        </div>
+    </div>
+    {% if user.is_superuser or user.profile.role == "admin" %}
+    <a href="{% url 'recurring_schedule_list' %}" class="btn btn-add">
+        <i class="fas fa-repeat"></i> Manage Recurring Schedules
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- SUMMARY STATISTICS (real counts from the current filtered result set) -->
+<div class="cl-stats">
+    <div class="cl-stat">
+        <div class="cl-stat-top">
+            <span class="cl-stat-label">Total</span>
+            <div class="cl-stat-icon total"><i class="fas fa-layer-group"></i></div>
+        </div>
+        <div class="cl-stat-value">{{ total_count }}</div>
+        <div class="cl-stat-sub">Matching current filters</div>
+    </div>
+    <div class="cl-stat">
+        <div class="cl-stat-top">
+            <span class="cl-stat-label">Completed</span>
+            <div class="cl-stat-icon completed"><i class="fas fa-check"></i></div>
+        </div>
+        <div class="cl-stat-value">{{ completed_count }}</div>
+        <div class="cl-stat-sub">{{ completed_pct }}% completion rate</div>
+    </div>
+    <div class="cl-stat">
+        <div class="cl-stat-top">
+            <span class="cl-stat-label">Ongoing</span>
+            <div class="cl-stat-icon ongoing"><i class="fas fa-rotate"></i></div>
+        </div>
+        <div class="cl-stat-value">{{ ongoing_count }}</div>
+        <div class="cl-stat-sub">Currently in progress</div>
+    </div>
+    <div class="cl-stat">
+        <div class="cl-stat-top">
+            <span class="cl-stat-label">Scheduled</span>
+            <div class="cl-stat-icon scheduled"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="cl-stat-value">{{ scheduled_count }}</div>
+        <div class="cl-stat-sub">Awaiting collection</div>
+    </div>
+</div>
+
+<!-- FILTERS -->
+<div class="cl-filter-card">
+    <div class="cl-filter-title"><i class="fas fa-sliders"></i> Filter Collections</div>
+    <form method="get" class="cl-filter-form">
+        {% if my_barangay %}
+        <input type="hidden" name="barangay" value="{{ my_barangay }}">
+        <div class="cl-filter-field">
+            <label>Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+        </div>
+        {% else %}
+        <div class="cl-filter-field">
+            <label for="cl-barangay">Barangay</label>
+            <select name="barangay" id="cl-barangay" onchange="this.form.submit()">
+                <option value="">All Barangays</option>
+                {% for value, label in barangay_choices %}
+                <option value="{{ value }}" {% if value == selected_barangay %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="cl-filter-field">
+            <label for="cl-waste-type">Waste Type</label>
+            <select name="waste_type" id="cl-waste-type" onchange="this.form.submit()">
+                <option value="">All Types</option>
+                {% for value, label in waste_type_choices %}
+                <option value="{{ value }}" {% if value == selected_waste_type %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="cl-filter-field">
+            <label for="cl-period">Month</label>
+            <select name="period" id="cl-period" onchange="this.form.submit()">
+                <option value="">All Months</option>
+                {% for value, label in period_choices %}
+                <option value="{{ value }}" {% if value == selected_period %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if selected_barangay or selected_waste_type or selected_period %}
+        <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- COLLECTIONS TABLE -->
+<div class="card" style="padding: 0;">
+    {% if collections %}
+    <div class="cl-table-card-header">
+        <h3>Collections</h3>
+        <div class="cl-search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="cl-search-input" placeholder="Search this page (barangay, type, collector)&hellip;" aria-label="Search collections on this page">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table id="cl-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Scheduled</th>
+                    <th>Barangay</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Weight (kg)</th>
+                    <th>Collector</th>
+                    <th class="actions-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in collections %}
+                <tr class="row-clickable" onclick="window.location='{% url 'collection_detail' c.id %}'">
+                    <td data-label="ID">#{{ c.id }}</td>
+                    <td data-label="Scheduled">
+                        {% if c.scheduled_date %}
+                        <span class="cl-date-strong">{{ c.scheduled_date|date:"M d, Y" }}</span>
+                        <span class="cl-date-muted">{{ c.scheduled_date|date:"h:i A" }}</span>
+                        {% else %}
+                        <span class="cl-weight-empty">&ndash;</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Barangay">{{ c.barangay }}</td>
+                    <td data-label="Type">{{ c.waste_type }}</td>
+                    <td data-label="Status">
+                        <span class="status-badge status-{{ c.status|slugify }}">
+                            {% if c.status == "Completed" %}<i class="fas fa-check"></i>
+                            {% elif c.status == "Ongoing" %}<i class="fas fa-rotate"></i>
+                            {% else %}<i class="fas fa-circle" style="font-size:0.4rem;"></i>{% endif %}
+                            {{ c.status }}
+                        </span>
+                    </td>
+                    <td data-label="Weight (kg)">
+                        {% if c.weight_kg %}<span class="cl-weight">{{ c.weight_kg }} kg</span>{% else %}<span class="cl-weight-empty">&ndash;</span>{% endif %}
+                    </td>
+                    <td data-label="Collector"><span class="cl-collector">{{ c.collector|default:"&ndash;" }}</span></td>
+                    <td class="actions-col">
+                        <div class="cl-actions">
+                            {% if user.is_superuser or user.profile.role == "admin" %}
+                            <a href="{% url 'collection_edit' c.id %}" class="cl-icon-btn edit" data-tooltip="Edit" aria-label="Edit collection #{{ c.id }}" onclick="event.stopPropagation();"><i class="fas fa-pen"></i></a>
+                            <button type="button" class="cl-icon-btn delete" data-tooltip="Delete" aria-label="Delete collection #{{ c.id }}"
+                                    onclick="event.stopPropagation(); clOpenDeleteModal({{ c.id }}, '#{{ c.id }} &middot; {{ c.barangay }} &middot; {{ c.waste_type }}');">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% else %}
+                            {% if c.status != "Completed" %}
+                            <a href="{% url 'collection_update_status' c.id %}" class="cl-icon-btn status" onclick="event.stopPropagation();"><i class="fas fa-clipboard-check"></i> Update Status</a>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="cl-pagination">
+        {% if page_obj.has_previous %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}{% if selected_period %}&period={{ selected_period }}{% endif %}">&laquo; Prev</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}{% if selected_period %}&period={{ selected_period }}{% endif %}">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-dumpster"></i>
+        <div class="empty-state-title">No collections found</div>
+        <div class="empty-state-text">
+            {% if selected_barangay or selected_waste_type or selected_period %}
+            There are no collection schedules matching your current filters.
+            {% else %}
+            Log your first waste collection to start tracking volume by barangay and type.
+            {% endif %}
+        </div>
+        {% if selected_barangay or selected_waste_type or selected_period %}
+        <div class="cl-empty-actions">
+            <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+{% if user.is_superuser or user.profile.role == "admin" %}
+<div class="cl-modal-overlay" id="clDeleteModal" role="dialog" aria-modal="true" aria-labelledby="clDeleteModalTitle">
+    <div class="cl-modal">
+        <div class="cl-modal-icon"><i class="fas fa-triangle-exclamation"></i></div>
+        <div class="cl-modal-body">
+            <h3 id="clDeleteModalTitle">Delete Collection?</h3>
+            <p id="clDeleteModalDetail">Are you sure you want to delete this collection record?</p>
+            <p class="cl-modal-warn">This action cannot be undone.</p>
+            <div class="cl-modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="clCloseDeleteModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" id="clConfirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Collection
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<form id="clDeleteForm" method="post" style="display:none;" data-url-template="{% url 'collection_delete' 999999 %}">
+    {% csrf_token %}
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const searchInput = document.getElementById('cl-search-input');
+        const table = document.getElementById('cl-table');
+
+        if (searchInput && table) {
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.trim().toLowerCase();
+                table.querySelectorAll('tbody tr').forEach((row) => {
+                    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+                });
+            });
+        }
+
+        const modal = document.getElementById('clDeleteModal');
+        const deleteForm = document.getElementById('clDeleteForm');
+        const detailEl = document.getElementById('clDeleteModalDetail');
+        const confirmBtn = document.getElementById('clConfirmDeleteBtn');
+
+        window.clOpenDeleteModal = function (id, label) {
+            if (!modal) return;
+            detailEl.innerHTML = 'You are about to delete collection <strong>' + label + '</strong>.';
+            const template = deleteForm.getAttribute('data-url-template');
+            deleteForm.action = template.replace('999999', id);
+            modal.classList.add('active');
+        };
+
+        window.clCloseDeleteModal = function () {
+            if (modal) modal.classList.remove('active');
+        };
+
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) clCloseDeleteModal();
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') clCloseDeleteModal();
+        });
+
+        if (confirmBtn && deleteForm) {
+            confirmBtn.addEventListener('click', () => {
+                confirmBtn.setAttribute('disabled', 'disabled');
+                deleteForm.submit();
+            });
+        }
+    })();
+</script>
+{% endblock %}

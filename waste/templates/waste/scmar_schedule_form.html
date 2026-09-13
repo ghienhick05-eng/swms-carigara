@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Set Schedule - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner">
+        <div class="entity-banner-icon"><i class="fas fa-calendar-day"></i></div>
+        <h2>{{ scmar.title }}</h2>
+        <p>MENRO Admin can only set the schedule (due) date for this SCMAR. Everything else was submitted by the Barangay.</p>
+    </div>
+    <div class="entity-body">
+        <div class="form-group">
+            <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ scmar.barangay|default:"Municipal-wide" }}</div>
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-heading"></i> Report Title</label>
+            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ scmar.title }}</div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label><i class="fas fa-calendar-day"></i> Due Date <span style="font-weight:400; color: var(--text-tertiary);">(submission deadline)</span></label>
+                {{ form.target_date }}
+                {% if form.target_date.errors %}
+                    <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.target_date.errors|striptags }}</div>
+                {% endif %}
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-add"><i class="fas fa-check"></i> Save Schedule</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

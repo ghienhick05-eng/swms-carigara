@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Edit Collection - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner">
+        <div class="entity-banner-icon"><i class="fas fa-trash-alt"></i></div>
+        <h2>Edit Collection #{{ collection.id }}</h2>
+        <p>Update the details for this auto-generated collection record.</p>
+    </div>
+    <div class="entity-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
+                    {{ form.barangay }}
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-recycle"></i> Waste Type</label>
+                    {{ form.waste_type }}
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> Scheduled Date</label>
+                    {{ form.scheduled_date }}
+                    <span class="barangay-locked-hint">Date collection is scheduled to happen for this barangay.</span>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-truck"></i> Collector / Truck ID</label>
+                    {{ form.collector }}
+                </div>
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-add"><i class="fas fa-check"></i> Update Record</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

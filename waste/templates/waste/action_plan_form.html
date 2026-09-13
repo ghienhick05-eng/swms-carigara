@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Action Plan - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner">
+        <div class="entity-banner-icon"><i class="fas fa-tasks"></i></div>
+        <h2>{% if editing %}Edit Action Plan #{{ action_plan.id }}{% else %}Add Action Plan{% endif %}</h2>
+        <p>{% if editing %}Update the details for this action plan.{% else %}Plan an upcoming activity and assign responsibility.{% endif %}</p>
+    </div>
+    <div class="entity-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label><i class="fas fa-heading"></i> Activity / Title</label>
+                {{ form.title }}
+                <datalist id="action-plan-suggestions">
+                    <option value="Establishment of MRF">
+                    <option value="HAPAG">
+                    <option value="Desilting">
+                    <option value="BARKADA Day">
+                </datalist>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    {% if form.locked_barangay %}
+                        <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
+                        <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ form.locked_barangay }}</div>
+                        <span class="barangay-locked-hint">Automatically set to your assigned barangay.</span>
+                        {{ form.barangay }}
+                    {% else %}
+                        <label><i class="fas fa-map-marker-alt"></i> Barangay <span style="font-weight:400; color: var(--text-tertiary);">(blank = municipal-wide)</span></label>
+                        {{ form.barangay }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {% if form.target_date %}
+                        <label><i class="fas fa-calendar-day"></i> Due Date <span style="font-weight:400; color: var(--text-tertiary);">(submission deadline)</span></label>
+                        {{ form.target_date }}
+                    {% else %}
+                        <label><i class="fas fa-calendar-day"></i> Due Date</label>
+                        <div class="barangay-locked-display"><i class="fas fa-lock"></i> Set by MENRO Admin</div>
+                        <span class="barangay-locked-hint">The due date is assigned by the MENRO Admin after your submission is reviewed.</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-align-left"></i> Description</label>
+                {{ form.description }}
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label><i class="fas fa-peso-sign"></i> Estimated Budget (PHP)</label>
+                    {{ form.budget }}
+                    <span style="font-size: 0.85rem; color: var(--text-tertiary);">Estimated cost for this activity.</span>
+                    {% if form.budget.errors %}
+                        <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.budget.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-list-check"></i> Status</label>
+                    {{ form.status }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-user-tie"></i> Responsible Person / Office</label>
+                {{ form.responsible_person }}
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-note-sticky"></i> Remarks</label>
+                {{ form.remarks }}
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-file-arrow-up"></i> Action Plan Document <span style="font-weight:400; color: var(--text-tertiary);">(Allowed: PDF, DOC, DOCX)</span></label>
+                {% if editing and action_plan.file %}
+                    <div style="margin-bottom: var(--spacing-sm); font-size: 0.9rem; color: var(--text-secondary);">
+                        <i class="fas fa-file"></i> Current file:
+                        <a href="{{ action_plan.file.url }}" target="_blank" rel="noopener">{{ action_plan.file.name|cut:"action_plans/" }}</a>
+                        &mdash; choose a new file below only if you want to replace it.
+                    </div>
+                {% endif %}
+                {{ form.file }}
+                {% if form.file.errors %}
+                    <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.file.errors|striptags }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-image"></i> Supporting Image <span style="font-weight:400; color: var(--text-tertiary);">(Allowed: JPG, JPEG, PNG — optional)</span></label>
+                {% if editing and action_plan.supporting_image %}
+                    <div style="margin-bottom: var(--spacing-sm);">
+                        <img src="{{ action_plan.supporting_image.url }}" alt="Current supporting image" style="max-width: 140px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: block; margin-bottom: 4px;">
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Current image &mdash; choose a new one below only if you want to replace it.</span>
+                    </div>
+                {% endif %}
+                {{ form.supporting_image }}
+                {% if form.supporting_image.errors %}
+                    <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.supporting_image.errors|striptags }}</div>
+                {% endif %}
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'action_plan_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-add">{% if editing %}<i class="fas fa-check"></i> Update Plan{% else %}<i class="fas fa-plus"></i> Save Plan{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

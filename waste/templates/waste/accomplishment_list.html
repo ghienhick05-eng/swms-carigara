@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+{% block title %}Accomplishments - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============ FILTER CARD ============ */
+    .acc-filter-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .acc-filter-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .acc-filter-title i { color: var(--green-700); }
+
+    .acc-filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        align-items: flex-end;
+    }
+
+    .acc-filter-field { flex: 1 1 220px; min-width: 180px; }
+
+    .acc-filter-field label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .acc-filter-field select,
+    .acc-filter-field .barangay-locked-display { min-height: 44px; }
+
+    /* ============ TABLE CARD ============ */
+    .acc-table-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .acc-table-card-header h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .acc-table-scroll { overflow-x: auto; }
+
+    .acc-table { width: 100%; border-collapse: collapse; }
+
+    .acc-table thead th {
+        color: var(--green-800);
+        background: var(--green-50);
+        text-align: left;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: var(--spacing-md) var(--spacing-lg);
+        white-space: nowrap;
+    }
+
+    .acc-table td {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-top: 1px solid var(--gray-100);
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+
+    .acc-table .col-expand { width: 40px; text-align: center; }
+    .acc-table .col-title { text-align: center; }
+    .acc-table .col-actions { text-align: center; white-space: nowrap; }
+
+    .acc-clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+
+    .acc-empty-cell { color: var(--text-tertiary); }
+
+    /* Expand toggle - front row shows essentials, rest tucked inside */
+    .acc-expand-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--gray-200);
+        background: var(--white);
+        color: var(--text-tertiary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .acc-expand-btn:hover {
+        background: var(--green-50);
+        border-color: var(--green-100);
+        color: var(--green-700);
+    }
+
+    .acc-expand-btn i {
+        transition: transform var(--transition-fast);
+        font-size: 0.7rem;
+    }
+
+    .acc-expand-btn.open i { transform: rotate(180deg); }
+
+    .acc-expand-row { display: none; }
+    .acc-expand-row.open { display: table-row; }
+
+    .acc-expand-row td {
+        background: var(--gray-50);
+        border-top: none;
+        padding: var(--spacing-md) var(--spacing-xl);
+    }
+
+    .acc-expand-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .acc-expand-item .acc-expand-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 4px;
+    }
+
+    .acc-expand-item .acc-expand-value {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    @media (max-width: 640px) {
+        .acc-expand-grid { grid-template-columns: 1fr; gap: var(--spacing-sm); }
+    }
+
+    /* Action buttons: plain, centered, not sticky - same compact icon-button
+       style as the Action Plans table */
+    .acc-table .action-buttons {
+        display: flex;
+        gap: var(--spacing-xs);
+        justify-content: center;
+        flex-wrap: nowrap;
+    }
+
+    .acc-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        height: 34px;
+        padding: 0 0.65rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        background: var(--white);
+        color: var(--text-secondary);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .acc-icon-btn:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .acc-icon-btn.edit:hover {
+        background: #EFF6FF;
+        border-color: #BFDBFE;
+        color: #1D4ED8;
+    }
+
+    .acc-icon-btn.delete {
+        color: #B91C1C;
+        border-color: #FECACA;
+        background: #FEF2F2;
+    }
+
+    .acc-icon-btn.delete:hover {
+        background: #FEE2E2;
+        border-color: #FCA5A5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-toolbar">
+    <div class="page-toolbar-heading">
+        <div class="page-icon-badge"><i class="fas fa-check-circle"></i></div>
+        <div>
+            <h2 class="page-title">Accomplishment Records</h2>
+            <p class="page-subtitle">Completed activities and milestones logged for reporting.</p>
+        </div>
+    </div>
+    {% if not user.is_superuser and user.profile.role != "admin" %}
+    <a href="{% url 'accomplishment_add' %}" class="btn btn-add"><i class="fas fa-plus"></i> Log New Accomplishment</a>
+    {% endif %}
+</div>
+
+<!-- FILTERS -->
+<div class="acc-filter-card">
+    <div class="acc-filter-title"><i class="fas fa-sliders"></i> Filters</div>
+    <form method="get" class="acc-filter-form">
+        {% if my_barangay %}
+        <input type="hidden" name="barangay" value="{{ my_barangay }}">
+        <div class="acc-filter-field">
+            <label>Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+        </div>
+        {% else %}
+        <div class="acc-filter-field">
+            <label for="acc-barangay">Barangay</label>
+            <select name="barangay" id="acc-barangay" onchange="this.form.submit()">
+                <option value="">All Barangays</option>
+                {% for value, label in barangay_choices %}
+                <option value="{{ value }}" {% if value == selected_barangay %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        {% if selected_barangay %}
+        <a href="{% url 'accomplishment_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- ACCOMPLISHMENT TABLE -->
+<div class="card" style="padding:0; overflow:hidden;">
+    {% if accomplishments %}
+    <div class="acc-table-card-header">
+        <h3>Accomplishment Records</h3>
+    </div>
+    <div class="acc-table-scroll">
+        <table class="acc-table">
+            <thead>
+                <tr>
+                    <th class="col-expand"></th>
+                    <th>Date</th>
+                    <th class="col-title">Title</th>
+                    <th>Barangay</th>
+                    <th>Review</th>
+                    <th class="col-actions"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in accomplishments %}
+                <tr class="row-clickable" onclick="window.location='{% url 'accomplishment_detail' a.id %}'">
+                    <td class="col-expand" data-label="">
+                        <button type="button" class="acc-expand-btn" aria-label="Show more details for accomplishment #{{ a.id }}"
+                            onclick="event.stopPropagation(); var r=document.getElementById('acc-expand-{{ a.id }}'); var open=r.classList.toggle('open'); this.classList.toggle('open', open);">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </td>
+                    <td data-label="Date">{{ a.date_accomplished|date:"M d, Y" }}</td>
+                    <td class="col-title" data-label="Title">
+                        <span class="acc-clamp">#{{ a.id }} &middot; {{ a.title }}</span>
+                    </td>
+                    <td data-label="Barangay">{{ a.barangay|default:"Municipal-wide" }}</td>
+                    <td data-label="Review"><span class="status-badge status-{{ a.review_status|slugify }}">{{ a.review_status }}</span></td>
+                    <td class="col-actions" data-label="">
+                        {% if user.is_superuser or user.profile.role == "admin" %}
+                        <div class="action-buttons">
+                            <a href="{% url 'accomplishment_edit' a.id %}" class="acc-icon-btn edit" onclick="event.stopPropagation();"><i class="fas fa-pen"></i> Edit</a>
+                            <a href="{% url 'accomplishment_delete' a.id %}" class="acc-icon-btn delete" onclick="event.stopPropagation();"><i class="fas fa-trash"></i> Delete</a>
+                        </div>
+                        {% elif a.logged_by_id == user.id and a.review_status != "Approved" %}
+                        <div class="action-buttons">
+                            <a href="{% url 'accomplishment_edit' a.id %}" class="acc-icon-btn edit" onclick="event.stopPropagation();"><i class="fas fa-pen"></i> Edit</a>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="acc-expand-row" id="acc-expand-{{ a.id }}">
+                    <td colspan="6">
+                        <div class="acc-expand-grid">
+                            <div class="acc-expand-item">
+                                <div class="acc-expand-label">Description</div>
+                                <div class="acc-expand-value">{{ a.description|default:"-"|truncatewords:25 }}</div>
+                            </div>
+                            <div class="acc-expand-item">
+                                <div class="acc-expand-label">Submitted By</div>
+                                <div class="acc-expand-value">{{ a.logged_by.username|default:"-" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div style="display:flex; justify-content:center; gap:8px; padding: var(--spacing-md);">
+        {% if page_obj.has_previous %}
+        <a class="btn btn-secondary" href="?page={{ page_obj.previous_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}">&laquo; Prev</a>
+        {% endif %}
+        <span style="align-self:center;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a class="btn btn-secondary" href="?page={{ page_obj.next_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-award"></i>
+        <div class="empty-state-title">No accomplishment records yet</div>
+        <div class="empty-state-text">Log completed activities like MRF establishment or clean-up drives to build your accomplishment history.</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

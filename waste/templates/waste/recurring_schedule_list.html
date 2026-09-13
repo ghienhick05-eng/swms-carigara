@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Recurring Collection Schedules - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="page-toolbar">
+    <div class="page-toolbar-heading">
+        <div class="page-icon-badge"><i class="fas fa-repeat"></i></div>
+        <div>
+            <h2 class="page-title">Recurring Collection Schedules</h2>
+            <p class="page-subtitle">Set these up once - a new Collection is auto-created every month for each active schedule.</p>
+        </div>
+    </div>
+    <div style="display:flex; gap: var(--spacing-sm);">
+        <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Collections</a>
+        <a href="{% url 'recurring_schedule_add' %}" class="btn btn-add"><i class="fas fa-plus"></i> New Schedule</a>
+    </div>
+</div>
+
+<div class="card">
+    {% if schedules %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr><th>Barangay</th><th>Waste Type</th><th>Day of Month</th><th>Collector</th><th>Active</th><th>Last Generated</th><th class="actions-col"></th></tr>
+            </thead>
+            <tbody>
+                {% for s in schedules %}
+                <tr>
+                    <td data-label="Barangay">{{ s.barangay }}</td>
+                    <td data-label="Waste Type">{{ s.waste_type }}</td>
+                    <td data-label="Day of Month">{{ s.day_of_month }}</td>
+                    <td data-label="Collector">{{ s.collector }}</td>
+                    <td data-label="Active">
+                        {% if s.is_active %}
+                        <span class="status-badge status-completed">Active</span>
+                        {% else %}
+                        <span class="status-badge status-scheduled">Paused</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Last Generated">{% if s.last_generated_for %}{{ s.last_generated_for|date:"F Y" }}{% else %}Not yet{% endif %}</td>
+                    <td class="actions-col">
+                        <div class="action-buttons">
+                            <a href="{% url 'recurring_schedule_edit' s.id %}" class="btn btn-md btn-edit"><i class="fas fa-pen"></i> Edit</a>
+                            <a href="{% url 'recurring_schedule_delete' s.id %}" class="btn btn-md btn-delete"><i class="fas fa-trash"></i> Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-repeat"></i>
+        <div class="empty-state-title">No recurring schedules yet</div>
+        <div class="empty-state-text">Create one so Collections for a barangay and waste type are auto-generated every month.</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

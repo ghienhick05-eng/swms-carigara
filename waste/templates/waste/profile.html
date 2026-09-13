@@ -1,0 +1,596 @@
+{% extends "base.html" %}
+{% block title %}My Profile - SWMS Carigara{% endblock %}
+{% block content %}
+<style>
+    .profile-wrapper {
+        max-width: 620px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+
+    /* ---------- Header card (compact) ---------- */
+    .profile-header-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .profile-banner {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        padding: var(--spacing-lg) var(--spacing-lg) 4rem;
+        text-align: center;
+        color: #fff;
+    }
+
+    .profile-banner h2 {
+        margin: 0 0 2px;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .profile-banner p {
+        margin: 0;
+        font-size: 0.8rem;
+        opacity: 0.92;
+    }
+
+    .profile-header-body {
+        padding: 0 var(--spacing-lg) var(--spacing-lg);
+    }
+
+    .avatar-upload {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        margin: -70px auto var(--spacing-sm);
+    }
+
+    .avatar-upload label {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        cursor: pointer;
+        position: relative;
+        border: 3px solid var(--bg-primary);
+        box-shadow: var(--shadow-md);
+        background: var(--bg-tertiary);
+        overflow: hidden;
+    }
+
+    .avatar-upload img,
+    .avatar-upload .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .avatar-upload .avatar-placeholder i {
+        font-size: 3rem;
+        color: var(--text-tertiary);
+    }
+
+    .avatar-upload .avatar-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.6);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        font-size: 0.62rem;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .avatar-upload label:hover .avatar-overlay {
+        opacity: 1;
+    }
+
+    .avatar-upload .avatar-overlay i {
+        font-size: 1rem;
+    }
+
+    .avatar-upload input[type="file"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+    }
+
+    .profile-identity {
+        text-align: center;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .profile-identity strong {
+        display: block;
+        font-size: 1.05rem;
+        color: var(--text-primary);
+    }
+
+    .profile-identity .role-badge {
+        display: inline-block;
+        margin-top: 6px;
+        padding: 0.15rem var(--spacing-md);
+        border-radius: 999px;
+        background: var(--bg-tertiary);
+        color: var(--accent-primary);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .profile-identity .barangay-line {
+        display: block;
+        margin-top: 6px;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+    }
+
+    .profile-identity .barangay-line i {
+        color: var(--accent-primary);
+        margin-right: 4px;
+    }
+
+    .filename-hint {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--text-tertiary);
+        margin-bottom: var(--spacing-md);
+        min-height: 1.1em;
+    }
+
+    .avatar-errors {
+        text-align: center;
+        color: var(--accent-danger);
+        font-size: 0.82rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .profile-header-body .form-actions {
+        margin-top: 0;
+    }
+
+    /* ---------- View mode static avatar (no upload affordance) ---------- */
+    .avatar-view {
+        width: 140px;
+        height: 140px;
+        margin: -70px auto var(--spacing-sm);
+        border-radius: 50%;
+        border: 3px solid var(--bg-primary);
+        box-shadow: var(--shadow-md);
+        background: var(--bg-tertiary);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .avatar-view img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-view i {
+        font-size: 3rem;
+        color: var(--text-tertiary);
+    }
+
+    #editProfileBtn {
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* ---------- Account information card ---------- */
+    .info-card-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .info-card-title i {
+        color: var(--accent-primary);
+    }
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        padding: 0.7rem 0;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-row-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .info-row-label i {
+        width: 16px;
+        text-align: center;
+        color: var(--accent-primary);
+    }
+
+    .info-row-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-align: right;
+    }
+
+    .account-status-pill {
+        display: inline-block;
+        padding: 0.1rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .account-status-active {
+        background: var(--green-100);
+        color: var(--green-800);
+    }
+
+    .account-status-inactive {
+        background: #FEE2E2;
+        color: #B91C1C;
+    }
+
+    /* ---------- Edit mode form fields ---------- */
+    .edit-form-fields {
+        margin-top: var(--spacing-md);
+    }
+
+    .edit-form-fields .form-group {
+        margin-bottom: var(--spacing-md);
+        text-align: left;
+    }
+
+    .edit-form-fields .form-group label {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+    }
+
+    .locked-field {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-sm);
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px dashed var(--gray-300);
+        border-radius: var(--radius-md);
+        background: var(--gray-50);
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        box-sizing: border-box;
+    }
+
+    .locked-field i {
+        color: var(--text-tertiary);
+        font-size: 0.85rem;
+    }
+
+    .edit-section-divider {
+        margin: var(--spacing-lg) 0 var(--spacing-md);
+        padding-top: var(--spacing-md);
+        border-top: 1px solid var(--border-color);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+    }
+
+    @media (max-width: 640px) {
+        .profile-header-body,
+        .card {
+            padding-left: var(--spacing-md);
+            padding-right: var(--spacing-md);
+        }
+
+        .info-row-value {
+            text-align: right;
+            max-width: 60%;
+        }
+    }
+</style>
+
+<div class="profile-wrapper">
+
+    <div class="profile-header-card">
+        <div class="profile-banner">
+            <h2><i class="fas fa-user-circle"></i> My Profile</h2>
+            <p>View your account details, or edit your profile picture.</p>
+        </div>
+
+        <div class="profile-header-body">
+
+            <!-- ============ VIEW MODE (default) ============ -->
+            <div id="profileViewMode">
+                <div class="avatar-view">
+                    {% if profile_obj.avatar %}
+                        <img src="{{ profile_obj.avatar.url }}" alt="Current profile picture">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+
+                <div class="profile-identity">
+                    <strong>{{ user.username }}</strong>
+                    {% if user.get_full_name %}
+                        <span class="barangay-line"><i class="fas fa-id-badge"></i>{{ user.get_full_name }}</span>
+                    {% endif %}
+                    {% if user.profile %}
+                        <span class="role-badge">{{ user.profile.get_role_display }}</span>
+                        {% if user.profile.role == "user" and user.profile.barangay %}
+                            <span class="barangay-line"><i class="fas fa-map-marker-alt"></i>Barangay {{ user.profile.barangay }}</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <button type="button" id="editProfileBtn" class="btn btn-add">
+                    <i class="fas fa-pen"></i> Edit Profile
+                </button>
+            </div>
+
+            <!-- ============ EDIT MODE (hidden by default) ============ -->
+            <!--
+                Security note: this form (ProfileEditForm) only exposes
+                "username", "full_name" and "avatar" server-side. Role,
+                barangay, account status, date joined, and email are never
+                included in this form, so even if someone tampers with the
+                client, the server will not accept changes to those fields -
+                toggling this block only changes what controls are shown,
+                not what the backend allows. See waste/views.py::profile()
+                and waste/forms.py::ProfileEditForm for the enforcement.
+            -->
+            <form method="post" enctype="multipart/form-data" id="profileEditForm" style="display:none;">
+                {% csrf_token %}
+
+                <div class="avatar-upload">
+                    <label for="{{ form.avatar.id_for_label }}">
+                        {% if profile_obj.avatar %}
+                            <img id="avatar-preview" src="{{ profile_obj.avatar.url }}" alt="Current profile picture">
+                        {% else %}
+                            <span class="avatar-placeholder" id="avatar-placeholder"><i class="fas fa-user"></i></span>
+                        {% endif %}
+                        <span class="avatar-overlay">
+                            <i class="fas fa-camera"></i>
+                            Change
+                        </span>
+                        {{ form.avatar }}
+                    </label>
+                </div>
+
+                <div class="filename-hint" id="filenameHint">Click the photo above to choose a new picture</div>
+
+                {% if form.avatar.errors %}
+                    <div class="avatar-errors">{{ form.avatar.errors|striptags }}</div>
+                {% endif %}
+
+                <div class="edit-form-fields">
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}"><i class="fas fa-user"></i> Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="avatar-errors" style="text-align:left;">{{ form.username.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.full_name.id_for_label }}"><i class="fas fa-id-badge"></i> Full Name</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                            <div class="avatar-errors" style="text-align:left;">{{ form.full_name.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="edit-section-divider">Locked (cannot be changed)</div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <div class="locked-field">
+                            <span>{{ user.email|default:"Not set" }}</span>
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+
+                    {% if user.profile %}
+                    <div class="form-group">
+                        <label><i class="fas fa-user-tag"></i> Role</label>
+                        <div class="locked-field">
+                            <span>{{ user.profile.get_role_display }}</span>
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+
+                    {% if user.profile.role == "user" %}
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
+                        <div class="locked-field">
+                            <span>{{ user.profile.barangay|default:"Not set" }}</span>
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label><i class="fas fa-toggle-on"></i> Account Status</label>
+                        <div class="locked-field">
+                            <span>{% if user.is_active %}Active{% else %}Inactive{% endif %}</span>
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+
+                    {% if user.date_joined %}
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-plus"></i> Date Joined</label>
+                        <div class="locked-field">
+                            <span>{{ user.date_joined|date:"M d, Y" }}</span>
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions" style="justify-content:center;">
+                    <button type="button" id="cancelEditBtn" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</button>
+                    <button type="submit" class="btn btn-add"><i class="fas fa-check"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="info-card-title"><i class="fas fa-circle-info"></i> Account Information</div>
+        <div class="info-list">
+            <div class="info-row">
+                <span class="info-row-label"><i class="fas fa-user"></i> Username</span>
+                <span class="info-row-value">{{ user.username }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-row-label"><i class="fas fa-envelope"></i> Email</span>
+                <span class="info-row-value">{{ user.email|default:"Not set" }}</span>
+            </div>
+            {% if user.profile %}
+            <div class="info-row">
+                <span class="info-row-label"><i class="fas fa-user-tag"></i> Role</span>
+                <span class="info-row-value">{{ user.profile.get_role_display }}</span>
+            </div>
+            {% if user.profile.role == "user" %}
+            <div class="info-row">
+                <span class="info-row-label"><i class="fas fa-map-marker-alt"></i> Barangay</span>
+                <span class="info-row-value">{{ user.profile.barangay|default:"Not set" }}</span>
+            </div>
+            {% endif %}
+            {% endif %}
+            <div class="info-row">
+                <span class="info-row-label"><i class="fas fa-toggle-on"></i> Account Status</span>
+                <span class="info-row-value">
+                    {% if user.is_active %}
+                        <span class="account-status-pill account-status-active">Active</span>
+                    {% else %}
+                        <span class="account-status-pill account-status-inactive">Inactive</span>
+                    {% endif %}
+                </span>
+            </div>
+            {% if user.date_joined %}
+            <div class="info-row">
+                <span class="info-row-label"><i class="fas fa-calendar-plus"></i> Date Joined</span>
+                <span class="info-row-value">{{ user.date_joined|date:"M d, Y" }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const avatarInput = document.querySelector('#profileEditForm input[name="avatar"]');
+    const filenameHint = document.getElementById('filenameHint');
+    const viewMode = document.getElementById('profileViewMode');
+    const editForm = document.getElementById('profileEditForm');
+    const editBtn = document.getElementById('editProfileBtn');
+    const cancelBtn = document.getElementById('cancelEditBtn');
+
+    // Snapshot the original field values as rendered by the server, so
+    // Cancel can discard any in-progress edits without a page reload.
+    const originalValues = {
+        username: editForm.querySelector('[name="username"]').value,
+        full_name: editForm.querySelector('[name="full_name"]').value,
+    };
+
+    function enterEditMode() {
+        viewMode.style.display = 'none';
+        editForm.style.display = 'block';
+    }
+
+    function exitEditMode() {
+        editForm.style.display = 'none';
+        viewMode.style.display = 'block';
+        editForm.reset();
+        editForm.querySelector('[name="username"]').value = originalValues.username;
+        editForm.querySelector('[name="full_name"]').value = originalValues.full_name;
+        const preview = document.getElementById('avatar-preview');
+        {% if profile_obj.avatar %}
+            if (preview) preview.src = "{{ profile_obj.avatar.url }}";
+        {% endif %}
+        filenameHint.textContent = 'Click the photo above to choose a new picture';
+    }
+
+    if (editBtn) {
+        editBtn.addEventListener('click', enterEditMode);
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', exitEditMode);
+    }
+
+    {% if form.avatar.errors or form.username.errors or form.full_name.errors %}
+        // Re-open edit mode automatically if the submission had a validation error.
+        enterEditMode();
+    {% endif %}
+
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            filenameHint.textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                let img = document.getElementById('avatar-preview');
+                const placeholder = document.getElementById('avatar-placeholder');
+                if (!img) {
+                    img = document.createElement('img');
+                    img.id = 'avatar-preview';
+                    if (placeholder) placeholder.replaceWith(img);
+                }
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+</script>
+{% endblock %}

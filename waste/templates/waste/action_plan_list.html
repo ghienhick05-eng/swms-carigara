@@ -1,0 +1,562 @@
+{% extends "base.html" %}
+{% block title %}Action Plans - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============ PAGE HEADER ============ */
+    .apl-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .apl-header-titles {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .apl-header-titles .page-title {
+        font-size: 1.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .apl-header-titles .page-subtitle {
+        margin: 0;
+        max-width: 620px;
+    }
+
+    /* ============ FILTER TOOLBAR ============ */
+    .apl-filter-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .apl-filter-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .apl-filter-title i {
+        color: var(--green-700);
+    }
+
+    .apl-filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        align-items: flex-end;
+    }
+
+    .apl-filter-field {
+        flex: 1 1 180px;
+        min-width: 150px;
+    }
+
+    .apl-filter-field.apl-search {
+        flex: 2 1 260px;
+    }
+
+    .apl-filter-field label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .apl-filter-field select,
+    .apl-filter-field .barangay-locked-display {
+        min-height: 44px;
+    }
+
+    .apl-search-input-wrap {
+        position: relative;
+    }
+
+    .apl-search-input-wrap i {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+        font-size: 0.85rem;
+        pointer-events: none;
+    }
+
+    .apl-search-input-wrap input {
+        min-height: 44px;
+        width: 100%;
+        padding-left: 2.25rem;
+    }
+
+    .apl-filter-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex: 0 0 auto;
+    }
+
+    @media (max-width: 900px) {
+        .apl-filter-form { flex-direction: column; align-items: stretch; }
+        .apl-filter-field, .apl-filter-field.apl-search { min-width: 0; }
+        .apl-filter-actions { width: 100%; }
+        .apl-filter-actions .btn { flex: 1; }
+    }
+
+    /* ============ TABLE CARD ============ */
+    .apl-table-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .apl-table-card-header h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    thead th {
+        color: var(--green-800);
+    }
+
+    /* ============ TITLE / RESPONSIBLE 2-LINE CLAMP ============ */
+    .apl-clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+
+    .ap-table td.col-title .apl-clamp {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .ap-table td.col-responsible .apl-clamp {
+        color: var(--text-secondary);
+    }
+
+    .apl-empty-cell {
+        color: var(--text-tertiary);
+    }
+
+    .apl-budget-value {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ============ COMPACT ICON ACTIONS ============ */
+    .apl-actions {
+        display: flex;
+        gap: var(--spacing-xs);
+        flex-wrap: nowrap;
+    }
+
+    .apl-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        height: 34px;
+        padding: 0 0.65rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        background: var(--white);
+        color: var(--text-secondary);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        position: relative;
+    }
+
+    .apl-icon-btn:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .apl-icon-btn.edit:hover {
+        background: #EFF6FF;
+        border-color: #BFDBFE;
+        color: #1D4ED8;
+    }
+
+    .apl-icon-btn.delete {
+        color: #B91C1C;
+        border-color: #FECACA;
+        background: #FEF2F2;
+    }
+
+    .apl-icon-btn.delete:hover {
+        background: #FEE2E2;
+        border-color: #FCA5A5;
+    }
+
+    .apl-icon-btn.submit {
+        color: var(--green-700);
+        border-color: var(--green-100);
+        background: var(--green-50);
+    }
+
+    .apl-icon-btn.submit:hover {
+        background: var(--green-100);
+    }
+
+    /* ============ FOOTER ============ */
+    .apl-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-top: 1px solid var(--gray-100);
+    }
+
+    .apl-footer-count {
+        font-size: 0.82rem;
+        color: var(--text-tertiary);
+    }
+
+    .apl-pagination {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .apl-pagination span {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+    }
+
+    /* ============ EXPAND TOGGLE (essential info up front, rest tucked inside) ============ */
+    .ap-table .col-expand { width: 40px; text-align: center; }
+
+    .apl-expand-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--gray-200);
+        background: var(--white);
+        color: var(--text-tertiary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .apl-expand-btn:hover {
+        background: var(--green-50);
+        border-color: var(--green-100);
+        color: var(--green-700);
+    }
+
+    .apl-expand-btn i {
+        transition: transform var(--transition-fast);
+        font-size: 0.7rem;
+    }
+
+    .apl-expand-btn.open i { transform: rotate(180deg); }
+
+    .apl-expand-row { display: none; }
+    .apl-expand-row.open { display: table-row; }
+
+    .apl-expand-row td {
+        background: var(--gray-50);
+        border-top: none;
+        padding: var(--spacing-md) var(--spacing-xl);
+    }
+
+    .apl-expand-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .apl-expand-item .apl-expand-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 4px;
+    }
+
+    .apl-expand-item .apl-expand-value {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    @media (max-width: 640px) {
+        .apl-expand-grid { grid-template-columns: 1fr; gap: var(--spacing-sm); }
+    }
+
+    /* Title column centered */
+    .ap-table .col-title,
+    .ap-table th.col-title {
+        text-align: center;
+    }
+
+    .ap-table td.col-title .apl-clamp {
+        text-align: center;
+    }
+
+    /* Table scrolls within its own box on narrow screens instead of
+       spilling past the page edge */
+    .apl-table-scroll {
+        overflow-x: auto;
+    }
+
+    /* Actions column: plain, same as the other columns - no sticky pin/shadow */
+    .apl-table-scroll table th.actions-col,
+    .apl-table-scroll table td.actions-col {
+        position: static;
+        box-shadow: none;
+        background: transparent;
+        text-align: center;
+    }
+
+    .apl-table-scroll table td.actions-col .apl-actions {
+        justify-content: center;
+    }
+
+    .apl-table-scroll table thead th.actions-col {
+        background: var(--green-50);
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="apl-header">
+    <div class="apl-header-titles">
+        <div class="page-icon-badge"><i class="fas fa-tasks"></i></div>
+        <div>
+            <h1 class="page-title">Action Plan Records</h1>
+            <p class="page-subtitle">Manage planned activities, deadlines, responsible offices, budgets, and compliance status.</p>
+        </div>
+    </div>
+    {% if my_barangay %}
+    <a href="{% url 'action_plan_add' %}" class="btn btn-add"><i class="fas fa-plus"></i> Add Action Plan</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- FILTERS -->
+<div class="apl-filter-card">
+    <div class="apl-filter-title"><i class="fas fa-sliders"></i> Filters</div>
+    <form method="get" class="apl-filter-form">
+        <div class="apl-filter-field apl-search">
+            <label for="apl-q">Search</label>
+            <div class="apl-search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="apl-q" name="q" placeholder="Search by title or responsible person&hellip;" value="{{ selected_search }}">
+            </div>
+        </div>
+        {% if my_barangay %}
+        <input type="hidden" name="barangay" value="{{ my_barangay }}">
+        <div class="apl-filter-field">
+            <label>Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+        </div>
+        {% else %}
+        <div class="apl-filter-field">
+            <label for="apl-barangay">Barangay</label>
+            <select name="barangay" id="apl-barangay">
+                <option value="">All Barangays</option>
+                {% for value, label in barangay_choices %}
+                <option value="{{ value }}" {% if value == selected_barangay %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="apl-filter-field">
+            <label for="apl-status">Status</label>
+            <select name="status" id="apl-status">
+                <option value="">All Statuses</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="apl-filter-field">
+            <label for="apl-compliance">Compliance</label>
+            <select name="compliance" id="apl-compliance">
+                <option value="">All</option>
+                <option value="Awaiting Due Date" {% if selected_compliance == "Awaiting Due Date" %}selected{% endif %}>Awaiting Due Date</option>
+                <option value="Pending" {% if selected_compliance == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="Submitted On Time" {% if selected_compliance == "Submitted On Time" %}selected{% endif %}>Submitted On Time</option>
+                <option value="Submitted Late" {% if selected_compliance == "Submitted Late" %}selected{% endif %}>Submitted Late</option>
+                <option value="Overdue" {% if selected_compliance == "Overdue" %}selected{% endif %}>Overdue</option>
+            </select>
+        </div>
+        <div class="apl-filter-actions">
+            <button type="submit" class="btn btn-add"><i class="fas fa-magnifying-glass"></i> Apply</button>
+            {% if selected_barangay or selected_status or selected_compliance or selected_search %}
+            <a href="{% url 'action_plan_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- ACTION PLAN TABLE -->
+<div class="card" style="padding:0; overflow:hidden;">
+    {% if action_plans %}
+    <div class="apl-table-card-header">
+        <h3>Action Plan Records</h3>
+    </div>
+    <div class="table-responsive apl-table-scroll">
+        <table class="ap-table">
+            <colgroup>
+                <col class="col-expand"><col class="col-due"><col class="col-title"><col class="col-barangay">
+                <col class="col-status"><col class="col-actions">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="col-expand"></th>
+                    <th class="col-due">Due Date</th>
+                    <th class="col-title">Title</th>
+                    <th class="col-barangay">Barangay</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-actions actions-col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in action_plans %}
+                <tr class="row-clickable" onclick="window.location='{% url 'action_plan_detail' a.id %}'">
+                    <td class="col-expand" data-label="">
+                        <button type="button" class="apl-expand-btn" aria-label="Show more details for action plan #{{ a.id }}"
+                            onclick="event.stopPropagation(); var r=document.getElementById('apl-expand-{{ a.id }}'); var open=r.classList.toggle('open'); this.classList.toggle('open', open);">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </td>
+                    <td class="col-due" data-label="Due Date">{{ a.target_date|date:"M d, Y"|default:"Not set" }}</td>
+                    <td class="col-title" data-label="Title" title="{{ a.title }}">
+                        <span class="apl-clamp">#{{ a.id }} &middot; {{ a.title }}</span>
+                    </td>
+                    <td class="col-barangay" data-label="Barangay">{{ a.barangay|default:"Municipal-wide" }}</td>
+                    <td class="col-status" data-label="Status"><span class="status-badge status-{{ a.get_display_status|slugify }}">{{ a.get_display_status }}</span></td>
+                    <td class="col-actions actions-col">
+                        {% if user.is_superuser or user.profile.role == "admin" %}
+                        <div class="apl-actions">
+                            <a href="{% url 'action_plan_edit' a.id %}" class="apl-icon-btn edit" onclick="event.stopPropagation();" data-tooltip="Set Schedule" aria-label="Set schedule date for action plan #{{ a.id }}"><i class="fas fa-calendar-day"></i> Schedule</a>
+                            <a href="{% url 'action_plan_delete' a.id %}" class="apl-icon-btn delete" onclick="event.stopPropagation();" data-tooltip="Delete" aria-label="Delete action plan #{{ a.id }}"><i class="fas fa-trash"></i></a>
+                        </div>
+                        {% elif my_barangay and a.barangay == my_barangay and a.review_status != "Approved" %}
+                        <div class="apl-actions">
+                            <a href="{% url 'action_plan_edit' a.id %}" class="apl-icon-btn submit" onclick="event.stopPropagation();"><i class="fas fa-file-arrow-up"></i> {% if a.submitted_by %}Update{% else %}Submit{% endif %}</a>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="apl-expand-row" id="apl-expand-{{ a.id }}">
+                    <td colspan="6">
+                        <div class="apl-expand-grid">
+                            <div class="apl-expand-item">
+                                <div class="apl-expand-label">Budget</div>
+                                <div class="apl-expand-value">
+                                    {% if a.budget %}<span class="apl-budget-value" data-raw="{{ a.budget }}">&#8369;{{ a.budget|floatformat:2 }}</span>{% else %}<span class="apl-empty-cell">&mdash;</span>{% endif %}
+                                </div>
+                            </div>
+                            <div class="apl-expand-item">
+                                <div class="apl-expand-label">Compliance</div>
+                                <div class="apl-expand-value"><span class="status-badge status-{{ a.get_submission_status|slugify }}">{{ a.get_submission_status }}</span></div>
+                            </div>
+                            <div class="apl-expand-item">
+                                <div class="apl-expand-label">Responsible</div>
+                                <div class="apl-expand-value">{{ a.responsible_person|default:"—" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="apl-footer">
+        <span class="apl-footer-count">
+            Showing {{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ page_obj.paginator.count }} action plans
+        </span>
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="apl-pagination">
+            {% if page_obj.has_previous %}
+            <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_compliance %}&compliance={{ selected_compliance }}{% endif %}{% if selected_search %}&q={{ selected_search }}{% endif %}">&laquo; Prev</a>
+            {% endif %}
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_compliance %}&compliance={{ selected_compliance }}{% endif %}{% if selected_search %}&q={{ selected_search }}{% endif %}">Next &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-clipboard-list"></i>
+        <div class="empty-state-title">No action plans found</div>
+        <div class="empty-state-text">
+            {% if selected_barangay or selected_status or selected_compliance or selected_search %}
+                There are no action plans matching your current filters.
+            {% elif my_barangay %}
+                Add an action plan to track upcoming activities, budgets, and who's responsible - then submit it to MENRO Admin for review.
+            {% else %}
+                No Action Plans have been submitted by any Barangay yet.
+            {% endif %}
+        </div>
+        {% if selected_barangay or selected_status or selected_compliance or selected_search %}
+        <div style="margin-top: var(--spacing-md);">
+            <a href="{% url 'action_plan_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        // Purely cosmetic: adds thousand separators to the already
+        // server-rendered peso amounts (from a.budget|floatformat:2).
+        // Does not alter or re-fetch any value.
+        document.querySelectorAll('.apl-budget-value').forEach((el) => {
+            const raw = parseFloat(el.getAttribute('data-raw'));
+            if (!isNaN(raw)) {
+                el.textContent = '\u20B1' + raw.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        });
+
+        // The Barangay/Status/Compliance selects previously auto-submitted
+        // on change; now that there's an explicit Apply button they submit
+        // together, so drop the auto-submit handlers (none were inlined
+        // here to begin with - selects rely on the Apply/Enter submit).
+    })();
+</script>
+{% endblock %}

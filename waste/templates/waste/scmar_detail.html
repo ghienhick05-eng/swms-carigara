@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+{% block title %}SCMAR - {{ scmar.barangay|default:"Municipal-wide" }} - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .scd-wrapper { max-width: 1150px; margin: 0 auto; }
+
+    .scd-breadcrumb { margin-bottom: var(--spacing-md); font-size: 0.85rem; }
+    .scd-breadcrumb a { color: var(--text-tertiary); text-decoration: none; }
+    .scd-breadcrumb a:hover { color: var(--green-700); }
+    .scd-breadcrumb span.sep { margin: 0 6px; color: var(--gray-300); }
+    .scd-breadcrumb span.current { color: var(--text-secondary); font-weight: 600; }
+
+    .scd-header {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .scd-back {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 0.8rem; color: var(--text-tertiary); text-decoration: none;
+        margin-bottom: var(--spacing-md);
+    }
+    .scd-back:hover { color: var(--green-700); }
+
+    .scd-header-row {
+        display: flex; align-items: flex-start; gap: var(--spacing-md);
+        flex-wrap: wrap; justify-content: space-between;
+    }
+    .scd-header-main { display: flex; align-items: flex-start; gap: var(--spacing-md); min-width: 0; }
+    .scd-header-icon {
+        width: 52px; height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+        border-radius: var(--radius-lg); background: var(--green-50); border: 1px solid var(--green-100);
+        color: var(--green-700); font-size: 1.3rem;
+    }
+    .scd-eyebrow {
+        text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.72rem; font-weight: 700;
+        color: var(--text-tertiary); margin-bottom: 2px;
+    }
+    .scd-title {
+        font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 700;
+        color: var(--text-primary); margin: 0;
+    }
+    .scd-period-note { font-size: 0.82rem; color: var(--text-tertiary); margin-top: 4px; }
+
+    .scd-section {
+        background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm); margin-bottom: var(--spacing-lg); overflow: hidden;
+    }
+    .scd-section-header {
+        display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-xl); border-bottom: 1px solid var(--gray-100);
+    }
+    .scd-section-title {
+        display: flex; align-items: center; gap: var(--spacing-sm);
+        font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0;
+    }
+    .scd-section-title i { color: var(--green-700); font-size: 0.9rem; }
+    .scd-section-source {
+        font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+        color: var(--text-tertiary); background: var(--gray-50); border: 1px solid var(--gray-200);
+        border-radius: 999px; padding: 3px 10px;
+    }
+    .scd-section-body { padding: var(--spacing-xl); }
+
+    .scd-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg); }
+    @media (max-width: 760px) { .scd-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .scd-grid { grid-template-columns: 1fr; } }
+    .scd-grid.scd-grid-4 { grid-template-columns: repeat(4, 1fr); }
+    @media (max-width: 760px) { .scd-grid.scd-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+
+    .scd-item-label {
+        font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+        color: var(--text-tertiary); margin-bottom: 4px;
+    }
+    .scd-item-value { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
+    .scd-item-value small { display: block; font-weight: 400; color: var(--text-tertiary); font-size: 0.78rem; }
+    .scd-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); font-family: 'Poppins', sans-serif; }
+
+    .scd-text-block { margin-bottom: var(--spacing-lg); }
+    .scd-text-block:last-child { margin-bottom: 0; }
+    .scd-text-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--text-tertiary); margin-bottom: 6px; }
+    .scd-text-body { color: var(--text-secondary); line-height: 1.7; font-size: 0.92rem; }
+    .scd-text-empty { color: var(--text-tertiary); font-style: italic; font-size: 0.9rem; }
+
+    .scd-file-card {
+        display: flex; align-items: center; gap: var(--spacing-md);
+        border: 1px solid var(--gray-200); border-radius: var(--radius-md);
+        padding: var(--spacing-md) var(--spacing-lg); background: var(--gray-50);
+    }
+    .scd-file-icon {
+        width: 42px; height: 42px; border-radius: var(--radius-md); background: var(--white);
+        border: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: center;
+        color: var(--green-700); font-size: 1.1rem; flex-shrink: 0;
+    }
+    .scd-file-name { font-weight: 600; color: var(--text-primary); font-size: 0.92rem; word-break: break-word; }
+    .scd-file-actions { margin-left: auto; display: flex; gap: var(--spacing-xs); flex-shrink: 0; }
+    .scd-image-preview {
+        display: block; max-width: 160px; max-height: 160px; border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200); object-fit: cover; margin-bottom: var(--spacing-sm);
+    }
+
+    /* Expandable "detail" disclosure for each module section */
+    .scd-details { margin-top: var(--spacing-lg); }
+    .scd-details summary {
+        cursor: pointer; list-style: none; display: flex; align-items: center; gap: var(--spacing-sm);
+        font-size: 0.85rem; font-weight: 600; color: var(--green-700);
+        padding: var(--spacing-sm) 0; user-select: none;
+    }
+    .scd-details summary::-webkit-details-marker { display: none; }
+    .scd-details summary i { transition: transform 0.15s ease; }
+    .scd-details[open] summary i.fa-chevron-down { transform: rotate(180deg); }
+    .scd-details-body { padding-top: var(--spacing-sm); }
+
+    .scd-mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .scd-mini-table th {
+        text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+        color: var(--text-tertiary); font-weight: 700; padding: 6px 10px; border-bottom: 1px solid var(--gray-200);
+    }
+    .scd-mini-table td { padding: 8px 10px; border-bottom: 1px solid var(--gray-100); color: var(--text-secondary); vertical-align: top; }
+    .scd-mini-table tr:last-child td { border-bottom: none; }
+
+    .scd-flow { display: flex; flex-direction: column; }
+    .scd-flow-step { display: flex; gap: var(--spacing-md); position: relative; padding-bottom: var(--spacing-lg); }
+    .scd-flow-step:last-child { padding-bottom: 0; }
+    .scd-flow-marker {
+        width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 0.78rem; font-weight: 700; flex-shrink: 0; z-index: 1;
+    }
+    .scd-flow-line { position: absolute; left: 12px; top: 26px; bottom: -4px; width: 2px; background: var(--gray-200); }
+    .scd-flow-step:last-child .scd-flow-line { display: none; }
+    .scd-flow-step.done .scd-flow-marker { background: var(--green-600); color: white; }
+    .scd-flow-step.done .scd-flow-line { background: var(--green-600); }
+    .scd-flow-step.current .scd-flow-marker { background: var(--green-100); color: var(--green-800); border: 2px solid var(--green-600); }
+    .scd-flow-step.returned .scd-flow-marker { background: #C2410C; color: white; }
+    .scd-flow-step.pending .scd-flow-marker { background: var(--gray-100); color: var(--text-tertiary); }
+    .scd-flow-title { font-weight: 600; color: var(--text-primary); font-size: 0.92rem; }
+    .scd-flow-sub { font-size: 0.8rem; color: var(--text-tertiary); }
+
+    .scd-review-form textarea { width: 100%; margin-bottom: var(--spacing-sm); }
+    .scd-actions { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scd-wrapper">
+
+    <nav class="scd-breadcrumb">
+        <a href="{% url 'scmar_list' %}">SCMAR</a>
+        <span class="sep">/</span>
+        <span class="current">{{ scmar.barangay|default:"Municipal-wide" }} &middot; {{ scmar.reporting_period }}</span>
+    </nav>
+
+    <div class="scd-header">
+        <a href="{% url 'scmar_list' %}" class="scd-back"><i class="fas fa-arrow-left"></i> Back to SCMAR</a>
+        <div class="scd-header-row">
+            <div class="scd-header-main">
+                <div class="scd-header-icon"><i class="fas fa-clipboard-check"></i></div>
+                <div>
+                    <div class="scd-eyebrow">SCMAR #{{ scmar.id }} &middot; Combined Assessment</div>
+                    <h1 class="scd-title">{{ scmar.barangay|default:"Municipal-wide" }} - {{ scmar.reporting_period }}</h1>
+                    {% if scmar.period_start or scmar.period_end %}
+                    <div class="scd-period-note">
+                        <i class="fas fa-calendar-days"></i>
+                        Data gathered from {{ scmar.period_start|date:"M d, Y"|default:"the beginning" }} to {{ scmar.period_end|date:"M d, Y"|default:"present" }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <span class="status-badge status-{{ scmar.status|slugify }}">{{ scmar.status }}</span>
+        </div>
+    </div>
+
+    <!-- REPORT INFORMATION -->
+    <div class="scd-section">
+        <div class="scd-section-header"><h2 class="scd-section-title"><i class="fas fa-paper-plane"></i> Report Information</h2></div>
+        <div class="scd-section-body">
+            <div class="scd-grid">
+                <div><div class="scd-item-label">Barangay</div><div class="scd-item-value">{{ scmar.barangay|default:"Municipal-wide" }}</div></div>
+                <div><div class="scd-item-label">Reporting Period</div><div class="scd-item-value">{{ scmar.reporting_period }}</div></div>
+                <div><div class="scd-item-label">Date Prepared</div><div class="scd-item-value">{{ scmar.date_prepared|date:"M d, Y"|default:"-" }}</div></div>
+                <div><div class="scd-item-label">Prepared By</div><div class="scd-item-value">{{ scmar.prepared_by|default:"-" }}</div></div>
+                <div><div class="scd-item-label">Date Submitted</div><div class="scd-item-value">{{ scmar.submission_date|date:"M d, Y"|default:"Not yet submitted" }}</div></div>
+                <div><div class="scd-item-label">Submitted By</div><div class="scd-item-value">{{ scmar.submitted_by.username|default:"-" }}<small>Barangay</small></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPLAINTS ASSESSMENT (from Complaints module) -->
+    <div class="scd-section">
+        <div class="scd-section-header">
+            <h2 class="scd-section-title"><i class="fas fa-triangle-exclamation"></i> Complaints Assessment</h2>
+            <span class="scd-section-source"><i class="fas fa-database"></i> Source: Complaints module</span>
+        </div>
+        <div class="scd-section-body">
+            <div class="scd-grid scd-grid-4">
+                <div><div class="scd-item-label">Total Complaints</div><div class="scd-stat-value">{{ complaints.total }}</div></div>
+                <div><div class="scd-item-label">Pending</div><div class="scd-stat-value">{{ complaints.pending }}</div></div>
+                <div><div class="scd-item-label">In Progress</div><div class="scd-stat-value">{{ complaints.in_progress }}</div></div>
+                <div><div class="scd-item-label">Resolved</div><div class="scd-stat-value">{{ complaints.resolved }}</div></div>
+            </div>
+            <div class="scd-text-block" style="margin-top: var(--spacing-lg);">
+                <div class="scd-text-label">Main Complaints / Issues Raised</div>
+                {% if complaints.top_issues %}
+                <ul style="margin:0; padding-left: 1.1rem; color: var(--text-secondary); line-height: 1.8; font-size: 0.9rem;">
+                    {% for issue in complaints.top_issues %}<li>{{ issue }}</li>{% endfor %}
+                </ul>
+                {% else %}
+                <div class="scd-text-empty">No complaints recorded for this period.</div>
+                {% endif %}
+            </div>
+            {% if complaints.queryset %}
+            <details class="scd-details">
+                <summary><i class="fas fa-chevron-down"></i> View {{ complaints.total }} complaint record{{ complaints.total|pluralize }}</summary>
+                <div class="scd-details-body">
+                    <table class="scd-mini-table">
+                        <thead><tr><th>Resident</th><th>Issue</th><th>Date Filed</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for c in complaints.queryset|slice:":15" %}
+                            <tr>
+                                <td>{{ c.resident_name }}</td>
+                                <td>{{ c.issue|truncatechars:60 }}</td>
+                                <td>{{ c.date_filed|date:"M d, Y" }}</td>
+                                <td><span class="status-badge status-{{ c.status|slugify }}">{{ c.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: var(--spacing-sm);"><a href="{% url 'complaint_list' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-up-right-from-square"></i> Open Complaints module</a></div>
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- COLLECTION ASSESSMENT (from Collections module) -->
+    <div class="scd-section">
+        <div class="scd-section-header">
+            <h2 class="scd-section-title"><i class="fas fa-truck"></i> Collection Assessment</h2>
+            <span class="scd-section-source"><i class="fas fa-database"></i> Source: Collections module</span>
+        </div>
+        <div class="scd-section-body">
+            <div class="scd-grid scd-grid-4">
+                <div><div class="scd-item-label">Total Activities</div><div class="scd-stat-value">{{ collections.total }}</div></div>
+                <div><div class="scd-item-label">Scheduled</div><div class="scd-stat-value">{{ collections.scheduled }}</div></div>
+                <div><div class="scd-item-label">Ongoing</div><div class="scd-stat-value">{{ collections.ongoing }}</div></div>
+                <div><div class="scd-item-label">Completed</div><div class="scd-stat-value">{{ collections.completed }}</div></div>
+            </div>
+            <div class="scd-grid" style="margin-top: var(--spacing-lg);">
+                <div><div class="scd-item-label">Waste Collected</div><div class="scd-item-value">{% if collections.total_weight_kg %}{{ collections.total_weight_kg }} kg{% else %}-{% endif %}</div></div>
+                <div><div class="scd-item-label">Waste Types Covered</div><div class="scd-item-value">{{ collections.waste_types_covered|join:", "|default:"-" }}</div></div>
+            </div>
+            {% if collections.queryset %}
+            <details class="scd-details">
+                <summary><i class="fas fa-chevron-down"></i> View {{ collections.total }} collection record{{ collections.total|pluralize }}</summary>
+                <div class="scd-details-body">
+                    <table class="scd-mini-table">
+                        <thead><tr><th>Waste Type</th><th>Collector</th><th>Scheduled</th><th>Collected</th><th>Weight (kg)</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for c in collections.queryset|slice:":15" %}
+                            <tr>
+                                <td>{{ c.waste_type }}</td>
+                                <td>{{ c.collector }}</td>
+                                <td>{{ c.scheduled_date|date:"M d, Y"|default:"-" }}</td>
+                                <td>{{ c.date_collected|date:"M d, Y"|default:"-" }}</td>
+                                <td>{{ c.weight_kg|default:"-" }}</td>
+                                <td><span class="status-badge status-{{ c.status|slugify }}">{{ c.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: var(--spacing-sm);"><a href="{% url 'collection_list' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-up-right-from-square"></i> Open Collections module</a></div>
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ACTION PLAN ASSESSMENT (from Action Plans module) -->
+    <div class="scd-section">
+        <div class="scd-section-header">
+            <h2 class="scd-section-title"><i class="fas fa-list-check"></i> Action Plan Assessment</h2>
+            <span class="scd-section-source"><i class="fas fa-database"></i> Source: Action Plans module</span>
+        </div>
+        <div class="scd-section-body">
+            <div class="scd-grid scd-grid-4">
+                <div><div class="scd-item-label">Total Action Plans</div><div class="scd-stat-value">{{ action_plans.total }}</div></div>
+                <div><div class="scd-item-label">Planned</div><div class="scd-stat-value">{{ action_plans.planned }}</div></div>
+                <div><div class="scd-item-label">Ongoing</div><div class="scd-stat-value">{{ action_plans.ongoing }}</div></div>
+                <div><div class="scd-item-label">Completed</div><div class="scd-stat-value">{{ action_plans.completed }}</div></div>
+            </div>
+            <div class="scd-grid" style="margin-top: var(--spacing-lg);">
+                <div><div class="scd-item-label">Total Budget (Action Plans)</div><div class="scd-item-value">{% if action_plans.total_budget %}&#8369;{{ action_plans.total_budget|floatformat:2 }}{% else %}-{% endif %}</div></div>
+            </div>
+            {% if action_plans.queryset %}
+            <details class="scd-details">
+                <summary><i class="fas fa-chevron-down"></i> View {{ action_plans.total }} action plan{{ action_plans.total|pluralize }}</summary>
+                <div class="scd-details-body">
+                    <table class="scd-mini-table">
+                        <thead><tr><th>Title</th><th>Budget</th><th>Responsible</th><th>Target Date</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for a in action_plans.queryset|slice:":15" %}
+                            <tr>
+                                <td>{{ a.title }}</td>
+                                <td>{% if a.budget %}&#8369;{{ a.budget|floatformat:2 }}{% else %}-{% endif %}</td>
+                                <td>{{ a.responsible_person|default:"-" }}</td>
+                                <td>{{ a.target_date|date:"M d, Y"|default:"-" }}</td>
+                                <td><span class="status-badge status-{{ a.get_display_status|slugify }}">{{ a.get_display_status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: var(--spacing-sm);"><a href="{% url 'action_plan_list' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-up-right-from-square"></i> Open Action Plans module</a></div>
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ACCOMPLISHMENT ASSESSMENT (from Accomplishments module) -->
+    <div class="scd-section">
+        <div class="scd-section-header">
+            <h2 class="scd-section-title"><i class="fas fa-trophy"></i> Accomplishment Assessment</h2>
+            <span class="scd-section-source"><i class="fas fa-database"></i> Source: Accomplishments module</span>
+        </div>
+        <div class="scd-section-body">
+            <div class="scd-grid scd-grid-4">
+                <div><div class="scd-item-label">Total Accomplishments</div><div class="scd-stat-value">{{ accomplishments.total }}</div></div>
+                <div><div class="scd-item-label">Approved</div><div class="scd-stat-value">{{ accomplishments.approved }}</div></div>
+                <div><div class="scd-item-label">For Review</div><div class="scd-stat-value">{{ accomplishments.for_review }}</div></div>
+                <div><div class="scd-item-label">Rejected</div><div class="scd-stat-value">{{ accomplishments.rejected }}</div></div>
+            </div>
+            {% if accomplishments.queryset %}
+            <details class="scd-details">
+                <summary><i class="fas fa-chevron-down"></i> View {{ accomplishments.total }} accomplishment{{ accomplishments.total|pluralize }}</summary>
+                <div class="scd-details-body">
+                    <table class="scd-mini-table">
+                        <thead><tr><th>Title</th><th>Date Accomplished</th><th>Evidence</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for acc in accomplishments.queryset|slice:":15" %}
+                            <tr>
+                                <td>{{ acc.title }}</td>
+                                <td>{{ acc.date_accomplished|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if acc.report_file %}<a href="{{ acc.report_file.url }}" target="_blank" rel="noopener"><i class="fas fa-file-lines"></i> Report</a>{% endif %}
+                                    {% if acc.supporting_image %} &middot; <a href="{{ acc.supporting_image.url }}" target="_blank" rel="noopener"><i class="fas fa-image"></i> Photo</a>{% endif %}
+                                    {% if not acc.report_file and not acc.supporting_image %}-{% endif %}
+                                </td>
+                                <td><span class="status-badge status-{{ acc.review_status|slugify }}">{{ acc.review_status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: var(--spacing-sm);"><a href="{% url 'accomplishment_list' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-up-right-from-square"></i> Open Accomplishments module</a></div>
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- OVERALL ASSESSMENT -->
+    <div class="scd-section">
+        <div class="scd-section-header"><h2 class="scd-section-title"><i class="fas fa-chart-line"></i> Overall Assessment</h2></div>
+        <div class="scd-section-body">
+            <div class="scd-text-block"><div class="scd-text-label">Overall Performance Summary</div><div class="scd-text-body">{{ scmar.overall_summary|default:"-"|linebreaksbr }}</div></div>
+            <div class="scd-text-block"><div class="scd-text-label">Major Issues Identified</div><div class="scd-text-body">{{ scmar.major_issues|default:"-"|linebreaksbr }}</div></div>
+            <div class="scd-text-block"><div class="scd-text-label">Areas Needing Improvement</div><div class="scd-text-body">{{ scmar.improvement_areas|default:"-"|linebreaksbr }}</div></div>
+            <div class="scd-text-block"><div class="scd-text-label">Positive Accomplishments</div><div class="scd-text-body">{{ scmar.positive_accomplishments|default:"-"|linebreaksbr }}</div></div>
+            <div class="scd-text-block">
+                <div class="scd-text-label">Recommended Actions</div>
+                <div class="scd-text-body">{{ scmar.recommended_action|default:"-"|linebreaksbr }}</div>
+            </div>
+            <div class="scd-grid"><div><div class="scd-item-label">Priority</div><div class="scd-item-value">{{ scmar.priority|default:"-" }}</div></div></div>
+        </div>
+    </div>
+
+    <!-- BUDGET SUMMARY -->
+    <div class="scd-section">
+        <div class="scd-section-header">
+            <h2 class="scd-section-title"><i class="fas fa-peso-sign"></i> Budget Summary</h2>
+            <span class="scd-section-source"><i class="fas fa-database"></i> Allocated from Action Plans</span>
+        </div>
+        <div class="scd-section-body">
+            <div class="scd-grid">
+                <div><div class="scd-item-label">Allocated Budget</div><div class="scd-item-value">{% if scmar.allocated_budget %}&#8369;{{ scmar.allocated_budget|floatformat:2 }}{% else %}-{% endif %}</div></div>
+                <div><div class="scd-item-label">Amount Spent</div><div class="scd-item-value">{% if scmar.amount_spent %}&#8369;{{ scmar.amount_spent|floatformat:2 }}{% else %}-{% endif %}</div></div>
+                <div><div class="scd-item-label">Remaining Budget</div><div class="scd-item-value">{% if scmar.remaining_budget is not None %}&#8369;{{ scmar.remaining_budget|floatformat:2 }}{% else %}-{% endif %}</div></div>
+            </div>
+            <div class="scd-text-block" style="margin-top: var(--spacing-lg);">
+                <div class="scd-text-label">Budget Utilization / Purpose</div>
+                <div class="scd-text-body">{{ scmar.budget_purpose|default:"-"|linebreaksbr }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPPORTING DOCUMENTS -->
+    <div class="scd-section">
+        <div class="scd-section-header"><h2 class="scd-section-title"><i class="fas fa-folder-open"></i> Supporting Documents</h2></div>
+        <div class="scd-section-body">
+            <div class="scd-text-block">
+                <div class="scd-text-label">Additional Photo</div>
+                {% if scmar.evidence_photo %}
+                <a href="{{ scmar.evidence_photo.url }}" target="_blank" rel="noopener" title="View larger image">
+                    <img src="{{ scmar.evidence_photo.url }}" alt="Supporting photo" class="scd-image-preview">
+                </a>
+                <div class="scd-actions">
+                    <a href="{{ scmar.evidence_photo.url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-expand"></i> View Image</a>
+                </div>
+                {% else %}
+                <div class="scd-text-empty">No additional photo uploaded.</div>
+                {% endif %}
+            </div>
+            <div class="scd-text-block">
+                <div class="scd-text-label">Additional Document</div>
+                {% if scmar.evidence_document %}
+                <div class="scd-file-card">
+                    <div class="scd-file-icon"><i class="fas fa-file-lines"></i></div>
+                    <div class="scd-file-name">{{ scmar.evidence_document.name|cut:"scmar_reports/" }}</div>
+                    <div class="scd-file-actions">
+                        <a href="{{ scmar.evidence_document.url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
+                        <a href="{{ scmar.evidence_document.url }}" download class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> Download</a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="scd-text-empty">No additional supporting document uploaded.</div>
+                {% endif %}
+            </div>
+            <div class="scd-text-empty" style="margin-top: var(--spacing-md);">
+                Evidence already attached to individual Action Plans and Accomplishments can be viewed inside those sections above, or in their respective modules.
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMISSION WORKFLOW & REVIEW PANEL -->
+    <div class="scd-section">
+        <div class="scd-section-header"><h2 class="scd-section-title"><i class="fas fa-diagram-project"></i> Submission Workflow</h2></div>
+        <div class="scd-section-body">
+            <div class="scd-flow">
+                <div class="scd-flow-step done">
+                    <div><div class="scd-flow-marker"><i class="fas fa-check"></i></div><div class="scd-flow-line"></div></div>
+                    <div><div class="scd-flow-title">Barangay</div><div class="scd-flow-sub">Creator / Submitter</div></div>
+                </div>
+                <div class="scd-flow-step {% if scmar.submitted_by %}done{% else %}current{% endif %}">
+                    <div><div class="scd-flow-marker">{% if scmar.submitted_by %}<i class="fas fa-check"></i>{% else %}2{% endif %}</div><div class="scd-flow-line"></div></div>
+                    <div><div class="scd-flow-title">Submit to MENRO Admin</div><div class="scd-flow-sub">{% if scmar.submitted_by %}Submitted {{ scmar.submission_date|date:"M d, Y" }}{% else %}Awaiting Barangay submission{% endif %}</div></div>
+                </div>
+                <div class="scd-flow-step {% if scmar.status == 'Approved' %}done{% elif scmar.status == 'Returned for Revision' %}returned{% elif scmar.submitted_by %}current{% else %}pending{% endif %}">
+                    <div><div class="scd-flow-marker">{% if scmar.status == 'Approved' %}<i class="fas fa-check"></i>{% elif scmar.status == 'Returned for Revision' %}<i class="fas fa-rotate-left"></i>{% else %}3{% endif %}</div><div class="scd-flow-line"></div></div>
+                    <div><div class="scd-flow-title">MENRO Admin</div><div class="scd-flow-sub">Receiver / Reviewer / Approver &middot; {{ scmar.status }}</div></div>
+                </div>
+                <div class="scd-flow-step {% if scmar.status == 'Approved' %}done{% else %}pending{% endif %}">
+                    <div><div class="scd-flow-marker">{% if scmar.status == 'Approved' %}<i class="fas fa-check"></i>{% else %}4{% endif %}</div></div>
+                    <div><div class="scd-flow-title">Barangay Receives Decision</div><div class="scd-flow-sub">{% if scmar.status == 'Approved' or scmar.status == 'Returned for Revision' %}{{ scmar.status }}{% else %}Pending MENRO Admin review{% endif %}</div></div>
+                </div>
+            </div>
+
+            <div class="scd-grid" style="margin-top: var(--spacing-xl);">
+                <div><div class="scd-item-label">MENRO Admin Remarks</div><div class="scd-item-value" style="font-weight:400;">{{ scmar.review_remarks|default:"-" }}</div></div>
+                <div><div class="scd-item-label">Review Date</div><div class="scd-item-value">{{ scmar.review_date|date:"M d, Y"|default:"-" }}</div></div>
+                <div><div class="scd-item-label">Reviewed By</div><div class="scd-item-value">{{ scmar.reviewed_by.username|default:"-" }}</div></div>
+            </div>
+
+            {% if is_menro_admin and scmar.status == "Under Review" %}
+            <div style="margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px dashed var(--gray-200);">
+                <div class="scd-text-label" style="margin-bottom: var(--spacing-sm);"><i class="fas fa-gavel"></i> Review this Submission</div>
+                <form method="post" action="{% url 'scmar_review' scmar.id %}" class="scd-review-form">
+                    {% csrf_token %}
+                    <textarea name="review_remarks" class="form-control" rows="2" placeholder="Remarks for the Barangay (required when returning for revision)"></textarea>
+                    <div class="scd-actions">
+                        <button type="submit" name="decision" value="Approved" class="btn btn-success"><i class="fas fa-check"></i> Approve</button>
+                        <button type="submit" name="decision" value="Returned for Revision" class="btn btn-danger"><i class="fas fa-rotate-left"></i> Return for Revision</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="scd-section">
+        <div class="scd-section-body">
+            <div class="scd-actions">
+                <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                {% if can_edit %}
+                <a href="{% url 'scmar_edit' scmar.id %}" class="btn btn-success"><i class="fas fa-pen"></i> {% if scmar.status == "Draft" %}Continue Editing{% else %}Revise &amp; Resubmit{% endif %}</a>
+                {% endif %}
+                {% if can_edit and scmar.status == "Draft" %}
+                <a href="{% url 'scmar_delete' scmar.id %}" class="btn btn-delete"><i class="fas fa-trash"></i> Delete Draft</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

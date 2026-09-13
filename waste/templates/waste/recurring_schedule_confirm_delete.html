@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Delete Recurring Schedule - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner danger">
+        <div class="entity-banner-icon"><i class="fas fa-trash"></i></div>
+        <h2>Delete this recurring schedule?</h2>
+        <p>Future months will no longer auto-create a Collection for this combination.</p>
+    </div>
+    <div class="entity-body">
+        <div class="confirm-summary">
+            <strong>Barangay:</strong> {{ schedule.barangay }}<br>
+            <strong>Waste Type:</strong> {{ schedule.waste_type }}<br>
+            <strong>Day of Month:</strong> {{ schedule.day_of_month }}<br>
+            <strong>Collector:</strong> {{ schedule.collector }}
+        </div>
+        <div class="confirm-warning">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span>This does not delete Collections already created - only stops future ones.</span>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url 'recurring_schedule_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-delete"><i class="fas fa-trash"></i> Yes, Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Delete SCMAR - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner danger">
+        <div class="entity-banner-icon"><i class="fas fa-trash"></i></div>
+        <h2>Delete Draft SCMAR #{{ scmar.id }}?</h2>
+        <p>This will permanently remove this draft.</p>
+    </div>
+    <div class="entity-body">
+        <div class="confirm-summary">
+            <strong>Barangay:</strong> {{ scmar.barangay|default:"Municipal-wide" }}<br>
+            <strong>Reporting Period:</strong> {{ scmar.reporting_period }}<br>
+            <strong>Status:</strong> {{ scmar.status }}<br>
+            <strong>Prepared By:</strong> {{ scmar.prepared_by|default:"-" }}
+        </div>
+        <div class="confirm-warning">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span>This action cannot be undone.</span>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-delete"><i class="fas fa-trash"></i> Yes, Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

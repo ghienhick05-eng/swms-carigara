@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+{% block title %}Complaints - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============ PAGE HEADER ============ */
+    .cx-breadcrumb {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .cx-breadcrumb a {
+        color: var(--text-tertiary);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+
+    .cx-breadcrumb a:hover {
+        color: var(--green-700);
+    }
+
+    .cx-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .cx-header-titles {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .cx-header-titles .page-title {
+        font-size: 1.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .cx-header-titles .page-subtitle {
+        margin: 0;
+        max-width: 640px;
+    }
+
+    /* ============ STAT CARDS ============ */
+    .cx-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .cx-stat {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+
+    .cx-stat:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--gray-300);
+    }
+
+    .cx-stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .cx-stat-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .cx-stat-icon {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+    }
+
+    .cx-stat-icon.total { background: var(--gray-100); color: var(--gray-600); }
+    .cx-stat-icon.pending { background: #FEF3C7; color: #92400E; }
+    .cx-stat-icon.progress { background: #DBEAFE; color: #1D4ED8; }
+    .cx-stat-icon.resolved { background: var(--green-100); color: var(--green-800); }
+
+    .cx-stat-value {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .cx-stat-sub {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+    }
+
+    @media (max-width: 900px) {
+        .cx-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+        .cx-stats { grid-template-columns: 1fr; }
+    }
+
+    /* ============ FILTER PANEL ============ */
+    .cx-filter-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .cx-filter-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .cx-filter-title i {
+        color: var(--green-700);
+    }
+
+    .cx-filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        align-items: flex-end;
+    }
+
+    .cx-filter-field {
+        flex: 1 1 200px;
+        min-width: 160px;
+    }
+
+    .cx-filter-field label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .cx-filter-field select,
+    .cx-filter-field .barangay-locked-display {
+        min-height: 44px;
+    }
+
+    @media (max-width: 640px) {
+        .cx-filter-form { flex-direction: column; align-items: stretch; }
+        .cx-filter-field { min-width: 0; }
+    }
+
+    /* ============ TABLE CARD ============ */
+    .cx-table-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .cx-table-card-header h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .cx-search-wrap {
+        position: relative;
+        min-width: 240px;
+    }
+
+    .cx-search-wrap i {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+        font-size: 0.85rem;
+        pointer-events: none;
+    }
+
+    .cx-search-wrap input {
+        width: 100%;
+        min-height: 40px;
+        padding: 0 var(--spacing-md) 0 2.25rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        color: var(--text-primary);
+        font-size: 0.88rem;
+    }
+
+    .cx-search-wrap input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16);
+    }
+
+    @media (max-width: 640px) {
+        .cx-search-wrap { width: 100%; }
+    }
+
+    /* ============ TABLE CELLS ============ */
+    thead th {
+        color: var(--green-800);
+    }
+
+    .cx-date-strong {
+        display: block;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+
+    .cx-date-muted {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+    }
+
+    .cx-resident {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .cx-issue {
+        display: inline-block;
+        max-width: 260px;
+        color: var(--text-primary);
+        font-weight: 500;
+        white-space: normal;
+        overflow-wrap: break-word;
+        line-height: 1.4;
+        cursor: default;
+    }
+
+    /* ============ COMPACT UPDATE ACTION ============ */
+    .cx-update-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        height: 34px;
+        padding: 0 var(--spacing-md);
+        border-radius: var(--radius-md);
+        border: 1px solid #BFDBFE;
+        background: #EFF6FF;
+        color: #1D4ED8;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        white-space: nowrap;
+    }
+
+    .cx-update-btn:hover {
+        background: #DBEAFE;
+        border-color: #93C5FD;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .cx-update-btn i {
+        font-size: 0.78rem;
+    }
+
+    /* ============ EMPTY STATE ============ */
+    .cx-empty-actions {
+        margin-top: var(--spacing-md);
+    }
+
+    /* ============ PAGINATION ============ */
+    .cx-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-lg);
+        flex-wrap: wrap;
+    }
+
+    .cx-pagination span {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="cx-breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> / Complaints
+</div>
+<div class="cx-header">
+    <div class="cx-header-titles">
+        <div class="page-icon-badge"><i class="fas fa-exclamation-circle"></i></div>
+        <div>
+            <h1 class="page-title">Complaints / Reports</h1>
+            <p class="page-subtitle">Manage and review resident-filed waste management concerns by barangay.</p>
+        </div>
+    </div>
+    {% if not user.is_superuser and user.profile.role != "admin" %}
+    <a href="{% url 'complaint_add' %}" class="btn btn-add"><i class="fas fa-plus"></i> File New Complaint</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- SUMMARY STATISTICS (real counts from the current filtered result set) -->
+<div class="cx-stats">
+    <div class="cx-stat">
+        <div class="cx-stat-top">
+            <span class="cx-stat-label">Total</span>
+            <div class="cx-stat-icon total"><i class="fas fa-layer-group"></i></div>
+        </div>
+        <div class="cx-stat-value">{{ total_count }}</div>
+        <div class="cx-stat-sub">Matching current filters</div>
+    </div>
+    <div class="cx-stat">
+        <div class="cx-stat-top">
+            <span class="cx-stat-label">Pending</span>
+            <div class="cx-stat-icon pending"><i class="fas fa-circle" style="font-size:0.55rem;"></i></div>
+        </div>
+        <div class="cx-stat-value">{{ pending_count }}</div>
+        <div class="cx-stat-sub">Awaiting review</div>
+    </div>
+    <div class="cx-stat">
+        <div class="cx-stat-top">
+            <span class="cx-stat-label">In Progress</span>
+            <div class="cx-stat-icon progress"><i class="fas fa-rotate"></i></div>
+        </div>
+        <div class="cx-stat-value">{{ in_progress_count }}</div>
+        <div class="cx-stat-sub">Being addressed</div>
+    </div>
+    <div class="cx-stat">
+        <div class="cx-stat-top">
+            <span class="cx-stat-label">Resolved</span>
+            <div class="cx-stat-icon resolved"><i class="fas fa-check"></i></div>
+        </div>
+        <div class="cx-stat-value">{{ resolved_count }}</div>
+        <div class="cx-stat-sub">Closed out</div>
+    </div>
+</div>
+
+<!-- FILTERS -->
+<div class="cx-filter-card">
+    <div class="cx-filter-title"><i class="fas fa-sliders"></i> Filter Complaints</div>
+    <form method="get" class="cx-filter-form">
+        {% if my_barangay %}
+        <input type="hidden" name="barangay" value="{{ my_barangay }}">
+        <div class="cx-filter-field">
+            <label>Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+        </div>
+        {% else %}
+        <div class="cx-filter-field">
+            <label for="cx-barangay">Barangay</label>
+            <select name="barangay" id="cx-barangay" onchange="this.form.submit()">
+                <option value="">All Barangays</option>
+                {% for value, label in barangay_choices %}
+                <option value="{{ value }}" {% if value == selected_barangay %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="cx-filter-field">
+            <label for="cx-status">Status</label>
+            <select name="status" id="cx-status" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if selected_barangay or selected_status %}
+        <a href="{% url 'complaint_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- COMPLAINTS TABLE -->
+<div class="card" style="padding: 0;">
+    {% if complaints %}
+    <div class="cx-table-card-header">
+        <h3>Complaints</h3>
+        <div class="cx-search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="cx-search-input" placeholder="Search this page (barangay, resident, issue)&hellip;" aria-label="Search complaints on this page">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table id="cx-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Barangay</th>
+                    <th>Resident</th>
+                    <th>Issue</th>
+                    <th>Status</th>
+                    <th class="actions-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in complaints %}
+                <tr class="row-clickable" onclick="window.location='{% url 'complaint_detail' c.id %}'">
+                    <td data-label="ID">#{{ c.id }}</td>
+                    <td data-label="Date">
+                        <span class="cx-date-strong">{{ c.date_filed|date:"M d, Y" }}</span>
+                        <span class="cx-date-muted">{{ c.date_filed|date:"h:i A" }}</span>
+                    </td>
+                    <td data-label="Barangay">{{ c.barangay }}</td>
+                    <td data-label="Resident"><span class="cx-resident">{{ c.resident_name }}</span></td>
+                    <td data-label="Issue">
+                        <span class="cx-issue" title="{{ c.issue }}">{{ c.issue|truncatewords:12 }}</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status-badge status-{{ c.status|slugify|lower }}">
+                            {% if c.status == "Resolved" %}<i class="fas fa-check"></i>
+                            {% elif c.status == "In Progress" %}<i class="fas fa-rotate"></i>
+                            {% else %}<i class="fas fa-circle" style="font-size:0.4rem;"></i>{% endif %}
+                            {{ c.status }}
+                        </span>
+                    </td>
+                    <td class="actions-col">
+                        {% if user.is_superuser or user.profile.role == "admin" %}
+                        <a href="{% url 'complaint_update_status' c.id %}" class="cx-update-btn" onclick="event.stopPropagation();" title="Update status" aria-label="Update status for complaint #{{ c.id }}">
+                            <i class="fas fa-pen"></i> Update
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="cx-pagination">
+        {% if page_obj.has_previous %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">&laquo; Prev</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-comments"></i>
+        <div class="empty-state-title">No complaints found</div>
+        <div class="empty-state-text">
+            {% if selected_barangay or selected_status %}
+            There are no complaints matching your current filters.
+            {% else %}
+            Resident complaints and reports will show up here once submitted.
+            {% endif %}
+        </div>
+        {% if selected_barangay or selected_status %}
+        <div class="cx-empty-actions">
+            <a href="{% url 'complaint_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const searchInput = document.getElementById('cx-search-input');
+        const table = document.getElementById('cx-table');
+
+        if (searchInput && table) {
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.trim().toLowerCase();
+                table.querySelectorAll('tbody tr').forEach((row) => {
+                    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+                });
+            });
+        }
+    })();
+</script>
+{% endblock %}

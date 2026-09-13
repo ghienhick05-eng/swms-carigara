@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Delete Accomplishment - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner danger">
+        <div class="entity-banner-icon"><i class="fas fa-trash"></i></div>
+        <h2>Delete Accomplishment #{{ accomplishment.id }}?</h2>
+        <p>This will permanently remove this record.</p>
+    </div>
+    <div class="entity-body">
+        <div class="confirm-summary">
+            <strong>Title:</strong> {{ accomplishment.title }}<br>
+            <strong>Barangay:</strong> {{ accomplishment.barangay|default:"Municipal-wide" }}<br>
+            <strong>Date Accomplished:</strong> {{ accomplishment.date_accomplished|date:"M d, Y" }}<br>
+            <strong>Logged By:</strong> {{ accomplishment.logged_by.username|default:"-" }}
+        </div>
+        <div class="confirm-warning">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span>This action cannot be undone.</span>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url 'accomplishment_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-delete"><i class="fas fa-trash"></i> Yes, Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

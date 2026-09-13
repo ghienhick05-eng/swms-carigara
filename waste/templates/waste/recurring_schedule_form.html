@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Recurring Collection Schedule - SWMS Carigara{% endblock %}
+{% block content %}
+<div class="entity-card">
+    <div class="entity-banner">
+        <div class="entity-banner-icon"><i class="fas fa-repeat"></i></div>
+        <h2>{% if editing %}Edit Recurring Schedule{% else %}New Recurring Collection Schedule{% endif %}</h2>
+        <p>A Collection for this barangay and waste type will be auto-created every month.</p>
+    </div>
+    <div class="entity-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
+                    {{ form.barangay }}
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-recycle"></i> Waste Type</label>
+                    {{ form.waste_type }}
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-day"></i> Day of Month</label>
+                    {{ form.day_of_month }}
+                    <span class="barangay-locked-hint">1-28, so it stays valid even in February.</span>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-truck"></i> Collector / Truck ID</label>
+                    {{ form.collector }}
+                </div>
+                <div class="form-group">
+                    <label>{{ form.is_active }} Active</label>
+                    <span class="barangay-locked-hint">Uncheck to pause auto-generation without deleting this schedule.</span>
+                </div>
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'recurring_schedule_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                <button type="submit" class="btn btn-add">{% if editing %}<i class="fas fa-check"></i> Update Schedule{% else %}<i class="fas fa-plus"></i> Save Schedule{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

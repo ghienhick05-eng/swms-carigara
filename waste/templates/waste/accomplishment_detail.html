@@ -1,0 +1,575 @@
+{% extends "base.html" %}
+{% block title %}{{ accomplishment.title }} - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============ WRAPPER ============ */
+    .acd-wrapper {
+        max-width: 1150px;
+        margin: 0 auto;
+    }
+
+    .acd-breadcrumb {
+        margin-bottom: var(--spacing-md);
+        font-size: 0.85rem;
+    }
+
+    .acd-breadcrumb a {
+        color: var(--text-tertiary);
+        text-decoration: none;
+    }
+
+    .acd-breadcrumb a:hover { color: var(--green-700); }
+
+    .acd-breadcrumb span.sep { margin: 0 6px; color: var(--gray-300); }
+
+    .acd-breadcrumb span.current { color: var(--text-secondary); font-weight: 600; }
+
+    /* ============ HEADER ============ */
+    .acd-header {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+        position: relative;
+    }
+
+    .acd-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        text-decoration: none;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .acd-back:hover { color: var(--green-700); }
+
+    .acd-header-row {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .acd-header-main {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+        min-width: 0;
+    }
+
+    .acd-header-icon {
+        width: 52px;
+        height: 52px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-lg);
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+        color: var(--green-700);
+        font-size: 1.3rem;
+    }
+
+    .acd-eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 2px;
+    }
+
+    .acd-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        line-height: 1.3;
+        word-break: break-word;
+    }
+
+    .acd-header-status { flex-shrink: 0; }
+
+    /* ============ SECTION CARD ============ */
+    .acd-section {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--spacing-lg);
+        overflow: hidden;
+    }
+
+    .acd-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .acd-section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .acd-section-title i { color: var(--green-700); font-size: 0.9rem; }
+
+    .acd-section-body { padding: var(--spacing-xl); }
+
+    /* ============ OVERVIEW GRID ============ */
+    .acd-overview-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--gray-100);
+        border: 1px solid var(--gray-100);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+
+    .acd-overview-item { background: var(--white); padding: var(--spacing-md) var(--spacing-lg); }
+
+    .acd-overview-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 6px;
+    }
+
+    .acd-overview-label i { width: 14px; text-align: center; color: var(--green-700); }
+
+    .acd-overview-value { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+
+    @media (max-width: 760px) { .acd-overview-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .acd-overview-grid { grid-template-columns: 1fr; } }
+
+    /* ============ INFO GRID (submission & review / record info) ============ */
+    .acd-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    @media (max-width: 760px) { .acd-info-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .acd-info-grid { grid-template-columns: 1fr; } }
+
+    .acd-info-item .acd-overview-label { margin-bottom: 4px; }
+    .acd-info-item .acd-overview-value { font-size: 0.95rem; font-weight: 500; }
+    .acd-info-item .acd-overview-value small { display: block; font-weight: 400; color: var(--text-tertiary); font-size: 0.78rem; }
+
+    /* ============ WORKFLOW TIMELINE ============ */
+    .acd-flow { display: flex; flex-direction: column; }
+
+    .acd-flow-step {
+        display: flex;
+        gap: var(--spacing-md);
+        position: relative;
+        padding-bottom: var(--spacing-lg);
+    }
+
+    .acd-flow-step:last-child { padding-bottom: 0; }
+
+    .acd-flow-marker {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        z-index: 1;
+    }
+
+    .acd-flow-line {
+        position: absolute;
+        left: 12px;
+        top: 26px;
+        bottom: -4px;
+        width: 2px;
+        background: var(--gray-200);
+    }
+
+    .acd-flow-step:last-child .acd-flow-line { display: none; }
+
+    .acd-flow-step.done .acd-flow-marker { background: var(--green-600); color: white; }
+    .acd-flow-step.done .acd-flow-line { background: var(--green-600); }
+    .acd-flow-step.current .acd-flow-marker { background: var(--green-100); color: var(--green-800); border: 2px solid var(--green-600); }
+    .acd-flow-step.rejected .acd-flow-marker { background: #B91C1C; color: white; }
+    .acd-flow-step.pending .acd-flow-marker { background: var(--gray-100); color: var(--text-tertiary); }
+
+    .acd-flow-title { font-weight: 600; color: var(--text-primary); font-size: 0.92rem; }
+    .acd-flow-sub { font-size: 0.8rem; color: var(--text-tertiary); }
+
+    /* ============ TEXT BLOCKS ============ */
+    .acd-text-block { margin-bottom: var(--spacing-lg); }
+    .acd-text-block:last-child { margin-bottom: 0; }
+
+    .acd-text-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 6px;
+    }
+
+    .acd-text-body { color: var(--text-secondary); line-height: 1.7; font-size: 0.92rem; }
+    .acd-text-empty { color: var(--text-tertiary); font-style: italic; font-size: 0.9rem; }
+
+    /* ============ FILE / IMAGE ATTACHMENT ============ */
+    .acd-file-card {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: var(--gray-50);
+    }
+
+    .acd-file-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-md);
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--green-700);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .acd-file-name { font-weight: 600; color: var(--text-primary); font-size: 0.92rem; word-break: break-word; }
+    .acd-file-meta { font-size: 0.78rem; color: var(--text-tertiary); }
+
+    .acd-file-actions {
+        margin-left: auto;
+        display: flex;
+        gap: var(--spacing-xs);
+        flex-shrink: 0;
+    }
+
+    .acd-image-preview {
+        display: block;
+        max-width: 160px;
+        max-height: 160px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        object-fit: cover;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    /* ============ RECORD INFO (collapsible) ============ */
+    .acd-collapse-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        color: var(--green-700);
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .acd-collapse-toggle i { transition: transform var(--transition-fast); font-size: 0.75rem; }
+    .acd-collapse-toggle.open i { transform: rotate(180deg); }
+
+    .acd-collapse-body { display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px dashed var(--gray-200); }
+    .acd-collapse-body.open { display: block; }
+
+    /* ============ ACTIONS ============ */
+    .acd-actions { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+
+    /* ============ REVIEW FORM ============ */
+    .acd-review-form textarea { width: 100%; margin-bottom: var(--spacing-sm); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="acd-wrapper">
+
+    <!-- BREADCRUMB -->
+    <nav class="acd-breadcrumb">
+        <a href="{% url 'accomplishment_list' %}">Accomplishments</a>
+        <span class="sep">/</span>
+        <span class="current">Details</span>
+    </nav>
+
+    <!-- HEADER -->
+    <div class="acd-header">
+        <a href="javascript:history.back()" class="acd-back"><i class="fas fa-arrow-left"></i> Back to Accomplishments</a>
+        <div class="acd-header-row">
+            <div class="acd-header-main">
+                <div class="acd-header-icon"><i class="fas fa-award"></i></div>
+                <div>
+                    <div class="acd-eyebrow">Accomplishment Report</div>
+                    <h1 class="acd-title">{{ accomplishment.title }}</h1>
+                </div>
+            </div>
+            <div class="acd-header-status">
+                <span class="status-badge status-{{ accomplishment.review_status|slugify }}">{{ accomplishment.review_status }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="acd-section">
+        <div class="acd-section-header">
+            <h2 class="acd-section-title"><i class="fas fa-list-check"></i> Overview</h2>
+        </div>
+        <div class="acd-section-body">
+            <div class="acd-overview-grid">
+                <div class="acd-overview-item">
+                    <div class="acd-overview-label"><i class="fas fa-calendar-check"></i> Date Accomplished</div>
+                    <div class="acd-overview-value">{{ accomplishment.date_accomplished|date:"M d, Y" }}</div>
+                </div>
+                <div class="acd-overview-item">
+                    <div class="acd-overview-label"><i class="fas fa-map-marker-alt"></i> Barangay</div>
+                    <div class="acd-overview-value">{{ accomplishment.barangay|default:"Municipal-wide" }}</div>
+                </div>
+                <div class="acd-overview-item">
+                    <div class="acd-overview-label"><i class="fas fa-user"></i> Submitted By</div>
+                    <div class="acd-overview-value">{{ accomplishment.logged_by.username|default:"-" }}</div>
+                </div>
+                <div class="acd-overview-item">
+                    <div class="acd-overview-label"><i class="fas fa-arrow-right-to-bracket"></i> Submitted To</div>
+                    <div class="acd-overview-value">MENRO Admin</div>
+                </div>
+                {% with compliance=accomplishment.get_submission_status %}
+                <div class="acd-overview-item">
+                    <div class="acd-overview-label"><i class="fas fa-clipboard-check"></i> Compliance</div>
+                    <div class="acd-overview-value">
+                        {% if compliance %}
+                        <span class="status-badge status-{{ compliance|slugify }}">{{ compliance }}</span>
+                        {% else %}
+                        <span class="acd-text-empty">No deadline set</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+                <div class="acd-overview-item">
+                    <div class="acd-overview-label"><i class="fas fa-flag-checkered"></i> Review Status</div>
+                    <div class="acd-overview-value">
+                        <span class="status-badge status-{{ accomplishment.review_status|slugify }}">{{ accomplishment.review_status }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMISSION & REVIEW -->
+    <div class="acd-section">
+        <div class="acd-section-header">
+            <h2 class="acd-section-title"><i class="fas fa-paper-plane"></i> Submission &amp; Review</h2>
+        </div>
+        <div class="acd-section-body">
+            <div class="acd-info-grid">
+                <div class="acd-info-item">
+                    <div class="acd-overview-label"><i class="fas fa-arrow-up-from-bracket"></i> Submitted By</div>
+                    <div class="acd-overview-value">{{ accomplishment.logged_by.username|default:"-" }}<small>Barangay</small></div>
+                </div>
+                <div class="acd-info-item">
+                    <div class="acd-overview-label"><i class="fas fa-arrow-right-to-bracket"></i> Submitted To</div>
+                    <div class="acd-overview-value">MENRO Admin</div>
+                </div>
+                <div class="acd-info-item">
+                    <div class="acd-overview-label"><i class="fas fa-calendar-check"></i> Submission Date</div>
+                    <div class="acd-overview-value">{{ accomplishment.submission_date|date:"M d, Y"|default:"Not yet submitted" }}</div>
+                </div>
+                <div class="acd-info-item">
+                    <div class="acd-overview-label"><i class="fas fa-flag-checkered"></i> Review Status</div>
+                    <div class="acd-overview-value">
+                        <span class="status-badge status-{{ accomplishment.review_status|slugify }}">{{ accomplishment.review_status }}</span>
+                    </div>
+                </div>
+                <div class="acd-info-item">
+                    <div class="acd-overview-label"><i class="fas fa-user-check"></i> Reviewer</div>
+                    <div class="acd-overview-value">{{ accomplishment.reviewed_by.username|default:"MENRO Admin" }}</div>
+                </div>
+                {% if accomplishment.review_date %}
+                <div class="acd-info-item">
+                    <div class="acd-overview-label"><i class="fas fa-calendar-check"></i> Review Date</div>
+                    <div class="acd-overview-value">{{ accomplishment.review_date|date:"M d, Y" }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% if accomplishment.review_remarks %}
+            <div class="acd-text-block" style="margin-top: var(--spacing-lg);">
+                <div class="acd-text-label">Remarks from MENRO Admin</div>
+                <div class="acd-text-body">{{ accomplishment.review_remarks|linebreaksbr }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- WORKFLOW -->
+    <div class="acd-section">
+        <div class="acd-section-header">
+            <h2 class="acd-section-title"><i class="fas fa-diagram-project"></i> Submission Workflow</h2>
+        </div>
+        <div class="acd-section-body">
+            <div class="acd-flow">
+                <div class="acd-flow-step done">
+                    <div><div class="acd-flow-marker"><i class="fas fa-check"></i></div><div class="acd-flow-line"></div></div>
+                    <div><div class="acd-flow-title">Barangay</div><div class="acd-flow-sub">Sender / Submitter</div></div>
+                </div>
+                <div class="acd-flow-step done">
+                    <div><div class="acd-flow-marker"><i class="fas fa-check"></i></div><div class="acd-flow-line"></div></div>
+                    <div><div class="acd-flow-title">Submit to MENRO Admin</div><div class="acd-flow-sub">Submitted {{ accomplishment.submission_date|date:"M d, Y"|default:"-" }}</div></div>
+                </div>
+                <div class="acd-flow-step {% if accomplishment.review_status == 'Approved' %}done{% elif accomplishment.review_status == 'Rejected' %}rejected{% else %}current{% endif %}">
+                    <div><div class="acd-flow-marker">{% if accomplishment.review_status == 'Approved' %}<i class="fas fa-check"></i>{% elif accomplishment.review_status == 'Rejected' %}<i class="fas fa-xmark"></i>{% else %}3{% endif %}</div><div class="acd-flow-line"></div></div>
+                    <div><div class="acd-flow-title">MENRO Admin</div><div class="acd-flow-sub">Receiver / Reviewer &middot; {{ accomplishment.review_status }}</div></div>
+                </div>
+                <div class="acd-flow-step {% if accomplishment.review_status != 'For Review' %}done{% else %}pending{% endif %}">
+                    <div><div class="acd-flow-marker">{% if accomplishment.review_status != 'For Review' %}<i class="fas fa-check"></i>{% else %}4{% endif %}</div></div>
+                    <div><div class="acd-flow-title">Barangay Receives Decision</div><div class="acd-flow-sub">{% if accomplishment.review_status != 'For Review' %}{{ accomplishment.review_status }}{% else %}Pending MENRO Admin review{% endif %}</div></div>
+                </div>
+            </div>
+
+            {% if is_menro_admin and accomplishment.review_status == "For Review" %}
+            <div style="margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px dashed var(--gray-200);">
+                <div class="acd-text-label" style="margin-bottom: var(--spacing-sm);"><i class="fas fa-gavel"></i> Review this Submission</div>
+                <form method="post" action="{% url 'accomplishment_review' accomplishment.id %}" class="acd-review-form">
+                    {% csrf_token %}
+                    <textarea name="review_remarks" class="form-control" rows="2" placeholder="Optional remarks for the Barangay"></textarea>
+                    <div class="acd-actions">
+                        <button type="submit" name="decision" value="Approved" class="btn btn-success"><i class="fas fa-check"></i> Approve</button>
+                        <button type="submit" name="decision" value="Rejected" class="btn btn-danger"><i class="fas fa-xmark"></i> Reject</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ADDITIONAL INFORMATION -->
+    {% if accomplishment.description %}
+    <div class="acd-section">
+        <div class="acd-section-header">
+            <h2 class="acd-section-title"><i class="fas fa-align-left"></i> Additional Information</h2>
+        </div>
+        <div class="acd-section-body">
+            <div class="acd-text-block">
+                <div class="acd-text-label">Description</div>
+                <div class="acd-text-body">{{ accomplishment.description|linebreaksbr }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FILES -->
+    <div class="acd-section">
+        <div class="acd-section-header">
+            <h2 class="acd-section-title"><i class="fas fa-folder-open"></i> Files</h2>
+        </div>
+        <div class="acd-section-body">
+            <div class="acd-text-block">
+                <div class="acd-text-label">Accomplishment Report File</div>
+                {% if accomplishment.report_file %}
+                    <div class="acd-file-card">
+                        <div class="acd-file-icon"><i class="fas fa-file-lines"></i></div>
+                        <div>
+                            <div class="acd-file-name">{{ accomplishment.report_file.name|cut:"accomplishment_reports/" }}</div>
+                            <div class="acd-file-meta">Document</div>
+                        </div>
+                        <div class="acd-file-actions">
+                            <a href="{{ accomplishment.report_file.url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
+                            <a href="{{ accomplishment.report_file.url }}" download class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> Download</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="acd-text-empty">No Accomplishment Report document uploaded.</div>
+                {% endif %}
+            </div>
+
+            <div class="acd-text-block">
+                <div class="acd-text-label">Supporting Image</div>
+                {% if accomplishment.supporting_image %}
+                    <a href="{{ accomplishment.supporting_image.url }}" target="_blank" rel="noopener" title="View larger image">
+                        <img src="{{ accomplishment.supporting_image.url }}" alt="Supporting image for {{ accomplishment.title }}" class="acd-image-preview">
+                    </a>
+                    <div class="acd-actions">
+                        <a href="{{ accomplishment.supporting_image.url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-expand"></i> View Image</a>
+                    </div>
+                {% else %}
+                    <div class="acd-text-empty">No supporting image uploaded.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- RECORD INFORMATION (audit / metadata) -->
+    <div class="acd-section">
+        <div class="acd-section-body">
+            <button type="button" class="acd-collapse-toggle" onclick="
+                var b = document.getElementById('acd-record-body');
+                var open = b.classList.toggle('open');
+                this.classList.toggle('open', open);
+                this.querySelector('span').textContent = open ? 'Hide details' : 'Show details';
+            ">
+                <i class="fas fa-chevron-down"></i> Record Information &mdash; <span>Show details</span>
+            </button>
+            <div class="acd-collapse-body" id="acd-record-body">
+                <div class="acd-info-grid">
+                    <div class="acd-info-item">
+                        <div class="acd-overview-label"><i class="fas fa-clock"></i> Date Logged</div>
+                        <div class="acd-overview-value">{{ accomplishment.date_logged|date:"M d, Y H:i" }}</div>
+                    </div>
+                    <div class="acd-info-item">
+                        <div class="acd-overview-label"><i class="fas fa-calendar-day"></i> Due Date</div>
+                        <div class="acd-overview-value">{{ accomplishment.due_date|date:"M d, Y"|default:"No deadline set" }}</div>
+                    </div>
+                    <div class="acd-info-item">
+                        <div class="acd-overview-label"><i class="fas fa-user-check"></i> Reviewer</div>
+                        <div class="acd-overview-value">{{ accomplishment.reviewed_by.username|default:"MENRO Admin" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="acd-section">
+        <div class="acd-section-body">
+            <div class="acd-actions">
+                <a href="javascript:history.back()" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                {% if is_menro_admin %}
+                <a href="{% url 'accomplishment_edit' accomplishment.id %}" class="btn btn-success"><i class="fas fa-pen"></i> Edit</a>
+                <a href="{% url 'accomplishment_delete' accomplishment.id %}" class="btn btn-delete"><i class="fas fa-trash"></i> Delete</a>
+                {% elif is_owner and accomplishment.review_status != "Approved" %}
+                <a href="{% url 'accomplishment_edit' accomplishment.id %}" class="btn btn-success"><i class="fas fa-pen"></i> Edit Submission</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
