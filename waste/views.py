@@ -1684,7 +1684,19 @@ def profile(request):
                 profile_update_fields.append("phone_number")
 
             if profile_update_fields:
-                profile_obj.save(update_fields=profile_update_fields)
+                try:
+                    profile_obj.save(update_fields=profile_update_fields)
+                except Exception:
+                    # Usually the image upload to Cloudinary failing (bad
+                    # credentials, network). Log the real traceback and show a
+                    # friendly message instead of an HTTP 500.
+                    logging.getLogger(__name__).exception("Profile save failed")
+                    messages.error(
+                        request,
+                        "Your other changes were saved, but the profile picture "
+                        "could not be uploaded. Please try again in a moment.",
+                    )
+                    return redirect("profile")
 
             if email_change_requested:
                 try:
