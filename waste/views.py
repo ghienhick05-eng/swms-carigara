@@ -13,7 +13,7 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Exists, OuterRef
 from django.utils import timezone
 from django.http import HttpResponse
 
@@ -1603,6 +1603,8 @@ def register(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
 
+    purge_unverified_accounts()
+
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -1978,6 +1980,32 @@ def send_login_code(user, email=None):
         return False
 
 
+UNVERIFIED_ACCOUNT_MINUTES = 15
+
+
+def purge_unverified_accounts():
+    """Delete sign-ups that never confirmed their emailed code.
+
+    A new account stays inactive until its code is confirmed. If no code has
+    been sent for it in the last UNVERIFIED_ACCOUNT_MINUTES (pressing Resend
+    code counts), the account is removed so the username, email and barangay
+    are free again - it is as if the account was never made.
+    """
+    cutoff = timezone.now() - timedelta(minutes=UNVERIFIED_ACCOUNT_MINUTES)
+    recent_codes = LoginVerification.objects.filter(user=OuterRef("pk"), created_at__gte=cutoff)
+    (
+        AuthUser.objects.filter(
+            is_active=False,
+            is_superuser=False,
+            profile__email_verified=False,
+            profile__role="user",
+        )
+        .annotate(has_recent_code=Exists(recent_codes))
+        .filter(has_recent_code=False)
+        .delete()
+    )
+
+
 MAX_CODE_ATTEMPTS = 5
 
 
@@ -2034,13 +2062,16 @@ def confirm_login_view(request):
     Reached only via register() or resend_code_view() setting
     session['pending_user_id'] - never from a normal login.
     """
+    purge_unverified_accounts()
     user_id = request.session.get("pending_user_id")
     if not user_id:
         return redirect("login")
 
     user = AuthUser.objects.filter(id=user_id).first()
     if not user:
-        return redirect("login")
+        request.session.pop("pending_user_id", None)
+        messages.error(request, "That sign-up expired because the code wasn't confirmed in time. Please register again.")
+        return redirect("register")
 
     if request.method == "POST":
         form = ConfirmCodeForm(request.POST)
@@ -2064,6 +2095,9 @@ def confirm_login_view(request):
                     profile.email_verified = True
                     profile.save(update_fields=["email_verified"])
 
+                user.is_active = True
+                user.save(update_fields=["is_active"])
+
                 auth_login(request, user)
                 del request.session["pending_user_id"]
                 messages.success(request, f"Welcome, {user.username}!")
@@ -2075,6 +2109,7 @@ def confirm_login_view(request):
 
 
 def resend_code_view(request):
+    purge_unverified_accounts()
     user_id = request.session.get("pending_user_id")
     if user_id:
         user = AuthUser.objects.filter(id=user_id).first()

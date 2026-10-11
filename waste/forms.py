@@ -374,17 +374,22 @@ class RegisterForm(UserCreationForm):
         self.fields["username"].widget.attrs.update({"class": "auth-input"})
         self.fields["password1"].widget.attrs.update({"class": "auth-input"})
         self.fields["password2"].widget.attrs.update({"class": "auth-input"})
-        # One account per barangay: grey out barangays that already have one.
+        # One account per barangay: hide barangays that already have one.
         taken = set(
             Profile.objects.filter(role="user", barangay__isnull=False)
             .exclude(barangay="")
             .values_list("barangay", flat=True)
         )
-        widget = TakenAwareSelect(attrs={"class": "auth-input"})
-        widget.taken = taken
-        self.fields["barangay"].widget = widget
-        # Re-attach the choices, otherwise the swapped-in widget renders empty.
-        self.fields["barangay"].widget.choices = self.fields["barangay"].choices
+        # Barangays that already have an account are removed from the list
+        # entirely, so only available ones can be picked.
+        self.fields["barangay"].choices = [
+            (value, label)
+            for value, label in self.fields["barangay"].choices
+            if value not in taken
+        ]
+        self.fields["barangay"].error_messages["invalid_choice"] = (
+            "That barangay already has an account or isn't available."
+        )
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip().lower()
@@ -408,9 +413,13 @@ class RegisterForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
+        # Inactive until the emailed code is confirmed; unconfirmed accounts are
+        # deleted automatically (see purge_unverified_accounts in views.py).
+        user.is_active = False
         if commit:
             user.save()
             profile, _ = Profile.objects.get_or_create(user=user)
+            profile.email_verified = False
             profile.role = "user"
             profile.barangay = self.cleaned_data["barangay"]
             profile.phone_number = self.cleaned_data["phone_number"]
