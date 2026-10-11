@@ -1,8 +1,9 @@
 import os
 
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 
 from waste.models import Profile
 
@@ -15,7 +16,7 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        username = os.environ.get("MENRO_ADMIN_USERNAME", "menroadmin").strip()
+        username = os.environ.get("MENRO_ADMIN_USERNAME", "menroadmin").strip() or "menroadmin"
         email = os.environ.get("MENRO_ADMIN_EMAIL", "").strip().lower()
         password = os.environ.get("MENRO_ADMIN_PASSWORD", "")
 
@@ -24,12 +25,17 @@ class Command(BaseCommand):
             self.stdout.write("MENRO_ADMIN_EMAIL / MENRO_ADMIN_PASSWORD not set. Skipping admin creation.")
             return
 
-        clash = User.objects.filter(email__iexact=email).exclude(username=username).first()
-        if clash:
-            raise CommandError(f"Email {email} already belongs to another user ({clash.username}).")
-
         with transaction.atomic():
-            user, created = User.objects.get_or_create(username=username)
+            # Reuse an existing account that already has this email (or this
+            # username) instead of failing, so redeploys always work.
+            user = (
+                User.objects.filter(email__iexact=email).order_by("id").first()
+                or User.objects.filter(username__iexact=username).order_by("id").first()
+            )
+            created = user is None
+            if created:
+                user = User(username=username)
+
             user.email = email
             user.is_superuser = True
             user.is_staff = True
@@ -44,5 +50,5 @@ class Command(BaseCommand):
             profile.save()
 
         self.stdout.write(self.style.SUCCESS(
-            f"{'Created' if created else 'Updated'} MENRO admin superuser '{username}' ({email})."
+            f"{'Created' if created else 'Updated'} MENRO admin superuser '{user.username}' ({email})."
         ))
