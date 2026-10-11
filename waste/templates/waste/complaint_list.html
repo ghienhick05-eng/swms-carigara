@@ -266,6 +266,52 @@
         cursor: default;
     }
 
+    /* ============ TABLE LAYOUT FIX (desktop/tablet) ============
+       Stops words breaking mid-word ("BARANGA / Y", "RESOLVE / D", "# / 2")
+       and keeps the Update button on one line. Only the Issue text is
+       allowed to wrap, and the table scrolls sideways inside its card
+       instead of squeezing the columns. */
+    @media (min-width: 641px) {
+        #cx-table {
+            min-width: 900px;
+        }
+
+        #cx-table th,
+        #cx-table td {
+            white-space: nowrap;
+            vertical-align: middle;
+            padding: var(--spacing-md) var(--spacing-md);
+        }
+
+        #cx-table th:first-child,
+        #cx-table td:first-child {
+            padding-left: var(--spacing-lg);
+            width: 1%;
+        }
+
+        #cx-table .cx-issue {
+            min-width: 200px;
+            max-width: 300px;
+            white-space: normal;
+        }
+
+        #cx-table .status-badge {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        #cx-table .cx-update-btn {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        #cx-table td.actions-col,
+        #cx-table th.actions-col {
+            width: 1%;
+            padding-right: var(--spacing-lg);
+        }
+    }
+
     /* ============ COMPACT UPDATE ACTION ============ */
     .cx-update-btn {
         display: inline-flex;
@@ -319,9 +365,6 @@
 {% endblock %}
 
 {% block page_header %}
-<div class="cx-breadcrumb">
-    <a href="{% url 'dashboard' %}">Dashboard</a> / Complaints
-</div>
 <div class="cx-header">
     <div class="cx-header-titles">
         <div class="page-icon-badge"><i class="fas fa-exclamation-circle"></i></div>
@@ -381,12 +424,12 @@
         {% if my_barangay %}
         <input type="hidden" name="barangay" value="{{ my_barangay }}">
         <div class="cx-filter-field">
-            <label>Barangay</label>
-            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+            <label><i class="fas fa-location-dot"></i> Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-landmark"></i> {{ my_barangay }}</div>
         </div>
         {% else %}
         <div class="cx-filter-field">
-            <label for="cx-barangay">Barangay</label>
+            <label for="cx-barangay"><i class="fas fa-location-dot"></i> Barangay</label>
             <select name="barangay" id="cx-barangay" onchange="this.form.submit()">
                 <option value="">All Barangays</option>
                 {% for value, label in barangay_choices %}
@@ -396,7 +439,7 @@
         </div>
         {% endif %}
         <div class="cx-filter-field">
-            <label for="cx-status">Status</label>
+            <label for="cx-status"><i class="fas fa-file-lines"></i> Status</label>
             <select name="status" id="cx-status" onchange="this.form.submit()">
                 <option value="">All Statuses</option>
                 {% for value, label in status_choices %}
@@ -490,11 +533,6 @@
             Resident complaints and reports will show up here once submitted.
             {% endif %}
         </div>
-        {% if selected_barangay or selected_status %}
-        <div class="cx-empty-actions">
-            <a href="{% url 'complaint_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
-        </div>
-        {% endif %}
     </div>
     {% endif %}
 </div>

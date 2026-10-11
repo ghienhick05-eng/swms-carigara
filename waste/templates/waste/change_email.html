@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Change Email - SWMS Carigara{% endblock %}
+{% block content %}
+<style>
+    .sec-wrapper { max-width: 480px; margin: 1rem auto; padding: 0 0.75rem; }
+    .sec-card {
+        background: var(--bg-primary, #fff);
+        border: 1px solid var(--gray-200, #e5e7eb);
+        border-radius: 14px;
+        padding: 2rem 1.75rem;
+    }
+    .sec-head { text-align: center; margin-bottom: 1.5rem; }
+    .sec-icon {
+        width: 56px; height: 56px; margin: 0 auto 0.9rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; background: rgba(22, 163, 74, 0.15); color: #16a34a; font-size: 1.4rem;
+    }
+    .sec-head h2 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+    .sec-desc { color: var(--text-tertiary); margin: 0; line-height: 1.55; font-size: 0.95rem; overflow-wrap: anywhere; }
+    .sec-desc strong { color: var(--text-primary, inherit); }
+    .sec-card label { display: block; font-weight: 600; margin: 0 0 0.4rem; }
+    .sec-card input[type="text"], .sec-card input[type="email"] {
+        width: 100%; box-sizing: border-box; padding: 0.8rem 0.95rem;
+        border: 1px solid var(--gray-300, #d1d5db); border-radius: 10px;
+        font-size: 1rem; background: transparent; color: inherit;
+    }
+    .sec-card input:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); }
+    .sec-card .code-input input {
+        letter-spacing: 0.5em; text-align: center; font-size: 1.5rem; font-weight: 600;
+        padding: 0.9rem 0.5rem 0.9rem 1rem;
+    }
+    .sec-card .field-error { color: var(--accent-danger, #dc2626); font-size: 0.85rem; margin-top: 0.35rem; }
+    .sec-field { margin-top: 1.25rem; }
+    .sec-card .btn-block { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; margin-top: 1.25rem; padding: 0.8rem 1rem; }
+    .sec-links { display: flex; justify-content: center; align-items: center; gap: 0.5rem 1.25rem; flex-wrap: wrap; margin-top: 1.25rem; }
+    .sec-links form { margin: 0; }
+    .link-btn {
+        background: none; border: none; padding: 0.25rem 0; cursor: pointer;
+        font: inherit; font-size: 0.9rem; font-weight: 600; color: #16a34a;
+    }
+    .link-btn:hover { text-decoration: underline; }
+    .link-btn.muted { color: var(--text-tertiary); font-weight: 500; }
+    .sec-divider { border: 0; border-top: 1px solid var(--gray-200, #e5e7eb); margin: 1.5rem 0 0.75rem; }
+    .sec-cancel { text-align: center; }
+</style>
+
+<div class="sec-wrapper">
+    <div class="sec-card">
+        <div class="sec-head">
+            <div class="sec-icon"><i class="fas fa-envelope"></i></div>
+            <h2>Change email</h2>
+
+            {% if stage == "send_old" %}
+                <p class="sec-desc">
+                    To protect your account, we'll first send a confirmation code to your
+                    current email <strong>{{ current_email }}</strong>.
+                </p>
+            {% elif stage == "verify_old" %}
+                <p class="sec-desc">
+                    Enter the 6-digit code we sent to your current email
+                    <strong>{{ current_email }}</strong>. It expires in 10 minutes.
+                </p>
+            {% elif stage == "enter_new" %}
+                <p class="sec-desc">
+                    {% if requested_email %}Confirm your new email address below (you can edit it).{% else %}Enter the new email address you want to use.{% endif %}
+                    We'll send a code to it. Your email only changes after you enter that code.
+                </p>
+            {% else %}
+                <p class="sec-desc">
+                    Enter the 6-digit code we sent to your new email
+                    <strong>{{ pending_email }}</strong>. It expires in 10 minutes.
+                </p>
+            {% endif %}
+        </div>
+
+        {% if stage == "send_old" %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_old">
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Send code to my current email</button>
+            </form>
+
+        {% elif stage == "verify_old" %}
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="verify_old">
+                <div class="sec-field">
+                    <label for="{{ code_form.code.id_for_label }}">Confirmation code</label>
+                    <div class="code-input">{{ code_form.code }}</div>
+                    {% if code_form.code.errors %}<div class="field-error">{{ code_form.code.errors.0 }}</div>{% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check"></i> Confirm code</button>
+            </form>
+            <div class="sec-links">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="resend_old">
+                    <button type="submit" class="link-btn">Resend code</button>
+                </form>
+            </div>
+
+        {% elif stage == "enter_new" %}
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_new">
+                <div class="sec-field">
+                    <label for="{{ email_form.email.id_for_label }}">New email</label>
+                    {{ email_form.email }}
+                    {% for e in email_form.email.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Send code to new email</button>
+            </form>
+
+        {% else %}
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="verify_new">
+                <div class="sec-field">
+                    <label for="{{ code_form.code.id_for_label }}">Confirmation code</label>
+                    <div class="code-input">{{ code_form.code }}</div>
+                    {% if code_form.code.errors %}<div class="field-error">{{ code_form.code.errors.0 }}</div>{% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check"></i> Confirm &amp; change email</button>
+            </form>
+            <div class="sec-links">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="resend_new">
+                    <button type="submit" class="link-btn">Resend code</button>
+                </form>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="restart">
+                    <button type="submit" class="link-btn">Use a different email</button>
+                </form>
+            </div>
+        {% endif %}
+
+        <hr class="sec-divider">
+        <form method="post" class="sec-cancel">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="cancel">
+            <button type="submit" class="link-btn muted">Cancel</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

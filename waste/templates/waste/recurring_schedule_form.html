@@ -1,43 +1,168 @@
 {% extends "base.html" %}
-{% block title %}Recurring Collection Schedule - SWMS Carigara{% endblock %}
+{% block title %}{% if editing %}Edit Recurring Schedule{% else %}Create Collection Schedule{% endif %} - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rs-wrap { max-width: 1100px; margin: 0 auto; }
+
+    .rs-breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: var(--spacing-md); font-size: 0.82rem; color: var(--green-700); }
+    .rs-breadcrumb a { color: var(--green-700); text-decoration: none; }
+    .rs-breadcrumb a:hover { text-decoration: underline; }
+    .rs-breadcrumb .current { color: var(--text-secondary); }
+    .rs-breadcrumb i.sep { font-size: 0.6rem; color: var(--text-tertiary); }
+
+    .rs-header { display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+    .rs-header-icon { flex: 0 0 60px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); background: var(--green-100); color: var(--green-800); font-size: 1.5rem; }
+    .rs-header h1 { margin: 0 0 2px; font-family: 'Poppins', sans-serif; font-size: 1.7rem; font-weight: 700; color: var(--green-800); }
+    .rs-header p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); }
+
+    .rs-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--spacing-lg); align-items: start; }
+
+    .rs-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--spacing-md); }
+    .rs-card-banner { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); margin-bottom: var(--spacing-lg); background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); }
+    .rs-card-banner .ico { flex: 0 0 38px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--green-100); color: var(--green-800); }
+    .rs-card-banner h3 { margin: 0; font-size: 1rem; font-weight: 700; color: var(--green-800); }
+    .rs-card-banner p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); }
+
+    .rs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg) var(--spacing-xl); padding: 0 var(--spacing-sm); }
+    .rs-field label { display: flex; align-items: center; gap: 8px; margin-bottom: var(--spacing-sm); font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+    .rs-field label i { color: var(--green-700); width: 16px; text-align: center; }
+    .rs-field label .req { color: #DC2626; margin-left: -4px; }
+    .rs-field .form-control { width: 100%; min-height: 44px; }
+    .rs-hint { display: block; margin-top: 6px; font-size: 0.75rem; color: var(--text-tertiary); }
+    .rs-error { display: block; margin-top: 6px; font-size: 0.78rem; color: #B91C1C; }
+    .rs-error ul { margin: 0; padding: 0; list-style: none; }
+    .rs-check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer; }
+
+    .rs-note { display: flex; align-items: center; gap: 10px; margin: var(--spacing-lg) var(--spacing-sm) 0; padding: 0.7rem var(--spacing-md); background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); font-size: 0.8rem; color: var(--green-800); }
+    .rs-actions { display: flex; justify-content: flex-end; gap: var(--spacing-sm); margin: var(--spacing-md) var(--spacing-sm) var(--spacing-sm); padding-top: var(--spacing-md); border-top: 1px solid var(--gray-100); }
+
+    .rs-side { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .rs-side-head { display: flex; align-items: center; gap: 8px; padding: var(--spacing-md); background: var(--green-50); border-bottom: 1px solid var(--green-100); font-weight: 700; color: var(--green-800); }
+    .rs-side-item { display: flex; gap: var(--spacing-md); padding: var(--spacing-md); }
+    .rs-side-item + .rs-side-item { border-top: 1px solid var(--gray-100); }
+    .rs-side-item .ico { flex: 0 0 30px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--green-50); color: var(--green-700); font-size: 0.8rem; }
+    .rs-side-item strong { display: block; font-size: 0.85rem; color: var(--text-primary); }
+    .rs-side-item span { display: block; font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.4; }
+
+    @media (max-width: 900px) {
+        .rs-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+        .rs-grid { grid-template-columns: 1fr; }
+        .rs-header h1 { font-size: 1.35rem; }
+        .rs-actions { flex-direction: column-reverse; }
+        .rs-actions .btn { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="entity-card">
-    <div class="entity-banner">
-        <div class="entity-banner-icon"><i class="fas fa-repeat"></i></div>
-        <h2>{% if editing %}Edit Recurring Schedule{% else %}New Recurring Collection Schedule{% endif %}</h2>
-        <p>A Collection for this barangay and waste type will be auto-created every month.</p>
+<div class="rs-wrap">
+    <nav class="rs-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'dashboard' %}" aria-label="Home"><i class="fas fa-house"></i></a>
+        <i class="fas fa-angle-right sep"></i>
+        <a href="{% url 'collection_list' %}">Collections</a>
+        <i class="fas fa-angle-right sep"></i>
+        <a href="{% url 'recurring_schedule_list' %}">Recurring Schedules</a>
+        <i class="fas fa-angle-right sep"></i>
+        <span class="current">{% if editing %}Edit Schedule{% else %}Create Collection Schedule{% endif %}</span>
+    </nav>
+
+    <div class="rs-header">
+        <div class="rs-header-icon"><i class="fas fa-calendar-plus"></i></div>
+        <div>
+            <h1>{% if editing %}Edit Recurring Schedule{% else %}Create Collection Schedule{% endif %}</h1>
+            <p>{% if editing %}Update this barangay&rsquo;s recurring collection ({{ schedule.waste_type }}).{% else %}Schedule recurring waste collection for a barangay. This will be recorded in the system for monitoring.{% endif %}</p>
+        </div>
     </div>
-    <div class="entity-body">
-        <form method="post">
+
+    <div class="rs-layout">
+        <form method="post" class="rs-card">
             {% csrf_token %}
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
-                    {{ form.barangay }}
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-recycle"></i> Waste Type</label>
-                    {{ form.waste_type }}
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-calendar-day"></i> Day of Month</label>
-                    {{ form.day_of_month }}
-                    <span class="barangay-locked-hint">1-28, so it stays valid even in February.</span>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-truck"></i> Collector / Truck ID</label>
-                    {{ form.collector }}
-                </div>
-                <div class="form-group">
-                    <label>{{ form.is_active }} Active</label>
-                    <span class="barangay-locked-hint">Uncheck to pause auto-generation without deleting this schedule.</span>
+            <div class="rs-card-banner">
+                <div class="ico"><i class="fas fa-calendar-days"></i></div>
+                <div>
+                    <h3>Collection Schedule Details</h3>
+                    <p>Fill in the information below to schedule a new collection.</p>
                 </div>
             </div>
-            <div class="form-actions">
+
+            {% if form.non_field_errors %}<div class="rs-error" style="margin: 0 var(--spacing-sm) var(--spacing-md);">{{ form.non_field_errors }}</div>{% endif %}
+
+            <div class="rs-grid">
+                <div class="rs-field">
+                    <label for="{{ form.barangay.id_for_label }}"><i class="fas fa-location-dot"></i> Barangay <span class="req">*</span></label>
+                    {{ form.barangay }}
+                    <span class="rs-error">{{ form.barangay.errors }}</span>
+                </div>
+                <div class="rs-field">
+                    <label for="id_frequency"><i class="fas fa-repeat"></i> Frequency <span class="req">*</span></label>
+                    {{ form.frequency }}
+                    <span class="rs-error">{{ form.frequency.errors }}</span>
+                </div>
+
+                <div class="rs-field" id="rsWeekdayGroup">
+                    <label for="{{ form.day_of_week.id_for_label }}"><i class="fas fa-calendar-week"></i> Day of Week <span class="req">*</span></label>
+                    {{ form.day_of_week }}
+                    <span class="rs-error">{{ form.day_of_week.errors }}</span>
+                    <span class="rs-hint">Collected every week on this day.</span>
+                </div>
+                <div class="rs-field" id="rsMonthdayGroup">
+                    <label for="{{ form.day_of_month.id_for_label }}"><i class="fas fa-calendar-day"></i> Day of Month <span class="req">*</span></label>
+                    {{ form.day_of_month }}
+                    <span class="rs-error">{{ form.day_of_month.errors }}</span>
+                    <span class="rs-hint">1&ndash;28, so it stays valid even in February.</span>
+                </div>
+                <div class="rs-field">
+                    <label for="{{ form.collector.id_for_label }}"><i class="fas fa-truck"></i> Collector / Truck ID <span class="req">*</span></label>
+                    {{ form.collector }}
+                    <span class="rs-error">{{ form.collector.errors }}</span>
+                </div>
+
+                <div class="rs-field">
+                    <label><i class="fas fa-toggle-on"></i> Status</label>
+                    <label class="rs-check" for="{{ form.is_active.id_for_label }}">{{ form.is_active }} Active</label>
+                    <span class="rs-hint">Uncheck to pause auto-generation without deleting this schedule.</span>
+                </div>
+            </div>
+
+            <div class="rs-note">
+                <i class="fas fa-circle-info"></i>
+                <span>{% if editing %}Changes apply to collections generated from now on.{% else %}This will create a recurring schedule for every waste type. You can update the status and actual weight once each collection is completed.{% endif %}</span>
+            </div>
+
+            <div class="rs-actions">
                 <a href="{% url 'recurring_schedule_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
-                <button type="submit" class="btn btn-add">{% if editing %}<i class="fas fa-check"></i> Update Schedule{% else %}<i class="fas fa-plus"></i> Save Schedule{% endif %}</button>
+                <button type="submit" class="btn btn-add">{% if editing %}<i class="fas fa-check"></i> Update Schedule{% else %}<i class="fas fa-calendar-plus"></i> Save Schedule{% endif %}</button>
             </div>
         </form>
+
+        <aside class="rs-side" aria-label="Quick info">
+            <div class="rs-side-head"><i class="fas fa-circle-info"></i> Quick Info</div>
+            <div class="rs-side-item"><div class="ico"><i class="fas fa-location-dot"></i></div><div><strong>Barangay</strong><span>Choose the barangay this schedule is for.</span></div></div>
+            <div class="rs-side-item"><div class="ico"><i class="fas fa-repeat"></i></div><div><strong>Frequency</strong><span>Weekly repeats on a weekday. Monthly repeats on a day of the month.</span></div></div>
+            <div class="rs-side-item"><div class="ico"><i class="fas fa-recycle"></i></div><div><strong>Waste Types</strong><span>All waste types are scheduled together and shown as one combined row.</span></div></div>
+            <div class="rs-side-item"><div class="ico"><i class="fas fa-truck"></i></div><div><strong>Collector / Truck ID</strong><span>Assign the collector or truck for this schedule.</span></div></div>
+            <div class="rs-side-item"><div class="ico"><i class="fas fa-toggle-on"></i></div><div><strong>Active</strong><span>Pause auto-generation any time without deleting.</span></div></div>
+        </aside>
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    (function () {
+        var freq = document.getElementById('id_frequency');
+        var weekGroup = document.getElementById('rsWeekdayGroup');
+        var monthGroup = document.getElementById('rsMonthdayGroup');
+        if (!freq) return;
+        function sync() {
+            var weekly = freq.value === 'Weekly';
+            weekGroup.style.display = weekly ? '' : 'none';
+            monthGroup.style.display = weekly ? 'none' : '';
+        }
+        freq.addEventListener('change', sync);
+        sync();
+    })();
+</script>
 {% endblock %}

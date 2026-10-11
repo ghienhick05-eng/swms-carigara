@@ -107,21 +107,25 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # --- Email (used for login/security notifications) -----------------------
-# Defaults to printing emails to the console during local development.
-# In production, set DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-# plus the EMAIL_HOST_* variables below as real environment variables.
-EMAIL_BACKEND = os.environ.get(
-    "DJANGO_EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend",
-)
-EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "localhost")
-EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "587"))
-EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = os.environ.get("DJANGO_EMAIL_USE_TLS", "True") == "True"
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DJANGO_DEFAULT_FROM_EMAIL", "SWMS Carigara <no-reply@swms-carigara.local>"
-)
+# Sends real emails via Gmail SMTP. Replace the placeholders below with your
+# own Gmail address and a Gmail App Password (not your normal password) —
+# generate one at https://myaccount.google.com/apppasswords
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "ghienhick05@gmail.com"          # <-- put your Gmail address here
+EMAIL_HOST_PASSWORD = "rhjkmbpcqxkkoydf"      # <-- put your Gmail App Password here
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = "SWMS Carigara <ghienhick05@gmail.com>"
+
+
+
+# --- MENRO Admin self-registration ----------------------------------------
+# The Create Account page lets a MENRO Admin sign up with a personal email,
+# but only if they know this code. Set it via the environment, e.g.
+#   set MENRO_ADMIN_REGISTRATION_CODE=some-long-secret   (Windows)
+# Leave it empty to disable MENRO Admin self-registration completely.
+MENRO_ADMIN_REGISTRATION_CODE = os.environ.get("MENRO_ADMIN_REGISTRATION_CODE", "10Ct9z6I7I0fxKJO3sn1BQ")
 
 # --- Extra hardening, only enforced when DEBUG is off (i.e. production) --
 if not DEBUG:
@@ -135,3 +139,5 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "0"))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
     SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
+
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

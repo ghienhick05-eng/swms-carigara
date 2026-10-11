@@ -9,7 +9,7 @@
     }
 
     .topbar {
-        position: fixed;
+        display: none !important;
     }
 
     .menu-toggle,
@@ -19,6 +19,7 @@
 
     .main-container {
         margin-left: 0 !important;
+        margin-top: 0 !important;
     }
 
     .content-wrapper {
@@ -26,41 +27,149 @@
         max-width: none !important;
     }
 
-    .auth-wrapper {
-        min-height: calc(100vh - 72px);
+    html, body {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .auth-split {
+        height: 100vh;
+        display: flex;
+        overflow: hidden;
+    }
+
+    .auth-hero {
+        flex: 0 0 44%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 2rem;
+        padding: 2.75rem 3rem;
+        color: #EAF6EE;
+        background: linear-gradient(165deg, #0B3B22 0%, #124A2B 55%, #16603A 100%);
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .auth-hero__waves {
+        position: absolute;
+        left: -5%;
+        right: -5%;
+        bottom: -6%;
+        width: 110%;
+        opacity: 0.16;
+        pointer-events: none;
+    }
+
+    .auth-hero__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-hero__brand img {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #fff;
+        padding: 3px;
+        flex-shrink: 0;
+    }
+
+    .auth-hero__brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .auth-hero__brand-text strong {
+        font-size: 0.98rem;
+        letter-spacing: 0.01em;
+    }
+
+    .auth-hero__brand-text span {
+        font-size: 0.76rem;
+        color: rgba(234, 246, 238, 0.68);
+    }
+
+    .auth-hero__body {
+        max-width: 360px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-hero__body h1 {
+        font-size: 2.05rem;
+        line-height: 1.18;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0 0 0.9rem;
+    }
+
+    .auth-hero__body p {
+        font-size: 0.98rem;
+        line-height: 1.6;
+        color: rgba(234, 246, 238, 0.82);
+        margin: 0;
+    }
+
+    .auth-hero__features {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-hero__features div {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        font-size: 0.85rem;
+        color: rgba(234, 246, 238, 0.85);
+    }
+
+    .auth-hero__features i {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.12);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem 1rem;
-        background:
-            linear-gradient(rgba(20, 83, 45, 0.90), rgba(17, 24, 39, 0.86)),
-            url("{% static 'images/bg.jpg' %}");
-        background-size: cover;
-        background-position: center;
+        font-size: 0.78rem;
+        flex-shrink: 0;
+    }
+
+    .auth-panel {
+        flex: 1 1 56%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 2.5rem;
+        overflow-y: auto;
+        background: var(--gray-50);
+        box-sizing: border-box;
     }
 
     .auth-card {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
         width: 100%;
-        max-width: 420px;
-        border-radius: 1rem;
-        box-shadow: var(--shadow-xl);
-        padding: 3rem 2rem 2.5rem;
+        max-width: 380px;
     }
 
     .auth-icon {
-        width: 72px;
-        height: 72px;
+        display: none;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         background: #ffffff;
-        color: white;
-        display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1.5rem;
-        box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.3);
-        padding: 6px;
+        margin: 0 auto 1.25rem;
+        padding: 5px;
         border: 1px solid var(--gray-200);
     }
 
@@ -69,6 +178,20 @@
         height: 100%;
         object-fit: contain;
         border-radius: 50%;
+    }
+
+    @media (max-width: 900px) {
+        .auth-hero {
+            display: none;
+        }
+
+        .auth-panel {
+            flex: 1 1 100%;
+        }
+
+        .auth-icon {
+            display: flex;
+        }
     }
 
     .password-field {
@@ -265,15 +388,105 @@
             font-size: 0.9rem;
         }
     }
+
+    /* ---- Compact two-column layout so the sign-up form fits one screen ---- */
+    .auth-panel { padding: 1rem 2rem; }
+    .auth-card { max-width: 560px; }
+    .auth-card h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .auth-subtitle { margin-bottom: 1rem; font-size: 0.88rem; }
+    .auth-card form { margin-bottom: 0; }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 0.875rem;
+        margin-bottom: 0.75rem;
+    }
+    .field { min-width: 0; }
+
+    .auth-card label {
+        margin: 0 0 0.3rem;
+        font-size: 0.85rem;
+    }
+    .auth-card label:first-of-type { margin-top: 0; }
+
+    .auth-card select,
+    .auth-card input[type="text"],
+    .auth-card input[type="password"],
+    .auth-card input[type="email"] {
+        margin-bottom: 0;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.9rem;
+        box-sizing: border-box;
+    }
+    .password-field input { padding-right: 2.5rem !important; }
+    .password-toggle { top: 50%; transform: translateY(-50%); }
+
+    .field-error {
+        color: var(--accent-danger);
+        font-size: 0.78rem;
+        margin-top: 0.25rem;
+    }
+
+    .auth-help-text { font-size: 0.78rem; margin: -0.25rem 0 0.75rem; }
+
+    .password-requirements {
+        font-size: 0.78rem;
+        margin: 0 0 0.75rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .auth-card .btn { margin-top: 0; padding: 0.7rem 1rem; }
+    .auth-error { padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
+    .auth-footer-link { margin-top: 0.875rem; padding-top: 0.875rem; }
+
+    @media (max-height: 720px) {
+        .auth-panel { padding: 0.5rem 2rem; }
+        .auth-subtitle { display: none; }
+        .form-row { margin-bottom: 0.5rem; }
+        .auth-footer-link { margin-top: 0.6rem; padding-top: 0.6rem; }
+    }
+
+    @media (max-width: 640px) {
+        .form-row { grid-template-columns: 1fr; }
+        .auth-panel { padding: 1.5rem 1rem; }
+    }
 </style>
 
-<div class="auth-wrapper">
+<div class="auth-split">
+    <div class="auth-hero">
+        <div class="auth-hero__brand">
+            <img src="{% static 'images/carigara_seal.png' %}" alt="Municipality of Carigara Official Seal">
+            <div class="auth-hero__brand-text">
+                <strong>SWMS</strong>
+                <span>Municipality of Carigara</span>
+            </div>
+        </div>
+
+        <div class="auth-hero__body">
+            <h1>One system for every barangay's waste data.</h1>
+            <p>Carigara's 49 barangays log collections, complaints, and action plans here. Create an account to start keeping yours current.</p>
+        </div>
+
+        <div class="auth-hero__features">
+            <div><i class="fas fa-trash"></i> Collections across 49 barangays</div>
+            <div><i class="fas fa-comment-dots"></i> Complaints logged and tracked</div>
+            <div><i class="fas fa-clipboard-check"></i> Action plans and SCMAR reporting</div>
+        </div>
+
+        <svg class="auth-hero__waves" viewBox="0 0 600 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M0,60 C100,100 200,20 300,60 C400,100 500,20 600,60 L600,120 L0,120 Z" fill="#ffffff" opacity="0.5"/>
+            <path d="M0,80 C100,40 200,110 300,80 C400,40 500,110 600,80 L600,120 L0,120 Z" fill="#ffffff" opacity="0.3"/>
+        </svg>
+    </div>
+
+    <div class="auth-panel">
     <div class="auth-card">
         <div class="auth-icon">
             <img src="{% static 'images/carigara_seal.png' %}" alt="Municipality of Carigara Official Seal">
         </div>
         <h2>Create an Account</h2>
-        <p class="auth-subtitle">Register to start managing waste collections and complaints.</p>
+        <p class="auth-subtitle">Register your barangay account to start managing waste collections and complaints.</p>
 
         {% if form.errors %}
             <div class="auth-error">Please fix the errors below and try again.</div>
@@ -281,76 +494,60 @@
 
         <form method="post">
             {% csrf_token %}
-            <label for="{{ form.username.id_for_label }}">
-                <i class="fas fa-user"></i> Username
-            </label>
-            {{ form.username }}
-            {% if form.username.errors %}
-                <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: -0.75rem; margin-bottom: 1rem;">
-                    {{ form.username.errors.0 }}
+            <div class="form-row">
+                <div class="field">
+                    <label for="{{ form.username.id_for_label }}"><i class="fas fa-user"></i> Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
                 </div>
-            {% endif %}
-
-            <label for="{{ form.email.id_for_label }}">
-                <i class="fas fa-envelope"></i> Email
-            </label>
-            {{ form.email }}
-            {% if form.email.errors %}
-                <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: -0.75rem; margin-bottom: 1rem;">
-                    {{ form.email.errors.0 }}
+                <div class="field">
+                    <label for="{{ form.email.id_for_label }}"><i class="fas fa-envelope"></i> Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}
                 </div>
-            {% endif %}
-
-            <label for="{{ form.barangay.id_for_label }}">
-                <i class="fas fa-map-marker-alt"></i> Barangay
-            </label>
-            {{ form.barangay }}
-            {% if form.barangay.errors %}
-                <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: -0.75rem; margin-bottom: 1rem;">
-                    {{ form.barangay.errors.0 }}
-                </div>
-            {% endif %}
-            <p class="auth-help-text">This account will only be able to manage data for the selected barangay.</p>
-
-            <label for="{{ form.password1.id_for_label }}">
-                <i class="fas fa-lock"></i> Password
-            </label>
-            <div class="password-field">
-                {{ form.password1 }}
-                <button type="button" class="password-toggle" data-target="{{ form.password1.id_for_label }}" aria-label="Show password">
-                    <i class="fas fa-eye"></i>
-                </button>
             </div>
-            {% if form.password1.errors %}
-                <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: -0.75rem; margin-bottom: 1rem;">
-                    {{ form.password1.errors.0 }}
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="{{ form.phone_number.id_for_label }}"><i class="fas fa-phone"></i> Mobile Number</label>
+                    {{ form.phone_number }}
+                    {% if form.phone_number.errors %}<div class="field-error">{{ form.phone_number.errors.0 }}</div>{% endif %}
                 </div>
-            {% endif %}
+                <div class="field" id="barangay-fields">
+                    <label for="{{ form.barangay.id_for_label }}"><i class="fas fa-map-marker-alt"></i> Barangay</label>
+                    {{ form.barangay }}
+                    {% if form.barangay.errors %}<div class="field-error">{{ form.barangay.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+            <p class="auth-help-text" id="barangay-hint">This account will only be able to manage data for the selected barangay. Only one account is allowed per barangay.</p>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="{{ form.password1.id_for_label }}"><i class="fas fa-lock"></i> Password</label>
+                    <div class="password-field">
+                        {{ form.password1 }}
+                        <button type="button" class="password-toggle" data-target="{{ form.password1.id_for_label }}" aria-label="Show password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password1.errors %}<div class="field-error">{{ form.password1.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="field">
+                    <label for="{{ form.password2.id_for_label }}"><i class="fas fa-check-circle"></i> Confirm Password</label>
+                    <div class="password-field">
+                        {{ form.password2 }}
+                        <button type="button" class="password-toggle" data-target="{{ form.password2.id_for_label }}" aria-label="Show password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
 
             <div class="password-requirements">
                 <strong>Password requirements:</strong>
-                <ul>
-                    <li>At least 8 characters long</li>
-                    <li>Mix of uppercase and lowercase letters</li>
-                    <li>At least one number</li>
-                    <li>Not a common password</li>
-                </ul>
+                At least 8 characters, mixed upper and lowercase letters, at least one number, and not a common password.
             </div>
-
-            <label for="{{ form.password2.id_for_label }}">
-                <i class="fas fa-check-circle"></i> Confirm Password
-            </label>
-            <div class="password-field">
-                {{ form.password2 }}
-                <button type="button" class="password-toggle" data-target="{{ form.password2.id_for_label }}" aria-label="Show password">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            {% if form.password2.errors %}
-                <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: -0.75rem; margin-bottom: 1rem;">
-                    {{ form.password2.errors.0 }}
-                </div>
-            {% endif %}
 
             <button type="submit" class="btn btn-primary btn-block">
                 <i class="fas fa-user-plus"></i> Create Account
@@ -360,6 +557,7 @@
         <div class="auth-footer-link">
             Already have an account? <a href="{% url 'login' %}">Log in</a>
         </div>
+    </div>
     </div>
 </div>
 

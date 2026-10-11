@@ -247,6 +247,49 @@
         color: var(--text-secondary);
     }
 
+    /* ============ TABLE LAYOUT FIX (desktop/tablet) ============
+       Stops words from breaking mid-word ("Biodegradabl / e", "SCHEDULE / D",
+       "#1 / 1") and keeps the Update Status button on one line. The table
+       gets a sensible minimum width and scrolls sideways inside its card
+       instead of squeezing the columns. */
+    @media (min-width: 641px) {
+        #cl-table {
+            min-width: 940px;
+        }
+
+        #cl-table th,
+        #cl-table td {
+            white-space: nowrap;
+            vertical-align: middle;
+            padding: var(--spacing-md) var(--spacing-md);
+        }
+
+        #cl-table th:first-child,
+        #cl-table td:first-child {
+            padding-left: var(--spacing-lg);
+            width: 1%;
+        }
+
+        #cl-table .status-badge {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        #cl-table .cl-icon-btn.status {
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: max-content;
+            height: 36px;
+            padding: 0 var(--spacing-md);
+        }
+
+        #cl-table td.actions-col,
+        #cl-table th.actions-col {
+            width: 1%;
+            padding-right: var(--spacing-lg);
+        }
+    }
+
     /* ============ STATUS BADGES (collection-specific) ============ */
     .status-badge.status-scheduled {
         background: var(--gray-100);
@@ -260,6 +303,7 @@
 
     /* ============ COMPACT ICON ACTIONS ============ */
     .cl-actions {
+        align-items: center;
         display: flex;
         gap: var(--spacing-xs);
         justify-content: flex-end;
@@ -323,7 +367,7 @@
         bottom: calc(100% + 6px);
         left: 50%;
         transform: translateX(-50%) translateY(4px);
-        background: var(--black);
+        background: #166534;
         color: #fff;
         font-size: 0.72rem;
         padding: 0.3rem 0.55rem;
@@ -444,6 +488,75 @@
         font-size: 0.85rem;
         color: var(--text-secondary);
     }
+
+    /* ============ WEEK NAVIGATOR + MONTH ROLL-UP (Barangay Users) ============ */
+    .cl-week-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-md) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .cl-week-range { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.05rem; color: var(--text-primary); }
+    .cl-week-range small { display: block; font-family: inherit; font-weight: 500; font-size: 0.78rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .cl-week-nav { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+
+    .cl-month-card {
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-md) var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+    }
+
+    .cl-month-card h4 { margin: 0 0 2px; font-family: 'Poppins', sans-serif; font-size: 0.98rem; color: var(--green-800); }
+    .cl-month-card p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
+    .cl-month-card .cl-month-note { margin-top: 4px; font-size: 0.8rem; color: var(--text-tertiary); }
+
+    .status-badge.status-weekly { background: #DBEAFE; color: #1D4ED8; }
+    .status-badge.status-monthly { background: var(--gray-100); color: var(--gray-600); }
+
+    /* ============ COMPACT, CLICKABLE ROWS ============ */
+    @media (min-width: 641px) {
+        #cl-table { min-width: 0; font-size: 0.84rem; }
+        #cl-table th { font-size: 0.7rem; padding: 0.55rem var(--spacing-md); }
+        #cl-table td { padding: 0.45rem var(--spacing-md); }
+        #cl-table .cl-date-strong { font-size: 0.84rem; }
+        #cl-table .cl-date-muted { font-size: 0.7rem; margin-top: 0; }
+        #cl-table .status-badge { font-size: 0.68rem; padding: 0.15rem 0.5rem; }
+        #cl-table .cl-weight { font-size: 0.84rem; }
+        #cl-table .cl-icon-btn { width: 28px; height: 28px; font-size: 0.75rem; }
+        #cl-table .cl-icon-btn.status { height: 28px; font-size: 0.72rem; padding: 0 var(--spacing-sm); }
+    }
+    #cl-table tr.row-clickable { cursor: pointer; transition: background var(--transition-fast); }
+    #cl-table tr.row-clickable:hover { background: var(--green-50); }
+    #cl-table .cl-freq-tag {
+        display: inline-block; margin-left: 6px; padding: 0 6px;
+        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+        border-radius: 999px; vertical-align: middle;
+    }
+    #cl-table .cl-freq-tag.weekly { background: #DBEAFE; color: #1D4ED8; }
+    #cl-table .cl-freq-tag.monthly { background: var(--gray-100); color: var(--gray-600); }
+    #cl-table .cl-open { color: var(--gray-300); font-size: 0.75rem; }
+    #cl-table tr.row-clickable:hover .cl-open { color: var(--green-700); }
+
+    /* ============ COMBINED ROWS + DETAILS WINDOW ============ */
+    #cl-table .cl-group-row { background: var(--green-50); }
+    #cl-table .cl-group-row:hover { background: var(--green-100); }
+    #cl-table .cl-group-row:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: -2px; }
+    #cl-table .cl-types-line { white-space: normal; max-width: 340px; }
 </style>
 {% endblock %}
 
@@ -453,7 +566,7 @@
         <div class="page-icon-badge"><i class="fas fa-trash-alt"></i></div>
         <div>
             <h1 class="page-title">Collection Schedule &amp; Monitoring</h1>
-            <p class="page-subtitle">Monitor scheduled waste collections and track completion status across barangays.</p>
+            <p class="page-subtitle">{% if my_barangay %}Your barangay&rsquo;s collections for the week. Enter the waste you collected each week &mdash; the month&rsquo;s totals flow into your SCMAR.{% else %}Set weekly or monthly collection schedules per barangay and track completion status.{% endif %}</p>
         </div>
     </div>
     {% if user.is_superuser or user.profile.role == "admin" %}
@@ -466,6 +579,45 @@
 
 {% block content %}
 
+{% if my_barangay %}
+<!-- WEEK NAVIGATOR (Barangay Users see their collections week by week) -->
+<div class="cl-week-card">
+    <div class="cl-week-range">
+        <small>{% if is_current_week %}This week{% else %}Week of{% endif %}{% if not is_current_week %} &middot; View only{% endif %}</small>
+        {{ week_start|date:"M d" }} &ndash; {{ week_end|date:"M d, Y" }}
+    </div>
+    <div class="cl-week-nav">
+        {% if is_current_week %}
+        <a class="btn btn-add btn-sm" href="{% url 'collection_week_input' %}?week={{ week_start|date:'Y-m-d' }}"><i class="fas fa-clipboard-list"></i> Enter this week's collection</a>
+        {% endif %}
+        <a class="btn btn-secondary btn-sm" href="?week={{ prev_week|date:'Y-m-d' }}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}"><i class="fas fa-chevron-left"></i> Previous week</a>
+        {% if not is_current_week %}<a class="btn btn-secondary btn-sm" href="{% url 'collection_list' %}">This week</a>{% endif %}
+        {% if can_go_next %}
+        <a class="btn btn-secondary btn-sm" href="?week={{ next_week|date:'Y-m-d' }}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}">Next week <i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- MONTH ROLL-UP -> SCMAR -->
+<div class="cl-month-card">
+    <div>
+        <h4><i class="fas fa-calendar-check"></i> {{ month_label }} so far</h4>
+        <p>{{ month_completed }} of {{ month_total }} pickup{{ month_total|pluralize }} completed &middot; {{ month_weight|floatformat:2 }} kg collected</p>
+        <p class="cl-month-note">
+            {% if month_scmar %}Your SCMAR for this month already exists &mdash; new weekly records are included in it automatically.
+            {% else %}{{ month_progress.complete_weeks }} of {{ month_progress.weeks_needed }} weeks complete. At {{ month_progress.weeks_needed }} weeks (or when the month ends with every recorded week complete), your SCMAR is created automatically.{% endif %}
+        </p>
+    </div>
+    <div>
+        {% if month_scmar %}
+        <a href="{% url 'scmar_detail' month_scmar.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-file-lines"></i> View {{ month_label }} SCMAR</a>
+        {% else %}
+        <a href="{% url 'scmar_add' %}?month={{ month_key }}" class="btn btn-add btn-sm"><i class="fas fa-file-circle-plus"></i> {% if month_ended %}Prepare{% else %}Start{% endif %} SCMAR for {{ month_label }}</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 <!-- SUMMARY STATISTICS (real counts from the current filtered result set) -->
 <div class="cl-stats">
     <div class="cl-stat">
@@ -474,7 +626,7 @@
             <div class="cl-stat-icon total"><i class="fas fa-layer-group"></i></div>
         </div>
         <div class="cl-stat-value">{{ total_count }}</div>
-        <div class="cl-stat-sub">Matching current filters</div>
+        <div class="cl-stat-sub">{% if my_barangay %}This week{% else %}Matching current filters{% endif %}</div>
     </div>
     <div class="cl-stat">
         <div class="cl-stat-top">
@@ -508,13 +660,14 @@
     <form method="get" class="cl-filter-form">
         {% if my_barangay %}
         <input type="hidden" name="barangay" value="{{ my_barangay }}">
+        <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
         <div class="cl-filter-field">
-            <label>Barangay</label>
-            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+            <label><i class="fas fa-location-dot"></i> Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-landmark"></i> {{ my_barangay }}</div>
         </div>
         {% else %}
         <div class="cl-filter-field">
-            <label for="cl-barangay">Barangay</label>
+            <label for="cl-barangay"><i class="fas fa-location-dot"></i> Barangay</label>
             <select name="barangay" id="cl-barangay" onchange="this.form.submit()">
                 <option value="">All Barangays</option>
                 {% for value, label in barangay_choices %}
@@ -523,8 +676,9 @@
             </select>
         </div>
         {% endif %}
+        {% if my_barangay %}
         <div class="cl-filter-field">
-            <label for="cl-waste-type">Waste Type</label>
+            <label for="cl-waste-type"><i class="fas fa-recycle"></i> Waste Type</label>
             <select name="waste_type" id="cl-waste-type" onchange="this.form.submit()">
                 <option value="">All Types</option>
                 {% for value, label in waste_type_choices %}
@@ -532,8 +686,19 @@
                 {% endfor %}
             </select>
         </div>
+        {% endif %}
+        {% if not my_barangay %}
         <div class="cl-filter-field">
-            <label for="cl-period">Month</label>
+            <label for="cl-day"><i class="fas fa-calendar-week"></i> Schedule</label>
+            <select name="day" id="cl-day" onchange="this.form.submit()">
+                <option value="">Monday to Sunday</option>
+                {% for value, label in weekday_choices %}
+                <option value="{{ value }}" {% if selected_day == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="cl-filter-field">
+            <label for="cl-period"><i class="fas fa-calendar-days"></i> Month</label>
             <select name="period" id="cl-period" onchange="this.form.submit()">
                 <option value="">All Months</option>
                 {% for value, label in period_choices %}
@@ -541,8 +706,9 @@
                 {% endfor %}
             </select>
         </div>
-        {% if selected_barangay or selected_waste_type or selected_period %}
-        <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+        {% endif %}
+        {% if selected_waste_type or selected_frequency or selected_period or selected_day or not my_barangay and selected_barangay %}
+        <a href="{% if my_barangay %}?week={{ week_start|date:'Y-m-d' }}{% else %}{% url 'collection_list' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
         {% endif %}
     </form>
 </div>
@@ -561,30 +727,62 @@
         <table id="cl-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Scheduled</th>
-                    <th>Barangay</th>
+                    {% if not my_barangay %}<th>Barangay</th>{% endif %}
                     <th>Type</th>
                     <th>Status</th>
-                    <th>Weight (kg)</th>
+                    <th>Weight</th>
                     <th>Collector</th>
                     <th class="actions-col"></th>
                 </tr>
             </thead>
-            <tbody>
-                {% for c in collections %}
+            {% for g in collections %}
+            {% if g.is_group %}
+            <tbody class="cl-group">
+                <tr class="row-clickable cl-group-row" tabindex="0" role="link"
+                    data-href="{% url 'collection_day_detail' %}?barangay={{ g.barangay|urlencode }}&amp;date={{ g.day|date:'Y-m-d' }}&amp;frequency={{ g.frequency|urlencode }}"
+                    aria-label="{{ g.count }} collections on {{ g.day|date:'D, M d' }}. Press to open details.">
+                    <td data-label="Scheduled">
+                        {% if g.day %}
+                        <span class="cl-date-strong">{{ g.day|date:"D, M d" }}</span>
+                        <span class="cl-date-muted">{{ g.count }} pickups</span>
+                        {% else %}<span class="cl-weight-empty">&ndash;</span>{% endif %}
+                    </td>
+                    {% if not my_barangay %}<td data-label="Barangay">{{ g.barangay }}</td>{% endif %}
+                    <td data-label="Type">
+                        {{ g.count }} waste types{% if g.frequency %}<span class="cl-freq-tag {{ g.frequency|slugify }}">{{ g.frequency }}</span>{% endif %}
+                        <span class="cl-date-muted cl-types-line">{{ g.types }}</span>
+                    </td>
+                    <td data-label="Status">
+                        <span class="status-badge status-{{ g.status|slugify }}">
+                            {% if g.status == "Completed" %}<i class="fas fa-check"></i>
+                            {% elif g.status == "Ongoing" %}<i class="fas fa-rotate"></i>
+                            {% else %}<i class="fas fa-circle" style="font-size:0.4rem;"></i>{% endif %}
+                            {{ g.status_text }}
+                        </span>
+                    </td>
+                    <td data-label="Weight">
+                        {% if g.weight is not None %}<span class="cl-weight">{{ g.weight }} kg</span><span class="cl-date-muted">total</span>{% else %}<span class="cl-weight-empty">&ndash;</span>{% endif %}
+                    </td>
+                    <td data-label="Collector"><span class="cl-collector">{{ g.collector|default:"&ndash;" }}</span></td>
+                    <td class="actions-col">
+                    </td>
+                </tr>
+            </tbody>
+            {% else %}
+            <tbody class="cl-single">
+                {% with c=g.first %}
                 <tr class="row-clickable" onclick="window.location='{% url 'collection_detail' c.id %}'">
-                    <td data-label="ID">#{{ c.id }}</td>
                     <td data-label="Scheduled">
                         {% if c.scheduled_date %}
-                        <span class="cl-date-strong">{{ c.scheduled_date|date:"M d, Y" }}</span>
-                        <span class="cl-date-muted">{{ c.scheduled_date|date:"h:i A" }}</span>
+                        <span class="cl-date-strong">{{ c.scheduled_date|date:"D, M d" }}</span>
+                        {% if c.scheduled_date|date:"H:i" != "00:00" %}<span class="cl-date-muted">{{ c.scheduled_date|date:"h:i A" }}</span>{% endif %}
                         {% else %}
                         <span class="cl-weight-empty">&ndash;</span>
                         {% endif %}
                     </td>
-                    <td data-label="Barangay">{{ c.barangay }}</td>
-                    <td data-label="Type">{{ c.waste_type }}</td>
+                    {% if not my_barangay %}<td data-label="Barangay">{{ c.barangay }}</td>{% endif %}
+                    <td data-label="Type">{{ c.waste_type }}{% if c.frequency %}<span class="cl-freq-tag {{ c.frequency|slugify }}">{{ c.frequency }}</span>{% endif %}</td>
                     <td data-label="Status">
                         <span class="status-badge status-{{ c.status|slugify }}">
                             {% if c.status == "Completed" %}<i class="fas fa-check"></i>
@@ -593,7 +791,7 @@
                             {{ c.status }}
                         </span>
                     </td>
-                    <td data-label="Weight (kg)">
+                    <td data-label="Weight">
                         {% if c.weight_kg %}<span class="cl-weight">{{ c.weight_kg }} kg</span>{% else %}<span class="cl-weight-empty">&ndash;</span>{% endif %}
                     </td>
                     <td data-label="Collector"><span class="cl-collector">{{ c.collector|default:"&ndash;" }}</span></td>
@@ -606,26 +804,29 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                             {% else %}
-                            {% if c.status != "Completed" %}
+                            {% if c.status != "Completed" and c.can_edit %}
                             <a href="{% url 'collection_update_status' c.id %}" class="cl-icon-btn status" onclick="event.stopPropagation();"><i class="fas fa-clipboard-check"></i> Update Status</a>
                             {% endif %}
                             {% endif %}
+                            <i class="fas fa-chevron-right cl-open" aria-hidden="true" title="View details"></i>
                         </div>
                     </td>
                 </tr>
-                {% endfor %}
+                {% endwith %}
             </tbody>
+            {% endif %}
+            {% endfor %}
         </table>
     </div>
 
     {% if page_obj.paginator.num_pages > 1 %}
     <div class="cl-pagination">
         {% if page_obj.has_previous %}
-        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}{% if selected_period %}&period={{ selected_period }}{% endif %}">&laquo; Prev</a>
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if my_barangay %}&week={{ week_start|date:"Y-m-d" }}{% endif %}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_frequency %}&frequency={{ selected_frequency }}{% endif %}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}{% if selected_period %}&period={{ selected_period }}{% endif %}{% if selected_day %}&day={{ selected_day }}{% endif %}">&laquo; Prev</a>
         {% endif %}
         <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
-        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}{% if selected_period %}&period={{ selected_period }}{% endif %}">Next &raquo;</a>
+        <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if my_barangay %}&week={{ week_start|date:"Y-m-d" }}{% endif %}{% if selected_barangay %}&barangay={{ selected_barangay }}{% endif %}{% if selected_frequency %}&frequency={{ selected_frequency }}{% endif %}{% if selected_waste_type %}&waste_type={{ selected_waste_type }}{% endif %}{% if selected_period %}&period={{ selected_period }}{% endif %}{% if selected_day %}&day={{ selected_day }}{% endif %}">Next &raquo;</a>
         {% endif %}
     </div>
     {% endif %}
@@ -635,17 +836,14 @@
         <i class="fas fa-dumpster"></i>
         <div class="empty-state-title">No collections found</div>
         <div class="empty-state-text">
-            {% if selected_barangay or selected_waste_type or selected_period %}
+            {% if my_barangay %}
+            No collections are scheduled for your barangay this week. Use the arrows above to check other weeks.
+            {% elif selected_barangay or selected_waste_type or selected_period or selected_frequency %}
             There are no collection schedules matching your current filters.
             {% else %}
-            Log your first waste collection to start tracking volume by barangay and type.
+            Add a weekly or monthly recurring schedule for a barangay and its collections will appear here automatically.
             {% endif %}
         </div>
-        {% if selected_barangay or selected_waste_type or selected_period %}
-        <div class="cl-empty-actions">
-            <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
-        </div>
-        {% endif %}
     </div>
     {% endif %}
 </div>
@@ -681,11 +879,21 @@
         const searchInput = document.getElementById('cl-search-input');
         const table = document.getElementById('cl-table');
 
+        if (table) {
+            table.querySelectorAll('tr.cl-group-row').forEach((row) => {
+                const go = () => { window.location = row.getAttribute('data-href'); };
+                row.addEventListener('click', go);
+                row.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+                });
+            });
+        }
+
         if (searchInput && table) {
             searchInput.addEventListener('input', () => {
                 const q = searchInput.value.trim().toLowerCase();
-                table.querySelectorAll('tbody tr').forEach((row) => {
-                    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+                table.querySelectorAll('tbody').forEach((body) => {
+                    body.style.display = body.textContent.toLowerCase().includes(q) ? '' : 'none';
                 });
             });
         }

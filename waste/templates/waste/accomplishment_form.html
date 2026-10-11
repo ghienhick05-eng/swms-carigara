@@ -1,82 +1,265 @@
 {% extends "base.html" %}
 {% block title %}Log Accomplishment - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ac-wrap { max-width: 1100px; margin: 0 auto; }
+    .ac-back { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-secondary); text-decoration: none; margin-bottom: var(--spacing-md); }
+    .ac-back:hover { color: var(--green-700); }
+    .ac-title { display: flex; align-items: center; gap: 14px; margin-bottom: var(--spacing-lg); }
+    .ac-title-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--green-800); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .ac-title h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    .ac-title p { margin: 2px 0 0; font-size: .85rem; color: var(--text-secondary); }
+
+    .ac-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: var(--spacing-lg); align-items: start; }
+    @media (max-width: 900px) { .ac-layout { grid-template-columns: 1fr; } }
+    .ac-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--spacing-lg); }
+
+    .ac-sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: var(--spacing-md); }
+    .ac-num { width: 30px; height: 30px; border-radius: 50%; background: var(--green-800); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .ac-sec-head h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--green-800); }
+    .ac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md) var(--spacing-lg); }
+    .ac-grid .full { grid-column: span 2; }
+    @media (max-width: 640px) { .ac-grid { grid-template-columns: 1fr; } .ac-grid .full { grid-column: auto; } }
+    .ac-card .form-group { margin-bottom: 0; }
+    .ac-card label { font-size: .8rem; font-weight: 600; margin-bottom: 6px; }
+    .ac-card label .req { color: #dc2626; }
+    .ac-card .barangay-locked-display { margin: 0; }
+    .ac-hint { display: block; margin-top: 4px; font-size: .72rem; color: var(--text-tertiary); }
+    .ac-count { display: block; text-align: right; font-size: .7rem; color: var(--text-tertiary); margin-top: 2px; }
+    .ac-err { color: #dc2626; font-size: .78rem; margin-top: 4px; }
+    .ac-card textarea { resize: vertical; }
+
+    .ac-attach-head { display: flex; align-items: center; gap: 8px; margin: var(--spacing-lg) 0 2px; font-weight: 700; color: var(--green-800); }
+    .ac-attach-sub { font-size: .75rem; color: var(--text-tertiary); margin-bottom: var(--spacing-sm); }
+    .ac-drops { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+    @media (max-width: 640px) { .ac-drops { grid-template-columns: 1fr; } }
+    .ac-drop { display: flex; gap: 12px; align-items: flex-start; background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); padding: 14px; transition: border-color .15s, background .15s; }
+    .ac-drop.dragover { border-color: var(--green-600); background: var(--green-100); }
+    .ac-drop > i { font-size: 1.5rem; color: var(--green-700); margin-top: 2px; }
+    .ac-drop b { display: block; font-size: .78rem; }
+    .ac-drop small { display: block; font-size: .68rem; color: var(--text-tertiary); margin: 2px 0 8px; }
+    .ac-drop .row { display: flex; align-items: center; gap: 8px; font-size: .7rem; color: var(--text-tertiary); flex-wrap: wrap; }
+    .ac-drop input[type=file] { display: none; }
+    .ac-browse { background: var(--green-700); color: #fff; border: 0; border-radius: 6px; padding: 6px 12px; font-size: .72rem; font-weight: 600; cursor: pointer; }
+    .ac-browse:hover { background: var(--green-800); }
+
+    .ac-files-title { margin: var(--spacing-lg) 0 var(--spacing-sm); font-size: .85rem; font-weight: 700; }
+    .ac-files { border: 1px solid var(--gray-200); border-radius: var(--radius-md); overflow: hidden; }
+    .ac-file { display: grid; grid-template-columns: 40px 1fr auto auto auto; gap: 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--gray-100); }
+    .ac-file:last-child { border-bottom: 0; }
+    .ac-file .ico { width: 36px; height: 36px; border-radius: 6px; background: #e0ecff; color: #2563eb; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .ac-file .ico.img { background: var(--green-100); color: var(--green-700); }
+    .ac-file .ico img { width: 100%; height: 100%; object-fit: cover; }
+    .ac-file .meta b { display: block; font-size: .8rem; word-break: break-all; }
+    .ac-file .meta span { font-size: .7rem; color: var(--text-tertiary); }
+    .ac-file .status { font-size: .72rem; color: var(--green-700); font-weight: 500; }
+    .ac-file .status i { margin-right: 3px; }
+    .ac-file .act { background: none; border: 0; color: var(--gray-600); cursor: pointer; font-size: .9rem; padding: 4px 6px; text-decoration: none; }
+    .ac-file .act:hover { color: var(--green-700); }
+    .ac-file .act.del:hover { color: #dc2626; }
+    .ac-empty { padding: 14px; font-size: .78rem; color: var(--text-tertiary); text-align: center; }
+    @media (max-width: 560px) { .ac-file { grid-template-columns: 40px 1fr auto auto; } .ac-file .status { display: none; } }
+
+    .ac-guide { position: sticky; top: 16px; }
+    .ac-guide h3 { margin: 0 0 6px; font-size: .95rem; font-weight: 700; color: var(--green-800); display: flex; align-items: center; gap: 8px; }
+    .ac-guide h3 i { color: var(--green-600); }
+    .ac-guide .sub { font-size: .75rem; color: var(--text-tertiary); margin-bottom: var(--spacing-md); }
+    .ac-guide ul { list-style: none; margin: 0 0 var(--spacing-md); padding: 0; }
+    .ac-guide li { display: flex; gap: 8px; align-items: flex-start; font-size: .78rem; padding: 6px 0; }
+    .ac-guide li i { color: var(--green-600); margin-top: 2px; }
+    .ac-guide .tip { display: flex; gap: 10px; background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); padding: 10px 12px; font-size: .75rem; color: var(--green-900); }
+    .ac-guide .tip i { color: var(--green-700); margin-top: 2px; }
+
+    .ac-footer { display: flex; justify-content: flex-end; gap: var(--spacing-sm); margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="entity-card">
-    <div class="entity-banner">
-        <div class="entity-banner-icon"><i class="fas fa-award"></i></div>
-        <h2>{% if editing %}Edit Accomplishment #{{ accomplishment.id }}{% else %}Log an Accomplishment{% endif %}</h2>
-        <p>{% if editing %}Update the details for this accomplishment.{% else %}Record a completed activity or milestone.{% endif %}</p>
+<div class="ac-wrap">
+    <a href="{% url 'accomplishment_list' %}" class="ac-back"><i class="fas fa-arrow-left"></i> Back to Accomplishments List</a>
+
+    <div class="ac-title">
+        <div class="ac-title-icon"><i class="fas fa-clipboard-check"></i></div>
+        <div>
+            <h2>{% if editing %}Edit Accomplishment #{{ accomplishment.id }}{% else %}Log an Accomplishment{% endif %}</h2>
+            <p>{% if editing %}Update the details for this accomplishment.{% else %}Record a completed activity or milestone for your barangay's waste management program.{% endif %}</p>
+        </div>
     </div>
-    <div class="entity-body">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label><i class="fas fa-heading"></i> Activity / Title</label>
-                {{ form.title }}
-                <datalist id="accomplishment-suggestions">
-                    <option value="Establishment of MRF">
-                    <option value="HAPAG">
-                    <option value="Desilting">
-                    <option value="BARKADA Day">
-                </datalist>
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    {% if form.locked_barangay %}
-                        <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
-                        <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ form.locked_barangay }}</div>
-                        <span class="barangay-locked-hint">Automatically set to your assigned barangay.</span>
-                        {{ form.barangay }}
-                    {% else %}
-                        <label><i class="fas fa-map-marker-alt"></i> Barangay <span style="font-weight:400; color: var(--text-tertiary);">(blank = municipal-wide)</span></label>
-                        {{ form.barangay }}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="ac-layout">
+            <section class="ac-card">
+                <div class="ac-sec-head"><span class="ac-num">1</span><h3>Activity Information</h3></div>
+                {% if form.non_field_errors %}<div class="ac-err" style="margin-bottom:12px;">{{ form.non_field_errors|striptags }}</div>{% endif %}
+
+                <div class="ac-grid">
+                    <div class="form-group">
+                        {% if form.locked_barangay %}
+                            <label><i class="fas fa-map-marker-alt"></i> Barangay <span class="req">*</span></label>
+                            <div class="barangay-locked-display"><i class="fas fa-location-dot"></i> {{ form.locked_barangay }}</div>
+                            <span class="ac-hint">Automatically set to your assigned barangay.</span>
+                            {{ form.barangay }}
+                        {% else %}
+                            <label for="{{ form.barangay.id_for_label }}"><i class="fas fa-map-marker-alt"></i> Barangay <span class="ac-hint" style="display:inline;">(blank = municipal-wide)</span></label>
+                            {{ form.barangay }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.date_accomplished.id_for_label }}">Date Accomplished <span class="req">*</span></label>
+                        {{ form.date_accomplished }}
+                        {% if form.date_accomplished.errors %}<div class="ac-err">{{ form.date_accomplished.errors|striptags }}</div>{% endif %}
+                    </div>
+                    <div class="form-group full">
+                        <label for="{{ form.title.id_for_label }}">Activity / Title <span class="req">*</span></label>
+                        {{ form.title }}
+                        <datalist id="accomplishment-suggestions">
+                            <option value="Establishment of MRF">
+                            <option value="HAPAG">
+                            <option value="Desilting">
+                            <option value="BARKADA Day">
+                        </datalist>
+                        {% if form.title.errors %}<div class="ac-err">{{ form.title.errors|striptags }}</div>{% endif %}
+                    </div>
+                    <div class="form-group full">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                        <span class="ac-count"><span id="ac-desc-count">0</span>/1000</span>
+                        {% if form.description.errors %}<div class="ac-err">{{ form.description.errors|striptags }}</div>{% endif %}
+                    </div>
+                    <div class="form-group full">
+                        <label for="{{ form.due_date.id_for_label }}">Due Date <span class="ac-hint" style="display:inline;">(optional deadline for this report)</span></label>
+                        {{ form.due_date }}
+                        {% if form.due_date.errors %}<div class="ac-err">{{ form.due_date.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="ac-attach-head"><i class="fas fa-paperclip"></i> Attachments</div>
+                <div class="ac-attach-sub">Upload supporting documents for this accomplishment (optional).</div>
+                <div class="ac-drops">
+                    <div class="ac-drop" data-kind="image">
+                        <i class="fas fa-image"></i>
+                        <div>
+                            <b>Supporting Image</b>
+                            <small>JPG, JPEG, PNG (Max 10MB per file)</small>
+                            <div class="row"><button type="button" class="ac-browse">Browse Files</button> or drag and drop here</div>
+                            <input type="file" name="supporting_image" accept=".jpg,.jpeg,.png">
+                        </div>
+                    </div>
+                    <div class="ac-drop" data-kind="doc">
+                        <i class="fas fa-file-lines"></i>
+                        <div>
+                            <b>Accomplishment Report File</b>
+                            <small>PDF, DOC, DOCX (Max 10MB per file)</small>
+                            <div class="row"><button type="button" class="ac-browse">Browse Files</button> or drag and drop here</div>
+                            <input type="file" name="report_file" accept=".pdf,.doc,.docx">
+                        </div>
+                    </div>
+                </div>
+                {% if form.supporting_image.errors %}<div class="ac-err">{{ form.supporting_image.errors|striptags }}</div>{% endif %}
+                {% if form.report_file.errors %}<div class="ac-err">{{ form.report_file.errors|striptags }}</div>{% endif %}
+
+                <div class="ac-files-title">Uploaded Files</div>
+                <div class="ac-files" id="ac-files">
+                    {% if editing and accomplishment.supporting_image %}
+                    <div class="ac-file" data-existing="image">
+                        <div class="ico img"><img src="{{ accomplishment.supporting_image.url }}" alt=""></div>
+                        <div class="meta"><b>{{ accomplishment.supporting_image.name|cut:"accomplishment_evidence/" }}</b><span>Image &bull; current file (upload a new one to replace)</span></div>
+                        <span class="status"><i class="fas fa-circle-check"></i> Uploaded</span>
+                        <a class="act" href="{{ accomplishment.supporting_image.url }}" target="_blank" rel="noopener" title="View"><i class="fas fa-eye"></i></a>
+                        <span></span>
+                    </div>
                     {% endif %}
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-calendar-check"></i> Date Accomplished</label>
-                    {{ form.date_accomplished }}
-                </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-align-left"></i> Description</label>
-                {{ form.description }}
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-calendar-day"></i> Due Date <span style="font-weight:400; color: var(--text-tertiary);">(optional deadline for this report)</span></label>
-                {{ form.due_date }}
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-file-arrow-up"></i> Accomplishment Report File <span style="font-weight:400; color: var(--text-tertiary);">(Allowed: PDF, DOC, DOCX)</span></label>
-                {% if editing and accomplishment.report_file %}
-                    <div style="margin-bottom: var(--spacing-sm); font-size: 0.9rem; color: var(--text-secondary);">
-                        <i class="fas fa-file"></i> Current file:
-                        <a href="{{ accomplishment.report_file.url }}" target="_blank" rel="noopener">{{ accomplishment.report_file.name|cut:"accomplishment_reports/" }}</a>
-                        &mdash; choose a new file below only if you want to replace it.
+                    {% if editing and accomplishment.report_file %}
+                    <div class="ac-file" data-existing="doc">
+                        <div class="ico"><i class="fas fa-file-pdf"></i></div>
+                        <div class="meta"><b>{{ accomplishment.report_file.name|cut:"accomplishment_reports/" }}</b><span>Document &bull; current file (upload a new one to replace)</span></div>
+                        <span class="status"><i class="fas fa-circle-check"></i> Uploaded</span>
+                        <a class="act" href="{{ accomplishment.report_file.url }}" target="_blank" rel="noopener" title="View"><i class="fas fa-eye"></i></a>
+                        <span></span>
                     </div>
-                {% endif %}
-                {{ form.report_file }}
-                {% if form.report_file.errors %}
-                    <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.report_file.errors|striptags }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-image"></i> Supporting Image <span style="font-weight:400; color: var(--text-tertiary);">(Allowed: JPG, JPEG, PNG — optional)</span></label>
-                {% if editing and accomplishment.supporting_image %}
-                    <div style="margin-bottom: var(--spacing-sm);">
-                        <img src="{{ accomplishment.supporting_image.url }}" alt="Current supporting image" style="max-width: 140px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: block; margin-bottom: 4px;">
-                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Current image &mdash; choose a new one below only if you want to replace it.</span>
-                    </div>
-                {% endif %}
-                {{ form.supporting_image }}
-                {% if form.supporting_image.errors %}
-                    <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.supporting_image.errors|striptags }}</div>
-                {% endif %}
-            </div>
-            <div class="form-actions">
-                <a href="{% url 'accomplishment_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
-                <button type="submit" class="btn btn-add">{% if editing %}<i class="fas fa-check"></i> Update Record{% else %}<i class="fas fa-plus"></i> Save Record{% endif %}</button>
-            </div>
-        </form>
-    </div>
+                    {% endif %}
+                    <div class="ac-empty" id="ac-empty">No files selected yet.</div>
+                </div>
+            </section>
+
+            <aside class="ac-card ac-guide">
+                <h3><i class="fas fa-lightbulb"></i> Quick Guide</h3>
+                <div class="sub">This information will be included in your SCMAR report and will be reviewed by MENRO Admin.</div>
+                <ul>
+                    <li><i class="fas fa-circle-check"></i> Provide complete and accurate details</li>
+                    <li><i class="fas fa-circle-check"></i> Attach supporting photos or documents</li>
+                    <li><i class="fas fa-circle-check"></i> Ensure the activity is already completed</li>
+                </ul>
+                <div class="tip"><i class="fas fa-circle-info"></i><span>Your accomplished activities will be automatically pulled into the SCMAR module.</span></div>
+            </aside>
+        </div>
+
+        <div class="ac-footer">
+            <a href="{% url 'accomplishment_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-add">{% if editing %}<i class="fas fa-check"></i> Update Accomplishment{% else %}<i class="fas fa-check"></i> Submit to SCMAR{% endif %}</button>
+        </div>
+    </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    // description counter + limit
+    var d = document.getElementById('{{ form.description.id_for_label }}'), c = document.getElementById('ac-desc-count');
+    if (d) {
+        d.setAttribute('maxlength', 1000);
+        d.placeholder = 'Provide a detailed description of the activity, objectives and expected outcome...';
+        var u = function () { c.textContent = d.value.length; }; d.addEventListener('input', u); u();
+    }
+
+    // uploads
+    var list = document.getElementById('ac-files'), empty = document.getElementById('ac-empty');
+    function fmt(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+    function refreshEmpty() {
+        empty.style.display = list.querySelectorAll('.ac-file').length ? 'none' : 'block';
+    }
+    document.querySelectorAll('.ac-drop').forEach(function (box) {
+        var kind = box.dataset.kind, input = box.querySelector('input[type=file]'), row = null;
+        function clear() {
+            if (row) { row.remove(); row = null; }
+            var old = list.querySelector('[data-existing="' + kind + '"]');
+            if (old) old.style.display = '';
+            refreshEmpty();
+        }
+        function show() {
+            if (row) { row.remove(); row = null; }
+            var f = input.files[0];
+            if (!f) { clear(); return; }
+            if (f.size > 10 * 1048576) { alert('File is larger than 10MB.'); input.value = ''; clear(); return; }
+            var old = list.querySelector('[data-existing="' + kind + '"]');
+            if (old) old.style.display = 'none';
+            var url = URL.createObjectURL(f), isImg = kind === 'image';
+            row = document.createElement('div'); row.className = 'ac-file';
+            row.innerHTML = '<div class="ico' + (isImg ? ' img' : '') + '"></div>' +
+                '<div class="meta"><b></b><span></span></div>' +
+                '<span class="status"><i class="fas fa-circle-check"></i> Ready</span>' +
+                '<a class="act" target="_blank" rel="noopener" title="Preview"><i class="fas fa-eye"></i></a>' +
+                '<button type="button" class="act del" title="Remove"><i class="fas fa-trash"></i></button>';
+            row.querySelector('b').textContent = f.name;
+            row.querySelector('.meta span').textContent = (f.name.split('.').pop() || '').toUpperCase() + ' \u2022 ' + fmt(f.size);
+            row.querySelector('a').href = url;
+            var ico = row.querySelector('.ico');
+            if (isImg) { var im = document.createElement('img'); im.src = url; ico.appendChild(im); }
+            else ico.innerHTML = '<i class="fas fa-file-pdf"></i>';
+            row.querySelector('.del').addEventListener('click', function () { input.value = ''; clear(); });
+            list.insertBefore(row, empty);
+            refreshEmpty();
+        }
+        box.querySelector('.ac-browse').addEventListener('click', function () { input.click(); });
+        input.addEventListener('change', show);
+        ['dragenter', 'dragover'].forEach(function (e) { box.addEventListener(e, function (ev) { ev.preventDefault(); box.classList.add('dragover'); }); });
+        ['dragleave', 'drop'].forEach(function (e) { box.addEventListener(e, function (ev) { ev.preventDefault(); box.classList.remove('dragover'); }); });
+        box.addEventListener('drop', function (ev) { if (ev.dataTransfer.files.length) { input.files = ev.dataTransfer.files; show(); } });
+    });
+    refreshEmpty();
+})();
+</script>
 {% endblock %}

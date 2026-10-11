@@ -501,7 +501,7 @@
                             <div class="acd-file-meta">Document</div>
                         </div>
                         <div class="acd-file-actions">
-                            <a href="{{ accomplishment.report_file.url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
+                            <a href="{% url 'document_view' 'accomplishment' accomplishment.pk %}" target="_blank" rel="noopener" data-doc-popup class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
                             <a href="{{ accomplishment.report_file.url }}" download class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> Download</a>
                         </div>
                     </div>

@@ -5,59 +5,50 @@
 <style>
     .rep-wrapper { max-width: 1250px; margin: 0 auto; }
 
-    /* ============ FILTER ============ */
-    .rep-filter-card {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-        padding: var(--spacing-lg) var(--spacing-xl);
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .rep-filter-title {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .rep-filter-title i { color: var(--green-700); }
-
-    .rep-filter-form {
+    /* ============ TOOLBAR / FILTER ============ */
+    .rep-actions {
         display: flex;
         align-items: flex-end;
-        gap: var(--spacing-md);
+        gap: var(--spacing-sm);
         flex-wrap: wrap;
     }
 
-    .rep-filter-field { flex: 0 0 220px; }
-
-    .rep-filter-field label {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: var(--spacing-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
+    .rep-period-form {
+        display: flex;
+        align-items: flex-end;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
     }
 
-    .rep-filter-field input[type="month"] { min-height: 42px; width: 100%; }
+    .rep-period-field label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 
-    /* ============ SUMMARY ROW ============ */
-    .rep-summary-row {
+    .rep-period-field input[type="month"] { min-height: 42px; min-width: 170px; }
+
+    .rep-actions .btn { min-height: 42px; }
+
+    /* ============ KPI TILES ============ */
+    .rep-kpis {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: var(--spacing-md);
         margin-bottom: var(--spacing-lg);
     }
 
-    .rep-summary-card {
+    @media (max-width: 1000px) { .rep-kpis { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px)  { .rep-kpis { grid-template-columns: 1fr; } }
+
+    .rep-kpi {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
         background: var(--white);
         border: 1px solid var(--gray-200);
         border-radius: var(--radius-lg);
@@ -65,90 +56,165 @@
         padding: var(--spacing-md) var(--spacing-lg);
     }
 
-    .rep-summary-label {
-        font-size: 0.72rem;
+    .rep-kpi-icon {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+        color: var(--green-700);
+        font-size: 1.05rem;
+    }
+
+    .rep-kpi.is-bad .rep-kpi-icon { background: #FEE2E2; border-color: #FECACA; color: #B91C1C; }
+
+    .rep-kpi-label {
+        font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-weight: 700;
         color: var(--text-tertiary);
-        margin-bottom: 6px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        margin-bottom: 2px;
     }
 
-    .rep-summary-label i { color: var(--green-700); font-size: 0.8rem; }
-
-    .rep-summary-value {
+    .rep-kpi-value {
         font-family: 'Poppins', sans-serif;
-        font-size: 1.2rem;
+        font-size: 1.35rem;
         font-weight: 700;
+        line-height: 1.2;
         color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
     }
 
-    .rep-summary-value.status-on-track { color: var(--green-700); }
-    .rep-summary-value.status-overdue { color: #B91C1C; }
+    .rep-kpi-value small { font-size: 0.8rem; font-weight: 600; color: var(--text-tertiary); }
+    .rep-kpi.is-good .rep-kpi-value { color: var(--green-700); }
+    .rep-kpi.is-bad .rep-kpi-value { color: #B91C1C; }
 
-    .rep-status-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: currentColor;
-        margin-right: 6px;
-    }
+    .rep-kpi-sub { font-size: 0.75rem; color: var(--text-tertiary); margin-top: 2px; }
 
-    .rep-summary-sub {
-        font-size: 0.75rem;
-        color: var(--text-tertiary);
-        margin-top: 2px;
-    }
-
-    @media (max-width: 760px) {
-        .rep-summary-row { grid-template-columns: 1fr; }
-    }
-
-    /* ============ REPORT CARDS ============ */
+    /* ============ CARDS ============ */
     .rep-card {
         background: var(--white);
         border: 1px solid var(--gray-200);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-sm);
-        padding: var(--spacing-lg) var(--spacing-xl);
+        overflow: hidden;
     }
 
     .rep-card-title {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-100);
         font-family: 'Poppins', sans-serif;
         font-size: 1rem;
         font-weight: 600;
         color: var(--text-primary);
-        margin: 0 0 var(--spacing-md);
-        padding-bottom: var(--spacing-md);
-        border-bottom: 1px solid var(--gray-100);
+        margin: 0;
     }
 
+    .rep-card-title span { display: flex; align-items: center; gap: var(--spacing-sm); }
     .rep-card-title i { color: var(--green-700); font-size: 0.9rem; }
+
+    .rep-card-meta {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+    }
+
+    .rep-card-body { padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-lg); }
 
     .rep-grid-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: var(--spacing-lg);
         margin-bottom: var(--spacing-lg);
+        align-items: start;
     }
 
-    @media (max-width: 900px) {
-        .rep-grid-2 { grid-template-columns: 1fr; }
+    @media (max-width: 900px) { .rep-grid-2 { grid-template-columns: 1fr; } }
+
+    /* ============ BAR LIST ============ */
+    .rep-bars { list-style: none; margin: 0; padding: 0; }
+
+    .rep-bar-row {
+        display: grid;
+        grid-template-columns: minmax(110px, 1.1fr) 2fr auto;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: 10px 0;
+        border-bottom: 1px solid var(--gray-100);
+        font-size: 0.9rem;
     }
 
-    .rep-table td:last-child,
-    .rep-table th:last-child {
+    .rep-bar-row:last-child { border-bottom: none; }
+
+    .rep-bar-name { font-weight: 600; color: var(--text-primary); overflow-wrap: anywhere; }
+
+    .rep-bar-track {
+        height: 8px;
+        background: var(--gray-100);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .rep-bar-fill {
+        display: block;
+        height: 100%;
+        min-width: 3px;
+        background: linear-gradient(90deg, var(--green-600), var(--green-700));
+        border-radius: 999px;
+    }
+
+    .rep-bar-value {
+        min-width: 112px;
         text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .rep-bar-value small { color: var(--text-tertiary); font-weight: 500; margin-left: 4px; }
+
+    @media (max-width: 520px) {
+        .rep-bar-row { grid-template-columns: 1fr auto; }
+        .rep-bar-track { grid-column: 1 / -1; order: 3; }
+    }
+
+    .rep-scroll { max-height: 440px; overflow-y: auto; }
+
+    /* ============ COMPLAINT STATUS ============ */
+    .rep-status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg) var(--spacing-xl);
+    }
+
+    .rep-status-tile {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        background: var(--gray-50);
+    }
+
+    .rep-status-count {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 6px;
         font-variant-numeric: tabular-nums;
     }
 
+    /* ============ EMPTY ============ */
     .rep-empty {
         text-align: center;
         padding: var(--spacing-xl) var(--spacing-md);
@@ -157,6 +223,19 @@
     }
 
     .rep-empty i { font-size: 1.4rem; margin-bottom: var(--spacing-sm); display: block; color: var(--gray-300); }
+
+    /* ============ PRINT ============ */
+    .rep-print-head { display: none; }
+
+    @media print {
+        .topbar, .sidebar, .no-print, .menu-toggle { display: none !important; }
+        .main-container { margin: 0 !important; }
+        .content-wrapper { padding: 0 !important; }
+        .rep-print-head { display: block; margin-bottom: 12px; }
+        .rep-card, .rep-kpi { box-shadow: none !important; break-inside: avoid; }
+        .rep-scroll { max-height: none; overflow: visible; }
+        .rep-bar-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
 </style>
 {% endblock %}
 
@@ -168,100 +247,126 @@
             <div class="page-icon-badge"><i class="fas fa-file-alt"></i></div>
             <div>
                 <h2 class="page-title">Monthly Summary Report</h2>
-                <p class="page-subtitle">Waste collection and complaint summary for the selected reporting period.</p>
+                <p class="page-subtitle">Waste collection and complaint summary for <strong>{{ report_period_label }}</strong>.</p>
             </div>
         </div>
-        <a href="{% url 'reports_export_excel' %}?period={{ report_period_value }}" class="btn btn-add">
-            <i class="fas fa-file-excel"></i> Download Excel
-        </a>
+        <div class="rep-actions no-print">
+            <form method="get" class="rep-period-form">
+                <div class="rep-period-field">
+                    <label for="period">Report Period</label>
+                    <input type="month" id="period" name="period" value="{{ report_period_value }}" onchange="this.form.submit()">
+                </div>
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-magnifying-glass"></i> View</button>
+            </form>
+            <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+            <a href="{% url 'reports_export_excel' %}?period={{ report_period_value }}" class="btn btn-add">
+                <i class="fas fa-file-excel"></i> Download Excel
+            </a>
+        </div>
     </div>
 
-    <!-- FILTER -->
-    <div class="rep-filter-card">
-        <div class="rep-filter-title"><i class="fas fa-calendar"></i> Report Period</div>
-        <form method="get" class="rep-filter-form">
-            <div class="rep-filter-field">
-                <label for="period">Month</label>
-                <input type="month" id="period" name="period" value="{{ report_period_value }}">
-            </div>
-            <button type="submit" class="btn btn-add"><i class="fas fa-magnifying-glass"></i> View Report</button>
-        </form>
+    <div class="rep-print-head">
+        <strong>SWMS Carigara &ndash; Monthly Summary Report</strong><br>
+        Report period: {{ report_period_label }}
     </div>
 
-    <!-- SUMMARY -->
-    <div class="rep-summary-row">
-        <div class="rep-summary-card">
-            <div class="rep-summary-label"><i class="fas fa-calendar-check"></i> Report Period</div>
-            <div class="rep-summary-value">{{ report_period_label }}</div>
-        </div>
-        <div class="rep-summary-card">
-            <div class="rep-summary-label"><i class="fas fa-weight-hanging"></i> Total Waste Collected</div>
-            <div class="rep-summary-value">{{ total_weight|floatformat:2 }} kg</div>
-        </div>
-        <div class="rep-summary-card">
-            <div class="rep-summary-label"><i class="fas {% if is_overdue %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %}"></i> Collection Status</div>
-            <div class="rep-summary-value {% if is_overdue %}status-overdue{% else %}status-on-track{% endif %}">
-                <span class="rep-status-dot"></span>{% if is_overdue %}Overdue{% else %}On Track{% endif %}
+    <!-- KPI TILES -->
+    <div class="rep-kpis">
+        <div class="rep-kpi">
+            <div class="rep-kpi-icon"><i class="fas fa-weight-hanging"></i></div>
+            <div>
+                <div class="rep-kpi-label">Total Waste Collected</div>
+                <div class="rep-kpi-value">{{ total_weight|floatformat:2 }} <small>kg</small></div>
             </div>
-            <div class="rep-summary-sub">Due {{ due_date|date:"F j, Y" }}</div>
+        </div>
+        <div class="rep-kpi">
+            <div class="rep-kpi-icon"><i class="fas fa-truck"></i></div>
+            <div>
+                <div class="rep-kpi-label">Collection Entries</div>
+                <div class="rep-kpi-value">{{ collections_qs.count }}</div>
+            </div>
+        </div>
+        <div class="rep-kpi">
+            <div class="rep-kpi-icon"><i class="fas fa-comment-dots"></i></div>
+            <div>
+                <div class="rep-kpi-label">Complaints Filed</div>
+                <div class="rep-kpi-value">{{ complaints_qs.count }}</div>
+            </div>
+        </div>
+        <div class="rep-kpi {% if is_overdue %}is-bad{% else %}is-good{% endif %}">
+            <div class="rep-kpi-icon"><i class="fas {% if is_overdue %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %}"></i></div>
+            <div>
+                <div class="rep-kpi-label">Report Status</div>
+                <div class="rep-kpi-value">{% if is_overdue %}Overdue{% else %}On Track{% endif %}</div>
+                <div class="rep-kpi-sub">Due {{ due_date|date:"F j, Y" }}</div>
+            </div>
         </div>
     </div>
 
     <!-- WASTE BY BARANGAY / TYPE -->
     <div class="rep-grid-2">
         <div class="rep-card">
-            <div class="rep-card-title"><i class="fas fa-map-marker-alt"></i> Waste Collected by Barangay</div>
+            <h3 class="rep-card-title">
+                <span><i class="fas fa-map-marker-alt"></i> Waste Collected by Barangay</span>
+                {% if by_barangay %}<span class="rep-card-meta">kg &middot; share of total</span>{% endif %}
+            </h3>
             {% if by_barangay %}
-            <div class="table-responsive">
-                <table class="rep-table">
-                    <thead><tr><th>Barangay</th><th>Total Weight</th></tr></thead>
-                    <tbody>
-                        {% for row in by_barangay %}
-                        <tr><td data-label="Barangay">{{ row.barangay }}</td><td data-label="Total Weight">{{ row.total_weight|floatformat:2 }} kg</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="rep-card-body rep-scroll">
+                <ul class="rep-bars">
+                    {% for row in by_barangay %}
+                    <li class="rep-bar-row">
+                        <span class="rep-bar-name">{{ row.barangay }}</span>
+                        <span class="rep-bar-track"><span class="rep-bar-fill" style="width: {% widthratio row.total_weight total_weight 100 %}%;"></span></span>
+                        <span class="rep-bar-value">{{ row.total_weight|floatformat:2 }} kg<small>{% widthratio row.total_weight total_weight 100 %}%</small></span>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
             {% else %}
-            <div class="rep-empty"><i class="fas fa-chart-simple"></i>No data available for this reporting period.</div>
+            <div class="rep-empty"><i class="fas fa-chart-simple"></i>No collections recorded for {{ report_period_label }}.</div>
             {% endif %}
         </div>
 
         <div class="rep-card">
-            <div class="rep-card-title"><i class="fas fa-recycle"></i> Waste Collected by Type</div>
+            <h3 class="rep-card-title">
+                <span><i class="fas fa-recycle"></i> Waste Collected by Type</span>
+                {% if by_type %}<span class="rep-card-meta">kg &middot; share of total</span>{% endif %}
+            </h3>
             {% if by_type %}
-            <div class="table-responsive">
-                <table class="rep-table">
-                    <thead><tr><th>Waste Type</th><th>Total Weight</th></tr></thead>
-                    <tbody>
-                        {% for row in by_type %}
-                        <tr><td data-label="Waste Type">{{ row.waste_type }}</td><td data-label="Total Weight">{{ row.total_weight|floatformat:2 }} kg</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="rep-card-body">
+                <ul class="rep-bars">
+                    {% for row in by_type %}
+                    <li class="rep-bar-row">
+                        <span class="rep-bar-name">{{ row.waste_type }}</span>
+                        <span class="rep-bar-track"><span class="rep-bar-fill" style="width: {% widthratio row.total_weight total_weight 100 %}%;"></span></span>
+                        <span class="rep-bar-value">{{ row.total_weight|floatformat:2 }} kg<small>{% widthratio row.total_weight total_weight 100 %}%</small></span>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
             {% else %}
-            <div class="rep-empty"><i class="fas fa-chart-simple"></i>No data available for this reporting period.</div>
+            <div class="rep-empty"><i class="fas fa-chart-simple"></i>No collections recorded for {{ report_period_label }}.</div>
             {% endif %}
         </div>
     </div>
 
     <!-- COMPLAINT STATUS SUMMARY -->
     <div class="rep-card">
-        <div class="rep-card-title"><i class="fas fa-exclamation-circle"></i> Complaint Status Summary</div>
+        <h3 class="rep-card-title">
+            <span><i class="fas fa-exclamation-circle"></i> Complaint Status Summary</span>
+            {% if complaint_status %}<span class="rep-card-meta">{{ complaints_qs.count }} total</span>{% endif %}
+        </h3>
         {% if complaint_status %}
-        <div class="table-responsive">
-            <table class="rep-table">
-                <thead><tr><th>Status</th><th>Count</th></tr></thead>
-                <tbody>
-                    {% for row in complaint_status %}
-                    <tr><td data-label="Status"><span class="status-badge status-{{ row.status|slugify }}">{{ row.status }}</span></td><td data-label="Count">{{ row.count }}</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="rep-status-grid">
+            {% for row in complaint_status %}
+            <div class="rep-status-tile">
+                <span class="status-badge status-{{ row.status|slugify }}">{{ row.status }}</span>
+                <div class="rep-status-count">{{ row.count }}</div>
+            </div>
+            {% endfor %}
         </div>
         {% else %}
-        <div class="rep-empty"><i class="fas fa-inbox"></i>No data available for this reporting period.</div>
+        <div class="rep-empty"><i class="fas fa-inbox"></i>No complaints filed for {{ report_period_label }}.</div>
         {% endif %}
     </div>
 

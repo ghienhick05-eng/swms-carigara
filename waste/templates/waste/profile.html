@@ -2,16 +2,16 @@
 {% block title %}My Profile - SWMS Carigara{% endblock %}
 {% block content %}
 <style>
-    .profile-wrapper {
-        max-width: 620px;
+    .pf-wrapper {
+        max-width: 860px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
         gap: var(--spacing-lg);
     }
 
-    /* ---------- Header card (compact) ---------- */
-    .profile-header-card {
+    /* ============ HEADER CARD ============ */
+    .pf-header-card {
         background: var(--white);
         border: 1px solid var(--gray-200);
         border-radius: var(--radius-lg);
@@ -19,34 +19,141 @@
         overflow: hidden;
     }
 
-    .profile-banner {
-        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-        padding: var(--spacing-lg) var(--spacing-lg) 4rem;
-        text-align: center;
+    .pf-banner {
+        position: relative;
+        height: 104px;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: 0 var(--spacing-xl);
         color: #fff;
+        background: linear-gradient(120deg, #15803D 0%, #16A34A 55%, #22A855 100%);
+        overflow: hidden;
     }
 
-    .profile-banner h2 {
-        margin: 0 0 2px;
-        font-size: 1.05rem;
+    .pf-banner-art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .pf-banner-icon {
+        position: relative;
+        z-index: 1;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fff;
+        color: #15803D;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .pf-banner-text { position: relative; z-index: 1; max-width: 270px; }
+    .pf-banner-text h2 { margin: 0 0 2px; font-size: 1.3rem; font-weight: 700; color: #fff; }
+    .pf-banner-text p { margin: 0; font-size: 0.8rem; line-height: 1.35; opacity: 0.95; }
+
+    /* ---- view mode ---- */
+    .pf-view-grid {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: start;
+        padding: 0 var(--spacing-xl) var(--spacing-lg);
+    }
+
+    .pf-view-center { grid-column: 2; text-align: center; }
+
+    .pf-view-action {
+        grid-column: 3;
+        justify-self: end;
+        align-self: center;
+        margin-top: var(--spacing-md);
+    }
+
+    .pf-avatar {
+        position: relative;
+        z-index: 2;
+        width: 116px;
+        height: 116px;
+        margin: -58px auto var(--spacing-sm);
+        border-radius: 50%;
+        border: 4px solid var(--bg-primary);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+        background: var(--gray-100);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .pf-avatar i { font-size: 2.8rem; color: var(--text-tertiary); }
+
+    .pf-username {
+        display: block;
+        font-size: 1.1rem;
         font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.3;
     }
 
-    .profile-banner p {
-        margin: 0;
-        font-size: 0.8rem;
-        opacity: 0.92;
+    .pf-fullname { display: block; font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px; }
+
+    .pf-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 3px 12px;
+        border-radius: 999px;
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+        color: var(--green-800);
+        font-size: 0.72rem;
+        font-weight: 600;
     }
 
-    .profile-header-body {
-        padding: 0 var(--spacing-lg) var(--spacing-lg);
+    .pf-role i { font-size: 0.7rem; }
+
+    .pf-edit-btn {
+        background: linear-gradient(135deg, #16A34A, #15803D);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 0.7rem 1.4rem;
+        font-weight: 600;
+        box-shadow: 0 6px 14px -4px rgba(21, 128, 61, 0.45);
+    }
+
+    .pf-edit-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+    @media (max-width: 700px) {
+        .pf-banner { padding: 0 var(--spacing-lg); height: 92px; }
+        .pf-banner-text p { display: none; }
+        .pf-view-grid { grid-template-columns: 1fr; padding: 0 var(--spacing-lg) var(--spacing-lg); }
+        .pf-view-center, .pf-view-action { grid-column: 1; justify-self: center; }
+        .pf-view-action { margin-top: var(--spacing-md); }
+    }
+
+    /* ---- edit mode ---- */
+    #profileEditForm {
+        padding: 0 var(--spacing-xl) var(--spacing-lg);
+        max-width: 720px;
+        margin: 0 auto;
     }
 
     .avatar-upload {
         position: relative;
-        width: 140px;
-        height: 140px;
-        margin: -70px auto var(--spacing-sm);
+        z-index: 2;
+        width: 116px;
+        height: 116px;
+        margin: -58px auto var(--spacing-sm);
     }
 
     .avatar-upload label {
@@ -56,9 +163,9 @@
         border-radius: 50%;
         cursor: pointer;
         position: relative;
-        border: 3px solid var(--bg-primary);
-        box-shadow: var(--shadow-md);
-        background: var(--bg-tertiary);
+        border: 4px solid var(--bg-primary);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+        background: var(--gray-100);
         overflow: hidden;
     }
 
@@ -72,10 +179,7 @@
         justify-content: center;
     }
 
-    .avatar-upload .avatar-placeholder i {
-        font-size: 3rem;
-        color: var(--text-tertiary);
-    }
+    .avatar-upload .avatar-placeholder i { font-size: 2.8rem; color: var(--text-tertiary); }
 
     .avatar-upload .avatar-overlay {
         position: absolute;
@@ -93,13 +197,29 @@
         transition: opacity 0.15s ease;
     }
 
-    .avatar-upload label:hover .avatar-overlay {
-        opacity: 1;
+    .avatar-upload label:hover .avatar-overlay { opacity: 1; }
+
+    .avatar-badge {
+        position: absolute;
+        right: 2px;
+        bottom: 6px;
+        z-index: 3;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--green-600);
+        color: #fff;
+        border: 3px solid var(--bg-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+        pointer-events: none;
     }
 
-    .avatar-upload .avatar-overlay i {
-        font-size: 1rem;
-    }
+    .avatar-upload:hover .avatar-badge { background: var(--green-700); }
+    .avatar-upload .avatar-overlay i { font-size: 1rem; }
 
     .avatar-upload input[type="file"] {
         position: absolute;
@@ -108,42 +228,6 @@
         opacity: 0;
         overflow: hidden;
         clip: rect(0, 0, 0, 0);
-    }
-
-    .profile-identity {
-        text-align: center;
-        margin-bottom: var(--spacing-md);
-    }
-
-    .profile-identity strong {
-        display: block;
-        font-size: 1.05rem;
-        color: var(--text-primary);
-    }
-
-    .profile-identity .role-badge {
-        display: inline-block;
-        margin-top: 6px;
-        padding: 0.15rem var(--spacing-md);
-        border-radius: 999px;
-        background: var(--bg-tertiary);
-        color: var(--accent-primary);
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-    }
-
-    .profile-identity .barangay-line {
-        display: block;
-        margin-top: 6px;
-        font-size: 0.82rem;
-        color: var(--text-secondary);
-    }
-
-    .profile-identity .barangay-line i {
-        color: var(--accent-primary);
-        margin-right: 4px;
     }
 
     .filename-hint {
@@ -161,132 +245,70 @@
         margin-bottom: var(--spacing-sm);
     }
 
-    .profile-header-body .form-actions {
-        margin-top: 0;
+    .edit-form-fields {
+        margin-top: var(--spacing-md);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: var(--spacing-lg);
+        row-gap: var(--spacing-xs);
     }
 
-    /* ---------- View mode static avatar (no upload affordance) ---------- */
-    .avatar-view {
-        width: 140px;
-        height: 140px;
-        margin: -70px auto var(--spacing-sm);
-        border-radius: 50%;
-        border: 3px solid var(--bg-primary);
-        box-shadow: var(--shadow-md);
-        background: var(--bg-tertiary);
-        overflow: hidden;
+    .edit-form-fields .edit-section-divider { grid-column: 1 / -1; }
+
+    .edit-form-fields input[type="text"],
+    .edit-form-fields input[type="email"],
+    .edit-form-fields input[type="tel"] {
+        width: 100%;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .edit-form-fields input:focus {
+        outline: none;
+        border-color: var(--green-600);
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+    }
+
+    #profileEditForm .form-actions {
         display: flex;
-        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid var(--border-color);
+    }
+
+    #profileEditForm .form-actions .btn {
+        min-width: 150px;
         justify-content: center;
     }
 
-    .avatar-view img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .avatar-view i {
-        font-size: 3rem;
-        color: var(--text-tertiary);
-    }
-
-    #editProfileBtn {
-        display: block;
-        margin: 0 auto;
-    }
-
-    /* ---------- Account information card ---------- */
-    .info-card-title {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: var(--spacing-md);
-        padding-bottom: var(--spacing-md);
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .info-card-title i {
-        color: var(--accent-primary);
-    }
-
-    .info-list {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .info-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--spacing-md);
-        padding: 0.7rem 0;
-        border-bottom: 1px dashed var(--border-color);
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-
-    .info-row-label {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
-
-    .info-row-label i {
-        width: 16px;
-        text-align: center;
-        color: var(--accent-primary);
-    }
-
-    .info-row-value {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        text-align: right;
-    }
-
-    .account-status-pill {
-        display: inline-block;
-        padding: 0.1rem 0.65rem;
-        border-radius: 999px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-
-    .account-status-active {
-        background: var(--green-100);
-        color: var(--green-800);
-    }
-
-    .account-status-inactive {
-        background: #FEE2E2;
-        color: #B91C1C;
-    }
-
-    /* ---------- Edit mode form fields ---------- */
-    .edit-form-fields {
-        margin-top: var(--spacing-md);
+    @media (max-width: 640px) {
+        #profileEditForm { padding: 0 var(--spacing-md) var(--spacing-lg); }
+        .edit-form-fields { grid-template-columns: 1fr; }
+        #profileEditForm .form-actions { flex-direction: column-reverse; }
+        #profileEditForm .form-actions .btn { width: 100%; }
     }
 
     .edit-form-fields .form-group {
-        margin-bottom: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
         text-align: left;
     }
 
     .edit-form-fields .form-group label {
         font-size: 0.82rem;
+        font-weight: 600;
         color: var(--text-secondary);
         margin-bottom: 6px;
+    }
+
+    .edit-form-fields .form-group label i { margin-right: 4px; color: var(--green-700); }
+
+    /* Stop the browser's yellow autofill highlight on these inputs. */
+    .edit-form-fields input:-webkit-autofill,
+    .edit-form-fields input:-webkit-autofill:hover,
+    .edit-form-fields input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--text-primary);
+        transition: background-color 9999s ease-in-out 0s;
     }
 
     .locked-field {
@@ -295,7 +317,7 @@
         justify-content: space-between;
         gap: var(--spacing-sm);
         width: 100%;
-        padding: var(--spacing-md);
+        padding: 0.65rem var(--spacing-md);
         border: 1px dashed var(--gray-300);
         border-radius: var(--radius-md);
         background: var(--gray-50);
@@ -304,10 +326,7 @@
         box-sizing: border-box;
     }
 
-    .locked-field i {
-        color: var(--text-tertiary);
-        font-size: 0.85rem;
-    }
+    .locked-field i { color: var(--text-tertiary); font-size: 0.85rem; }
 
     .edit-section-divider {
         margin: var(--spacing-lg) 0 var(--spacing-md);
@@ -320,64 +339,178 @@
         color: var(--text-tertiary);
     }
 
-    @media (max-width: 640px) {
-        .profile-header-body,
-        .card {
-            padding-left: var(--spacing-md);
-            padding-right: var(--spacing-md);
-        }
+    /* ============ ACCOUNT INFORMATION CARD ============ */
+    .pf-info-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-md);
+    }
 
-        .info-row-value {
-            text-align: right;
-            max-width: 60%;
-        }
+    .pf-info-head {
+        border-bottom: 1px solid var(--gray-200);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .pf-info-title {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding-bottom: 12px;
+        margin-bottom: -1px;
+        border-bottom: 2px solid var(--green-600);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .pf-title-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--green-700);
+        color: #fff;
+        font-size: 0.85rem;
+    }
+
+    .pf-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        padding: 14px 0;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .pf-row:last-child { border-bottom: none; }
+
+    .pf-row-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+    }
+
+    .pf-row-icon {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--green-50);
+        color: var(--green-700);
+        font-size: 0.9rem;
+    }
+
+    .pf-row-value {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: right;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .pf-change-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--green-700);
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .pf-change-link:hover { text-decoration: underline; }
+
+    .pf-status-pill {
+        display: inline-block;
+        padding: 3px 14px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .pf-status-active { background: var(--green-100); color: var(--green-800); }
+    .pf-status-inactive { background: #FEE2E2; color: #B91C1C; }
+
+    @media (max-width: 640px) {
+        .pf-info-card { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
+        .pf-row-label { gap: var(--spacing-sm); }
+        .pf-row-value { flex-wrap: wrap; justify-content: flex-end; gap: 4px var(--spacing-sm); }
     }
 </style>
 
-<div class="profile-wrapper">
+<div class="pf-wrapper">
 
-    <div class="profile-header-card">
-        <div class="profile-banner">
-            <h2><i class="fas fa-user-circle"></i> My Profile</h2>
-            <p>View your account details, or edit your profile picture.</p>
+    <div class="pf-header-card">
+        <div class="pf-banner">
+            <svg class="pf-banner-art" viewBox="0 0 860 104" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M0,70 C140,110 260,30 420,64 C560,94 680,40 860,70 L860,104 L0,104 Z" fill="#ffffff" opacity="0.08"/>
+                <path d="M0,86 C160,56 300,108 460,82 C620,56 740,96 860,78 L860,104 L0,104 Z" fill="#ffffff" opacity="0.07"/>
+                <g transform="translate(770 -6) rotate(8)">
+                    <path d="M0,10 C34,-4 70,18 66,60 C40,78 8,64 0,10 Z" fill="#ffffff" opacity="0.88"/>
+                    <path d="M4,16 C22,34 40,52 62,62" stroke="#16A34A" stroke-width="2.5" fill="none" opacity="0.7" stroke-linecap="round"/>
+                </g>
+                <g transform="translate(722 28) rotate(-18) scale(0.75)">
+                    <path d="M0,10 C34,-4 70,18 66,60 C40,78 8,64 0,10 Z" fill="#ffffff" opacity="0.4"/>
+                </g>
+            </svg>
+            <div class="pf-banner-icon"><i class="fas fa-user"></i></div>
+            <div class="pf-banner-text">
+                <h2 id="pfBannerTitle">My Profile</h2>
+                <p id="pfBannerSub">View your account details, or edit your profile picture.</p>
+            </div>
         </div>
 
-        <div class="profile-header-body">
+        <div>
 
             <!-- ============ VIEW MODE (default) ============ -->
             <div id="profileViewMode">
-                <div class="avatar-view">
-                    {% if profile_obj.avatar %}
-                        <img src="{{ profile_obj.avatar.url }}" alt="Current profile picture">
-                    {% else %}
-                        <i class="fas fa-user"></i>
-                    {% endif %}
-                </div>
-
-                <div class="profile-identity">
-                    <strong>{{ user.username }}</strong>
-                    {% if user.get_full_name %}
-                        <span class="barangay-line"><i class="fas fa-id-badge"></i>{{ user.get_full_name }}</span>
-                    {% endif %}
-                    {% if user.profile %}
-                        <span class="role-badge">{{ user.profile.get_role_display }}</span>
-                        {% if user.profile.role == "user" and user.profile.barangay %}
-                            <span class="barangay-line"><i class="fas fa-map-marker-alt"></i>Barangay {{ user.profile.barangay }}</span>
+                <div class="pf-view-grid">
+                    <div class="pf-view-center">
+                        <div class="pf-avatar">
+                            {% if profile_obj.avatar %}
+                                <img src="{{ profile_obj.avatar.url }}" alt="Current profile picture">
+                            {% else %}
+                                <i class="fas fa-user"></i>
+                            {% endif %}
+                        </div>
+                        <strong class="pf-username">{{ user.username }}</strong>
+                        {% if user.get_full_name %}
+                            <span class="pf-fullname">{{ user.get_full_name }}</span>
                         {% endif %}
-                    {% endif %}
+                        {% if user.profile %}
+                            <span class="pf-role"><i class="fas fa-shield-halved"></i> {{ user.profile.get_role_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="pf-view-action">
+                        <button type="button" id="editProfileBtn" class="btn pf-edit-btn">
+                            <i class="fas fa-pen"></i> Edit Profile
+                        </button>
+                    </div>
                 </div>
-
-                <button type="button" id="editProfileBtn" class="btn btn-add">
-                    <i class="fas fa-pen"></i> Edit Profile
-                </button>
             </div>
 
             <!-- ============ EDIT MODE (hidden by default) ============ -->
             <!--
                 Security note: this form (ProfileEditForm) only exposes
-                "username", "full_name" and "avatar" server-side. Role,
-                barangay, account status, date joined, and email are never
-                included in this form, so even if someone tampers with the
+                "username", "full_name", "avatar", "email" and "phone_number"
+                server-side. Role, barangay, account status and
+                date joined are never included in this form, so even if someone tampers with the
                 client, the server will not accept changes to those fields -
                 toggling this block only changes what controls are shown,
                 not what the backend allows. See waste/views.py::profile()
@@ -399,9 +532,10 @@
                         </span>
                         {{ form.avatar }}
                     </label>
+                    <span class="avatar-badge" aria-hidden="true"><i class="fas fa-camera"></i></span>
                 </div>
 
-                <div class="filename-hint" id="filenameHint">Click the photo above to choose a new picture</div>
+                <div class="filename-hint" id="filenameHint">Tap or click the photo to choose a new picture (JPG or PNG)</div>
 
                 {% if form.avatar.errors %}
                     <div class="avatar-errors">{{ form.avatar.errors|striptags }}</div>
@@ -424,15 +558,23 @@
                         {% endif %}
                     </div>
 
-                    <div class="edit-section-divider">Locked (cannot be changed)</div>
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}"><i class="fas fa-envelope"></i> Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="avatar-errors" style="text-align:left;">{{ form.email.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
 
                     <div class="form-group">
-                        <label><i class="fas fa-envelope"></i> Email</label>
-                        <div class="locked-field">
-                            <span>{{ user.email|default:"Not set" }}</span>
-                            <i class="fas fa-lock"></i>
-                        </div>
+                        <label for="{{ form.phone_number.id_for_label }}"><i class="fas fa-phone"></i> Mobile Number</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                            <div class="avatar-errors" style="text-align:left;">{{ form.phone_number.errors|striptags }}</div>
+                        {% endif %}
                     </div>
+
+                    <div class="edit-section-divider">Locked (cannot be changed)</div>
 
                     {% if user.profile %}
                     <div class="form-group">
@@ -473,7 +615,7 @@
                     {% endif %}
                 </div>
 
-                <div class="form-actions" style="justify-content:center;">
+                <div class="form-actions">
                     <button type="button" id="cancelEditBtn" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</button>
                     <button type="submit" class="btn btn-add"><i class="fas fa-check"></i> Save Changes</button>
                 </div>
@@ -481,43 +623,53 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="info-card-title"><i class="fas fa-circle-info"></i> Account Information</div>
-        <div class="info-list">
-            <div class="info-row">
-                <span class="info-row-label"><i class="fas fa-user"></i> Username</span>
-                <span class="info-row-value">{{ user.username }}</span>
+    <div class="pf-info-card" id="accountInfoCard">
+        <div class="pf-info-head">
+            <div class="pf-info-title">
+                <span class="pf-title-icon"><i class="fas fa-user"></i></span> Account Information
             </div>
-            <div class="info-row">
-                <span class="info-row-label"><i class="fas fa-envelope"></i> Email</span>
-                <span class="info-row-value">{{ user.email|default:"Not set" }}</span>
+        </div>
+        <div>
+            <div class="pf-row">
+                <span class="pf-row-label"><span class="pf-row-icon"><i class="fas fa-user"></i></span> Username</span>
+                <span class="pf-row-value">{{ user.username }}</span>
+            </div>
+            <div class="pf-row">
+                <span class="pf-row-label"><span class="pf-row-icon"><i class="fas fa-envelope"></i></span> Email</span>
+                <span class="pf-row-value">
+                    {{ user.email|default:"Not set" }}
+                </span>
+            </div>
+            <div class="pf-row">
+                <span class="pf-row-label"><span class="pf-row-icon"><i class="fas fa-phone"></i></span> Mobile Number</span>
+                <span class="pf-row-value">{{ user.profile.phone_number|default:"Not set" }}</span>
             </div>
             {% if user.profile %}
-            <div class="info-row">
-                <span class="info-row-label"><i class="fas fa-user-tag"></i> Role</span>
-                <span class="info-row-value">{{ user.profile.get_role_display }}</span>
+            <div class="pf-row">
+                <span class="pf-row-label"><span class="pf-row-icon"><i class="fas fa-user-tag"></i></span> Role</span>
+                <span class="pf-row-value">{{ user.profile.get_role_display }}</span>
             </div>
             {% if user.profile.role == "user" %}
-            <div class="info-row">
-                <span class="info-row-label"><i class="fas fa-map-marker-alt"></i> Barangay</span>
-                <span class="info-row-value">{{ user.profile.barangay|default:"Not set" }}</span>
+            <div class="pf-row">
+                <span class="pf-row-label"><span class="pf-row-icon"><i class="fas fa-map-marker-alt"></i></span> Barangay</span>
+                <span class="pf-row-value">{{ user.profile.barangay|default:"Not set" }}</span>
             </div>
             {% endif %}
             {% endif %}
-            <div class="info-row">
-                <span class="info-row-label"><i class="fas fa-toggle-on"></i> Account Status</span>
-                <span class="info-row-value">
+            <div class="pf-row">
+                <span class="pf-row-label"><span class="pf-row-icon"><i class="fas fa-toggle-on"></i></span> Account Status</span>
+                <span class="pf-row-value">
                     {% if user.is_active %}
-                        <span class="account-status-pill account-status-active">Active</span>
+                        <span class="pf-status-pill pf-status-active">Active</span>
                     {% else %}
-                        <span class="account-status-pill account-status-inactive">Inactive</span>
+                        <span class="pf-status-pill pf-status-inactive">Inactive</span>
                     {% endif %}
                 </span>
             </div>
             {% if user.date_joined %}
-            <div class="info-row">
-                <span class="info-row-label"><i class="fas fa-calendar-plus"></i> Date Joined</span>
-                <span class="info-row-value">{{ user.date_joined|date:"M d, Y" }}</span>
+            <div class="pf-row">
+                <span class="pf-row-label"><span class="pf-row-icon"><i class="fas fa-calendar-days"></i></span> Date Joined</span>
+                <span class="pf-row-value">{{ user.date_joined|date:"M d, Y" }}</span>
             </div>
             {% endif %}
         </div>
@@ -532,30 +684,51 @@
     const editForm = document.getElementById('profileEditForm');
     const editBtn = document.getElementById('editProfileBtn');
     const cancelBtn = document.getElementById('cancelEditBtn');
+    const accountInfoCard = document.getElementById('accountInfoCard');
 
     // Snapshot the original field values as rendered by the server, so
     // Cancel can discard any in-progress edits without a page reload.
     const originalValues = {
         username: editForm.querySelector('[name="username"]').value,
         full_name: editForm.querySelector('[name="full_name"]').value,
+        email: editForm.querySelector('[name="email"]') ? editForm.querySelector('[name="email"]').value : null,
+        phone_number: editForm.querySelector('[name="phone_number"]').value,
     };
 
+    // Give an empty email a hint so it doesn't look broken.
+    const emailInput = editForm.querySelector('[name="email"]');
+    if (emailInput && !emailInput.placeholder) emailInput.placeholder = 'e.g. name@example.com';
+
+    const bannerTitle = document.getElementById('pfBannerTitle');
+    const bannerSub = document.getElementById('pfBannerSub');
+
     function enterEditMode() {
+        bannerTitle.textContent = 'Edit Profile';
+        bannerSub.textContent = 'Update your picture and contact details.';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         viewMode.style.display = 'none';
         editForm.style.display = 'block';
+        if (accountInfoCard) accountInfoCard.style.display = 'none';
     }
 
     function exitEditMode() {
+        bannerTitle.textContent = 'My Profile';
+        bannerSub.textContent = 'View your account details, or edit your profile picture.';
         editForm.style.display = 'none';
         viewMode.style.display = 'block';
+        if (accountInfoCard) accountInfoCard.style.display = 'block';
         editForm.reset();
         editForm.querySelector('[name="username"]').value = originalValues.username;
         editForm.querySelector('[name="full_name"]').value = originalValues.full_name;
+        if (originalValues.email !== null) {
+            editForm.querySelector('[name="email"]').value = originalValues.email;
+        }
+        editForm.querySelector('[name="phone_number"]').value = originalValues.phone_number;
         const preview = document.getElementById('avatar-preview');
         {% if profile_obj.avatar %}
             if (preview) preview.src = "{{ profile_obj.avatar.url }}";
         {% endif %}
-        filenameHint.textContent = 'Click the photo above to choose a new picture';
+        filenameHint.textContent = 'Tap or click the photo to choose a new picture (JPG or PNG)';
     }
 
     if (editBtn) {
@@ -566,7 +739,7 @@
         cancelBtn.addEventListener('click', exitEditMode);
     }
 
-    {% if form.avatar.errors or form.username.errors or form.full_name.errors %}
+    {% if form.avatar.errors or form.username.errors or form.full_name.errors or form.email.errors or form.phone_number.errors %}
         // Re-open edit mode automatically if the submission had a validation error.
         enterEditMode();
     {% endif %}

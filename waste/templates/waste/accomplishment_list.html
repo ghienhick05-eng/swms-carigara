@@ -238,12 +238,12 @@
         {% if my_barangay %}
         <input type="hidden" name="barangay" value="{{ my_barangay }}">
         <div class="acc-filter-field">
-            <label>Barangay</label>
-            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+            <label><i class="fas fa-location-dot"></i> Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-landmark"></i> {{ my_barangay }}</div>
         </div>
         {% else %}
         <div class="acc-filter-field">
-            <label for="acc-barangay">Barangay</label>
+            <label for="acc-barangay"><i class="fas fa-location-dot"></i> Barangay</label>
             <select name="barangay" id="acc-barangay" onchange="this.form.submit()">
                 <option value="">All Barangays</option>
                 {% for value, label in barangay_choices %}

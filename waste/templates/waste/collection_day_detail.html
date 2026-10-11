@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+{% block title %}Collections on {{ day|date:"M d, Y" }} - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cd-wrapper { max-width: 960px; margin: 0 auto; }
+
+    .cd-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: var(--spacing-md);
+        font-size: 0.88rem;
+        color: var(--text-tertiary);
+    }
+    .cd-breadcrumb a { color: var(--text-tertiary); text-decoration: none; }
+    .cd-breadcrumb a:hover { color: var(--accent-primary); }
+    .cd-breadcrumb .current { color: var(--text-primary); font-weight: 600; }
+
+    /* ---------- Header ---------- */
+    .cd-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        background: linear-gradient(135deg, var(--green-50), #fff);
+        border: 1px solid var(--green-100);
+        border-radius: var(--radius-lg);
+    }
+    .cd-header-icon {
+        flex: 0 0 56px;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-lg);
+        background: var(--green-700);
+        color: #fff;
+        font-size: 1.4rem;
+    }
+    .cd-header-text { flex: 1 1 auto; min-width: 0; }
+    .cd-header-text h2 { margin: 0 0 2px; font-size: 1.6rem; font-weight: 700; color: var(--text-primary); }
+    .cd-header-text p { margin: 0; font-size: 0.92rem; color: var(--text-secondary); }
+
+    .cd-pill {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .cd-pill.st-scheduled { background: var(--green-100); color: var(--green-800); }
+    .cd-pill.st-ongoing   { background: #DBEAFE; color: #1D4ED8; }
+    .cd-pill.st-completed { background: var(--green-600); color: #fff; }
+
+    /* ---------- Key facts strip ---------- */
+    .cd-facts {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        margin-bottom: var(--spacing-lg);
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+    .cd-fact {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg);
+        min-width: 0;
+    }
+    .cd-fact + .cd-fact { border-left: 1px solid var(--gray-100); }
+    .cd-fact > i { flex: 0 0 24px; text-align: center; font-size: 1.25rem; color: var(--green-600); }
+    .cd-fact-label { display: block; margin-bottom: 2px; font-size: 0.8rem; color: var(--text-tertiary); }
+    .cd-fact-value { display: block; font-size: 1rem; font-weight: 700; color: var(--text-primary); overflow-wrap: anywhere; }
+
+    /* ---------- Cards ---------- */
+    .cd-section {
+        margin-bottom: var(--spacing-lg);
+        padding: var(--spacing-lg);
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+    .cd-section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin: 0 0 var(--spacing-lg);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .cd-section-title i { color: var(--green-700); }
+
+    .cd-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1.15fr;
+        gap: var(--spacing-lg);
+        align-items: stretch;
+    }
+    .cd-info-col { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+    .cd-info-item { display: flex; align-items: flex-start; gap: var(--spacing-md); }
+    .cd-info-item > i { flex: 0 0 20px; margin-top: 3px; text-align: center; color: var(--green-600); }
+    .cd-info-label { display: block; margin-bottom: 2px; font-size: 0.82rem; color: var(--text-tertiary); }
+    .cd-info-value { display: block; font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+    .cd-info-value.muted { font-weight: 600; color: var(--text-secondary); }
+    .cd-info-note { display: block; margin-top: 2px; font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.35; }
+
+    .cd-status-panel {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+    }
+    .cd-status-panel h4 { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--green-800); }
+    .cd-status-panel p { margin: 0; font-size: 0.85rem; line-height: 1.45; color: var(--text-secondary); }
+
+    /* ---------- Timeline ---------- */
+    .cd-steps { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .cd-step { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 var(--spacing-sm); }
+    .cd-step-dot {
+        position: relative;
+        z-index: 1;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--gray-200);
+        color: var(--gray-500);
+        font-size: 0.75rem;
+    }
+    .cd-step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 14px;
+        left: calc(50% + 22px);
+        width: calc(100% - 44px);
+        height: 2px;
+        background: var(--gray-200);
+    }
+    .cd-step.done:not(:last-child)::after { background: var(--green-600); }
+    .cd-step.done .cd-step-dot { background: var(--green-600); color: #fff; }
+    .cd-step.current .cd-step-dot { background: #fff; color: var(--green-600); border: 3px solid var(--green-600); }
+    .cd-step-name { margin-top: var(--spacing-sm); font-size: 0.9rem; font-weight: 600; color: var(--text-tertiary); }
+    .cd-step.done .cd-step-name, .cd-step.current .cd-step-name { color: var(--text-primary); }
+    .cd-step-meta { margin-top: 2px; font-size: 0.8rem; color: var(--text-tertiary); }
+
+    /* ---------- Actions ---------- */
+    .cd-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--spacing-sm); }
+    .cd-actions .btn { white-space: nowrap; }
+
+    @media (max-width: 900px) {
+        .cd-facts { grid-template-columns: 1fr 1fr; }
+        .cd-fact:nth-child(3) { border-left: none; }
+        .cd-fact:nth-child(n+3) { border-top: 1px solid var(--gray-100); }
+        .cd-info { grid-template-columns: 1fr 1fr; }
+        .cd-status-panel { grid-column: 1 / -1; }
+    }
+    @media (max-width: 640px) {
+        .cd-header { flex-wrap: wrap; }
+        .cd-facts, .cd-info { grid-template-columns: 1fr; }
+        .cd-fact + .cd-fact { border-left: none; border-top: 1px solid var(--gray-100); }
+        .cd-steps { grid-template-columns: 1fr; gap: var(--spacing-md); }
+        .cd-step { flex-direction: row; text-align: left; gap: var(--spacing-md); padding: 0; }
+        .cd-step:not(:last-child)::after { display: none; }
+        .cd-step-name { margin-top: 0; }
+        .cd-actions { flex-direction: column-reverse; }
+        .cd-actions .btn { width: 100%; justify-content: center; }
+    }
+
+    .cd-table-wrap { overflow-x: auto; }
+    .cd-table { width: 100%; font-size: 0.92rem; }
+    .cd-table th { font-size: 0.72rem; white-space: nowrap; }
+    .cd-table td { vertical-align: middle; white-space: nowrap; }
+    .cd-table tr.row-link { cursor: pointer; }
+    .cd-table tr.row-link:hover { background: var(--green-50); }
+    .cd-row-actions { display: flex; gap: var(--spacing-xs); justify-content: flex-end; }
+    .cd-row-actions .btn { white-space: nowrap; }
+    .cd-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--radius-md); border: 1px solid var(--gray-200); background: var(--white); color: var(--text-secondary); font-size: 0.85rem; text-decoration: none; cursor: pointer; transition: all var(--transition-fast); }
+    .cd-icon-btn:hover { text-decoration: none; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .cd-icon-btn.edit:hover { background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8; }
+    .cd-icon-btn.delete:hover { background: #FEF2F2; border-color: #FECACA; color: #B91C1C; }
+    .cd-total-row td { font-weight: 700; background: var(--green-50); }
+</style>
+{% endblock %}
+
+{% block content %}
+{% with st=group.status|slugify %}
+<div class="cd-wrapper">
+    <nav class="cd-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'collection_list' %}">Collections</a>
+        <i class="fas fa-angle-right" style="font-size:0.7rem;"></i>
+        <span class="current">{{ day|date:"D, M d, Y" }}</span>
+    </nav>
+
+    <div class="cd-header">
+        <div class="cd-header-icon"><i class="fas fa-truck"></i></div>
+        <div class="cd-header-text">
+            <h2>{{ group.count }} Collections &middot; {{ day|date:"M d, Y" }}</h2>
+            <p>All waste types collected by {{ group.barangay }} on this day.</p>
+        </div>
+        <span class="cd-pill st-{{ st }}">
+            {% if st == "completed" %}<i class="fas fa-check"></i>{% elif st == "ongoing" %}<i class="fas fa-rotate"></i>{% else %}<i class="fas fa-clock"></i>{% endif %}
+            {{ group.status_text }}
+        </span>
+    </div>
+
+    <div class="cd-facts">
+        <div class="cd-fact">
+            <i class="fas fa-calendar-days"></i>
+            <div>
+                <span class="cd-fact-label">Scheduled Date</span>
+                <span class="cd-fact-value">{{ day|date:"D, M d, Y" }}{% if group.frequency %} &middot; {{ group.frequency }}{% endif %}</span>
+            </div>
+        </div>
+        <div class="cd-fact">
+            <i class="fas fa-location-dot"></i>
+            <div>
+                <span class="cd-fact-label">Barangay</span>
+                <span class="cd-fact-value">{{ group.barangay }}</span>
+            </div>
+        </div>
+        <div class="cd-fact">
+            <i class="fas fa-recycle"></i>
+            <div>
+                <span class="cd-fact-label">Waste Types</span>
+                <span class="cd-fact-value">{{ group.count }} types</span>
+            </div>
+        </div>
+        <div class="cd-fact">
+            <i class="fas fa-truck"></i>
+            <div>
+                <span class="cd-fact-label">Collector / Truck ID</span>
+                <span class="cd-fact-value">{{ group.collector|default:"&ndash;" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="cd-section">
+        <h3 class="cd-section-title"><i class="fas fa-clipboard-list"></i> Collection Information</h3>
+        <div class="cd-info">
+            <div class="cd-info-col">
+                <div class="cd-info-item">
+                    <i class="fas fa-weight-hanging"></i>
+                    <div>
+                        <span class="cd-info-label">Total Weight Collected</span>
+                        {% if group.weight is not None %}
+                        <span class="cd-info-value">{{ group.weight }} kg</span>
+                        {% else %}
+                        <span class="cd-info-value muted">Not yet recorded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="cd-info-col">
+                <div class="cd-info-item">
+                    <i class="fas fa-circle-check"></i>
+                    <div>
+                        <span class="cd-info-label">Completed</span>
+                        <span class="cd-info-value">{{ completed_count }} of {{ group.count }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cd-info-col">
+                <div class="cd-info-item">
+                    <i class="fas fa-user"></i>
+                    <div>
+                        <span class="cd-info-label">Scheduled By</span>
+                        <span class="cd-info-value">{{ group.first.logged_by.username|default:"&ndash;" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cd-status-panel">
+                <h4>Collection Status</h4>
+                <div><span class="cd-pill st-{{ st }}">{{ group.status_text }}</span></div>
+                <p>
+                    {% if st == "completed" %}All collections for this day have been completed and weighed.
+                    {% elif st == "ongoing" %}Some collections for this day are still in progress.
+                    {% else %}These collections are scheduled but have not been done yet.{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cd-section">
+        <h3 class="cd-section-title"><i class="fas fa-list-check"></i> Collections on this day</h3>
+        <div class="cd-table-wrap">
+            <table class="cd-table">
+                <thead>
+                    <tr><th>Type</th><th>Status</th><th>Weight</th><th>Collector</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for c in group.items %}
+                    <tr class="row-link" onclick="window.location='{% url 'collection_detail' c.id %}'">
+                        <td>{{ c.waste_type }}</td>
+                        <td>
+                            <span class="status-badge status-{{ c.status|slugify }}">
+                                {% if c.status == "Completed" %}<i class="fas fa-check"></i>
+                                {% elif c.status == "Ongoing" %}<i class="fas fa-rotate"></i>
+                                {% else %}<i class="fas fa-circle" style="font-size:0.4rem;"></i>{% endif %}
+                                {{ c.status }}
+                            </span>
+                        </td>
+                        <td>{% if c.weight_kg %}<strong>{{ c.weight_kg }} kg</strong>{% else %}&ndash;{% endif %}</td>
+                        <td>{{ c.collector|default:"&ndash;" }}</td>
+                        <td>
+                            <div class="cd-row-actions">
+                                {% if user.is_superuser or user.profile.role == "admin" %}
+                                <a href="{% url 'collection_edit' c.id %}" class="cd-icon-btn edit" title="Edit" aria-label="Edit collection #{{ c.id }}" onclick="event.stopPropagation();"><i class="fas fa-pen"></i></a>
+                                <a href="{% url 'collection_delete' c.id %}" class="cd-icon-btn delete" title="Delete" aria-label="Delete collection #{{ c.id }}" onclick="event.stopPropagation();"><i class="fas fa-trash"></i></a>
+                                {% elif c.status != "Completed" and c.can_edit %}
+                                <a href="{% url 'collection_update_status' c.id %}" class="btn btn-add btn-sm" onclick="event.stopPropagation();"><i class="fas fa-clipboard-check"></i> Update Status</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="cd-total-row">
+                        <td>Total</td>
+                        <td>{{ completed_count }} of {{ group.count }} completed</td>
+                        <td>{% if group.weight is not None %}{{ group.weight }} kg{% else %}&ndash;{% endif %}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="cd-actions">
+        <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+{% endwith %}
+{% endblock %}

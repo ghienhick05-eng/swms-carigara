@@ -31,33 +31,51 @@
     .detail-row {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        padding: var(--spacing-md) 0;
+        align-items: center;
+        min-height: 3.25rem;
+        padding: 0.75rem 0;
         border-bottom: 1px solid var(--border-color);
         gap: var(--spacing-md);
-    }
-    .detail-row:last-of-type {
-        border-bottom: none;
     }
     .detail-label {
         color: var(--text-secondary);
         font-size: 0.9rem;
+        font-weight: 500;
         white-space: nowrap;
     }
     .detail-value {
         font-weight: 600;
+        font-size: 0.95rem;
         color: var(--text-primary);
         text-align: right;
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
-    .detail-value.issue-text {
+    .detail-row.detail-issue {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        border-bottom: none;
+        padding-top: 1rem;
+    }
+    .detail-issue .detail-value {
         text-align: left;
         font-weight: 400;
-        line-height: 1.5;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        padding: 0.875rem 1rem;
+        background: rgba(127, 127, 127, 0.08);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        white-space: pre-wrap;
     }
     .detail-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: var(--spacing-sm);
         margin-top: var(--spacing-lg);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid var(--border-color);
     }
     .status-badge {
         display: inline-flex;
@@ -107,9 +125,9 @@
         <span class="detail-label">Filed By</span>
         <span class="detail-value">{{ complaint.filed_by.username|default:"-" }}</span>
     </div>
-    <div class="detail-row" style="flex-direction: column; align-items: flex-start;">
-        <span class="detail-label" style="margin-bottom: var(--spacing-xs);">Issue Description</span>
-        <span class="detail-value issue-text">{{ complaint.issue|linebreaksbr }}</span>
+    <div class="detail-row detail-issue">
+        <span class="detail-label">Issue Description</span>
+        <div class="detail-value">{{ complaint.issue }}</div>
     </div>
 
     <div class="detail-actions">

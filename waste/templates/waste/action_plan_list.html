@@ -375,7 +375,7 @@
     <div class="apl-filter-title"><i class="fas fa-sliders"></i> Filters</div>
     <form method="get" class="apl-filter-form">
         <div class="apl-filter-field apl-search">
-            <label for="apl-q">Search</label>
+            <label for="apl-q"><i class="fas fa-magnifying-glass"></i> Search</label>
             <div class="apl-search-input-wrap">
                 <i class="fas fa-search"></i>
                 <input type="text" id="apl-q" name="q" placeholder="Search by title or responsible person&hellip;" value="{{ selected_search }}">
@@ -384,12 +384,12 @@
         {% if my_barangay %}
         <input type="hidden" name="barangay" value="{{ my_barangay }}">
         <div class="apl-filter-field">
-            <label>Barangay</label>
-            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+            <label><i class="fas fa-location-dot"></i> Barangay</label>
+            <div class="barangay-locked-display"><i class="fas fa-landmark"></i> {{ my_barangay }}</div>
         </div>
         {% else %}
         <div class="apl-filter-field">
-            <label for="apl-barangay">Barangay</label>
+            <label for="apl-barangay"><i class="fas fa-location-dot"></i> Barangay</label>
             <select name="barangay" id="apl-barangay">
                 <option value="">All Barangays</option>
                 {% for value, label in barangay_choices %}
@@ -399,7 +399,7 @@
         </div>
         {% endif %}
         <div class="apl-filter-field">
-            <label for="apl-status">Status</label>
+            <label for="apl-status"><i class="fas fa-file-lines"></i> Status</label>
             <select name="status" id="apl-status">
                 <option value="">All Statuses</option>
                 {% for value, label in status_choices %}
@@ -408,7 +408,7 @@
             </select>
         </div>
         <div class="apl-filter-field">
-            <label for="apl-compliance">Compliance</label>
+            <label for="apl-compliance"><i class="fas fa-shield-halved"></i> Compliance</label>
             <select name="compliance" id="apl-compliance">
                 <option value="">All</option>
                 <option value="Awaiting Due Date" {% if selected_compliance == "Awaiting Due Date" %}selected{% endif %}>Awaiting Due Date</option>
@@ -530,11 +530,6 @@
                 No Action Plans have been submitted by any Barangay yet.
             {% endif %}
         </div>
-        {% if selected_barangay or selected_status or selected_compliance or selected_search %}
-        <div style="margin-top: var(--spacing-md);">
-            <a href="{% url 'action_plan_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
-        </div>
-        {% endif %}
     </div>
     {% endif %}
 </div>

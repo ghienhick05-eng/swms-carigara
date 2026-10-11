@@ -365,6 +365,106 @@
 
     /* ============ REVIEW FORM ============ */
     .apd-review-form textarea { width: 100%; margin-bottom: var(--spacing-sm); }
+
+    /* ============ ICON TILES + COMPACT LAYOUT ============ */
+    .apd-with-icon {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .apd-ov-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--green-50);
+        color: var(--green-700);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .apd-ov-text { min-width: 0; flex: 1; }
+    .apd-ov-text .apd-overview-label { margin-bottom: 3px; }
+    .apd-ov-text .apd-text-label { margin-bottom: 4px; }
+
+    .apd-overview-item.apd-with-icon { padding: var(--spacing-md) var(--spacing-lg); }
+
+    .apd-info-grid .apd-info-item { padding: 0; }
+
+    .apd-review-box {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--spacing-lg);
+        margin-top: var(--spacing-lg);
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: var(--green-50);
+        border: 1px solid var(--green-100);
+        border-radius: var(--radius-md);
+    }
+
+    .apd-review-box .apd-ov-icon { background: var(--white); }
+
+    .apd-two-col {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--spacing-lg) var(--spacing-xl);
+    }
+
+    .apd-text-item .apd-file-card { flex-wrap: wrap; }
+
+    @media (max-width: 640px) {
+        .apd-two-col { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    .apd-file-card > div:nth-child(2) { min-width: 0; }
+
+    /* Workflow status pills */
+    .apd-flow-text { flex: 1; min-width: 0; }
+
+    .apd-flow-pill {
+        align-self: flex-start;
+        flex-shrink: 0;
+        padding: 3px 12px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: var(--gray-100);
+        color: var(--text-secondary);
+    }
+
+    .apd-flow-step.done .apd-flow-pill { background: var(--green-100); color: var(--green-800); }
+    .apd-flow-step.current .apd-flow-pill { background: #DBEAFE; color: #1D4ED8; }
+    .apd-flow-step.rejected .apd-flow-pill { background: #FEE2E2; color: #B91C1C; }
+
+    html[data-theme="dark"] .apd-flow-step.current .apd-flow-pill { background: #1E3A8A; color: #BFDBFE; }
+    html[data-theme="dark"] .apd-flow-step.rejected .apd-flow-pill { background: #7F1D1D; color: #FECACA; }
+
+    /* Record information bar */
+    .apd-record { background: var(--green-50); border-color: var(--green-100); }
+    .apd-record > .apd-section-body { padding: var(--spacing-md) var(--spacing-lg); }
+    .apd-record .apd-collapse-toggle { width: 100%; }
+
+    /* Action buttons: compact, one row */
+    .apd-actions .btn { min-height: 40px; padding: 0 1.1rem; font-size: 0.9rem; }
+    .apd-actions .btn-success { background: #166534; border-color: #166534; color: #fff; }
+    .apd-actions .btn-success:hover { background: #14532D; border-color: #14532D; }
+    @media (max-width: 480px) {
+        .apd-actions { flex-wrap: nowrap; gap: 6px; }
+        .apd-actions .btn { flex: 1 1 0; min-width: 0; padding: 0 .25rem; font-size: 0.76rem; white-space: nowrap; justify-content: center; gap: 4px; }
+        /* keep the Overview as a compact 2-column grid on phones */
+        .apd-overview-grid { grid-template-columns: minmax(0, 1fr); }
+        .apd-section-body { padding: var(--spacing-md); }
+        .apd-section-header { padding: var(--spacing-sm) var(--spacing-md); }
+        .apd-file-actions { margin-left: 0; flex-wrap: wrap; }
+        .apd-actions .btn i { display: none; }
+        .apd-overview-item.apd-with-icon { padding: var(--spacing-sm) var(--spacing-md); gap: 8px; }
+        .apd-overview-item .apd-ov-icon { width: 28px; height: 28px; font-size: 0.75rem; }
+        .apd-overview-value { font-size: 0.88rem; }
+        .apd-flow-pill { padding: 2px 8px; font-size: 0.66rem; }
+    }
 </style>
 {% endblock %}
 
@@ -402,33 +502,51 @@
         </div>
         <div class="apd-section-body">
             <div class="apd-overview-grid">
-                <div class="apd-overview-item">
-                    <div class="apd-overview-label"><i class="fas fa-calendar"></i> Due Date</div>
+                <div class="apd-overview-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-calendar"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Due Date</div>
                     <div class="apd-overview-value">{{ action_plan.target_date|date:"M d, Y"|default:"Not yet set by Admin" }}</div>
+                    </div>
                 </div>
-                <div class="apd-overview-item">
-                    <div class="apd-overview-label"><i class="fas fa-map-marker-alt"></i> Barangay</div>
+                <div class="apd-overview-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Barangay</div>
                     <div class="apd-overview-value">{{ action_plan.barangay|default:"Municipal-wide" }}</div>
+                    </div>
                 </div>
-                <div class="apd-overview-item">
-                    <div class="apd-overview-label"><i class="fas fa-peso-sign"></i> Estimated Budget</div>
+                <div class="apd-overview-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-peso-sign"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Estimated Budget</div>
                     <div class="apd-overview-value">{% if action_plan.budget %}₱{{ action_plan.budget|floatformat:2 }}{% else %}Not specified{% endif %}</div>
+                    </div>
                 </div>
-                <div class="apd-overview-item">
-                    <div class="apd-overview-label"><i class="fas fa-flag"></i> Status</div>
+                <div class="apd-overview-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-flag"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Status</div>
                     <div class="apd-overview-value">
                         <span class="status-badge status-{{ action_plan.get_display_status|slugify }}">{{ action_plan.get_display_status }}</span>
                     </div>
+                    </div>
                 </div>
-                <div class="apd-overview-item">
-                    <div class="apd-overview-label"><i class="fas fa-clipboard-check"></i> Compliance</div>
+                <div class="apd-overview-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Compliance</div>
                     <div class="apd-overview-value">
                         <span class="status-badge status-{{ action_plan.get_submission_status|slugify }}">{{ action_plan.get_submission_status }}</span>
                     </div>
+                    </div>
                 </div>
-                <div class="apd-overview-item">
-                    <div class="apd-overview-label"><i class="fas fa-calendar-check"></i> Submission Date</div>
+                <div class="apd-overview-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Submission Date</div>
                     <div class="apd-overview-value">{{ action_plan.submission_date|date:"M d, Y"|default:"Not yet submitted" }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -441,32 +559,52 @@
         </div>
         <div class="apd-section-body">
             <div class="apd-info-grid">
-                <div class="apd-info-item">
-                    <div class="apd-overview-label"><i class="fas fa-arrow-up-from-bracket"></i> Submitted By</div>
-                    <div class="apd-overview-value">{{ action_plan.submitted_by.username|default:"Not yet submitted" }}<small>Barangay</small></div>
-                </div>
-                <div class="apd-info-item">
-                    <div class="apd-overview-label"><i class="fas fa-arrow-right-to-bracket"></i> Submitted To</div>
-                    <div class="apd-overview-value">MENRO Admin</div>
-                </div>
-                <div class="apd-info-item">
-                    <div class="apd-overview-label"><i class="fas fa-user-tie"></i> Responsible</div>
-                    <div class="apd-overview-value">{{ action_plan.responsible_person|default:"-" }}</div>
-                </div>
-                <div class="apd-info-item">
-                    <div class="apd-overview-label"><i class="fas fa-flag-checkered"></i> Review Status</div>
-                    <div class="apd-overview-value">
-                        <span class="status-badge status-{{ action_plan.review_status|slugify }}">{{ action_plan.review_status }}</span>
+                <div class="apd-info-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-arrow-up-from-bracket"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Submitted By</div>
+                        <div class="apd-overview-value">{{ action_plan.submitted_by.username|default:"Not yet submitted" }}<small>Barangay</small></div>
                     </div>
                 </div>
-                <div class="apd-info-item">
-                    <div class="apd-overview-label"><i class="fas fa-user-check"></i> Reviewer</div>
-                    <div class="apd-overview-value">{{ action_plan.reviewed_by.username|default:"MENRO Admin" }}</div>
+                <div class="apd-info-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-arrow-right-to-bracket"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Submitted To</div>
+                        <div class="apd-overview-value">MENRO Admin</div>
+                    </div>
+                </div>
+                <div class="apd-info-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Responsible</div>
+                        <div class="apd-overview-value">{{ action_plan.responsible_person|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="apd-review-box">
+                <div class="apd-info-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-flag-checkered"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Review Status</div>
+                        <div class="apd-overview-value">
+                            <span class="status-badge status-{{ action_plan.review_status|slugify }}">{{ action_plan.review_status }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="apd-info-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Reviewer</div>
+                        <div class="apd-overview-value">{{ action_plan.reviewed_by.username|default:"MENRO Admin" }}</div>
+                    </div>
                 </div>
                 {% if action_plan.review_date %}
-                <div class="apd-info-item">
-                    <div class="apd-overview-label"><i class="fas fa-calendar-check"></i> Review Date</div>
-                    <div class="apd-overview-value">{{ action_plan.review_date|date:"M d, Y" }}</div>
+                <div class="apd-info-item apd-with-icon">
+                    <div class="apd-ov-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-overview-label">Review Date</div>
+                        <div class="apd-overview-value">{{ action_plan.review_date|date:"M d, Y" }}</div>
+                    </div>
                 </div>
                 {% endif %}
             </div>
@@ -488,19 +626,23 @@
             <div class="apd-flow">
                 <div class="apd-flow-step done">
                     <div><div class="apd-flow-marker"><i class="fas fa-check"></i></div><div class="apd-flow-line"></div></div>
-                    <div><div class="apd-flow-title">Barangay</div><div class="apd-flow-sub">Sender / Submitter</div></div>
+                    <div class="apd-flow-text"><div class="apd-flow-title">Barangay</div><div class="apd-flow-sub">Sender / Submitter</div></div>
+                    <span class="apd-flow-pill">Completed</span>
                 </div>
                 <div class="apd-flow-step {% if action_plan.submitted_by %}done{% else %}current{% endif %}">
                     <div><div class="apd-flow-marker">{% if action_plan.submitted_by %}<i class="fas fa-check"></i>{% else %}2{% endif %}</div><div class="apd-flow-line"></div></div>
-                    <div><div class="apd-flow-title">Submit to MENRO Admin</div><div class="apd-flow-sub">{% if action_plan.submitted_by %}Submitted {{ action_plan.submission_date|date:"M d, Y" }}{% else %}Awaiting Barangay submission{% endif %}</div></div>
+                    <div class="apd-flow-text"><div class="apd-flow-title">Submit to MENRO Admin</div><div class="apd-flow-sub">{% if action_plan.submitted_by %}Submitted {{ action_plan.submission_date|date:"M d, Y" }}{% else %}Awaiting Barangay submission{% endif %}</div></div>
+                    <span class="apd-flow-pill">{% if action_plan.submitted_by %}Completed{% else %}Current{% endif %}</span>
                 </div>
                 <div class="apd-flow-step {% if action_plan.review_status == 'Approved' %}done{% elif action_plan.review_status == 'Rejected' %}rejected{% elif action_plan.submitted_by %}current{% else %}pending{% endif %}">
                     <div><div class="apd-flow-marker">{% if action_plan.review_status == 'Approved' %}<i class="fas fa-check"></i>{% elif action_plan.review_status == 'Rejected' %}<i class="fas fa-xmark"></i>{% else %}3{% endif %}</div><div class="apd-flow-line"></div></div>
-                    <div><div class="apd-flow-title">MENRO Admin</div><div class="apd-flow-sub">Receiver / Reviewer &middot; {{ action_plan.review_status }}</div></div>
+                    <div class="apd-flow-text"><div class="apd-flow-title">MENRO Admin</div><div class="apd-flow-sub">Receiver / Reviewer &middot; {{ action_plan.review_status }}</div></div>
+                    <span class="apd-flow-pill">{% if action_plan.review_status == 'Approved' %}Completed{% elif action_plan.review_status == 'Rejected' %}Rejected{% elif action_plan.submitted_by %}Current{% else %}Pending{% endif %}</span>
                 </div>
                 <div class="apd-flow-step {% if action_plan.review_status != 'For Review' %}done{% else %}pending{% endif %}">
                     <div><div class="apd-flow-marker">{% if action_plan.review_status != 'For Review' %}<i class="fas fa-check"></i>{% else %}4{% endif %}</div></div>
-                    <div><div class="apd-flow-title">Barangay Receives Decision</div><div class="apd-flow-sub">{% if action_plan.review_status != 'For Review' %}{{ action_plan.review_status }}{% else %}Pending MENRO Admin review{% endif %}</div></div>
+                    <div class="apd-flow-text"><div class="apd-flow-title">Barangay Receives Decision</div><div class="apd-flow-sub">{% if action_plan.review_status != 'For Review' %}{{ action_plan.review_status }}{% else %}Pending MENRO Admin review{% endif %}</div></div>
+                    <span class="apd-flow-pill">{% if action_plan.review_status != 'For Review' %}Completed{% else %}Pending{% endif %}</span>
                 </div>
             </div>
 
@@ -526,21 +668,29 @@
             <h2 class="apd-section-title"><i class="fas fa-align-left"></i> Additional Information</h2>
         </div>
         <div class="apd-section-body">
-            <div class="apd-text-block">
-                <div class="apd-text-label">Description</div>
-                {% if action_plan.description %}
-                    <div class="apd-text-body">{{ action_plan.description|linebreaksbr }}</div>
-                {% else %}
-                    <div class="apd-text-empty">No description provided.</div>
-                {% endif %}
-            </div>
-            <div class="apd-text-block">
-                <div class="apd-text-label">Remarks</div>
-                {% if action_plan.remarks %}
-                    <div class="apd-text-body">{{ action_plan.remarks|linebreaksbr }}</div>
-                {% else %}
-                    <div class="apd-text-empty">No remarks provided.</div>
-                {% endif %}
+            <div class="apd-two-col">
+                <div class="apd-with-icon apd-text-item">
+                    <div class="apd-ov-icon"><i class="fas fa-file-lines"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-text-label">Description</div>
+                        {% if action_plan.description %}
+                            <div class="apd-text-body">{{ action_plan.description|linebreaksbr }}</div>
+                        {% else %}
+                            <div class="apd-text-empty">No description provided.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="apd-with-icon apd-text-item">
+                    <div class="apd-ov-icon"><i class="fas fa-star"></i></div>
+                    <div class="apd-ov-text">
+                        <div class="apd-text-label">Remarks</div>
+                        {% if action_plan.remarks %}
+                            <div class="apd-text-body">{{ action_plan.remarks|linebreaksbr }}</div>
+                        {% else %}
+                            <div class="apd-text-empty">No remarks provided.</div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -551,7 +701,10 @@
             <h2 class="apd-section-title"><i class="fas fa-folder-open"></i> Documents</h2>
         </div>
         <div class="apd-section-body">
-            <div class="apd-text-block">
+            <div class="apd-two-col">
+            <div class="apd-with-icon apd-text-item">
+                <div class="apd-ov-icon"><i class="fas fa-file-lines"></i></div>
+                <div class="apd-ov-text">
                 <div class="apd-text-label">Action Plan Document</div>
                 {% if action_plan.file %}
                     <div class="apd-file-card">
@@ -561,16 +714,19 @@
                             <div class="apd-file-meta">Document</div>
                         </div>
                         <div class="apd-file-actions">
-                            <a href="{{ action_plan.file.url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
+                            <a href="{% url 'document_view' 'action-plan' action_plan.pk %}" target="_blank" rel="noopener" data-doc-popup class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
                             <a href="{{ action_plan.file.url }}" download class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> Download</a>
                         </div>
                     </div>
                 {% else %}
                     <div class="apd-text-empty">No Action Plan document uploaded.</div>
                 {% endif %}
+                </div>
             </div>
 
-            <div class="apd-text-block">
+            <div class="apd-with-icon apd-text-item">
+                <div class="apd-ov-icon"><i class="fas fa-image"></i></div>
+                <div class="apd-ov-text">
                 <div class="apd-text-label">Supporting Image</div>
                 {% if action_plan.supporting_image %}
                     <a href="{{ action_plan.supporting_image.url }}" target="_blank" rel="noopener" title="View larger image">
@@ -582,12 +738,14 @@
                 {% else %}
                     <div class="apd-text-empty">No supporting image uploaded.</div>
                 {% endif %}
+                </div>
+            </div>
             </div>
         </div>
     </div>
 
     <!-- RECORD INFORMATION (audit / metadata) -->
-    <div class="apd-section">
+    <div class="apd-section apd-record">
         <div class="apd-section-body">
             <button type="button" class="apd-collapse-toggle" id="apd-record-toggle" onclick="
                 var b = document.getElementById('apd-record-body');
@@ -599,22 +757,34 @@
             </button>
             <div class="apd-collapse-body" id="apd-record-body">
                 <div class="apd-info-grid">
-                    <div class="apd-info-item">
-                        <div class="apd-overview-label"><i class="fas fa-user-shield"></i> Created By</div>
-                        <div class="apd-overview-value">{{ action_plan.created_by.username|default:action_plan.submitted_by.username|default:"-" }}<small>Barangay</small></div>
+                    <div class="apd-info-item apd-with-icon">
+                        <div class="apd-ov-icon"><i class="fas fa-user-shield"></i></div>
+                        <div class="apd-ov-text">
+                            <div class="apd-overview-label">Created By</div>
+                        <div class="apd-overview-value">{% if action_plan.created_by %}{{ action_plan.created_by.username }}{% elif action_plan.submitted_by %}{{ action_plan.submitted_by.username }}{% else %}-{% endif %}<small>Barangay</small></div>
+                        </div>
                     </div>
-                    <div class="apd-info-item">
-                        <div class="apd-overview-label"><i class="fas fa-clock"></i> Date Created</div>
+                    <div class="apd-info-item apd-with-icon">
+                        <div class="apd-ov-icon"><i class="fas fa-clock"></i></div>
+                        <div class="apd-ov-text">
+                            <div class="apd-overview-label">Date Created</div>
                         <div class="apd-overview-value">{{ action_plan.date_created|date:"M d, Y H:i" }}</div>
+                        </div>
                     </div>
-                    <div class="apd-info-item">
-                        <div class="apd-overview-label"><i class="fas fa-user-check"></i> Reviewer</div>
+                    <div class="apd-info-item apd-with-icon">
+                        <div class="apd-ov-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="apd-ov-text">
+                            <div class="apd-overview-label">Reviewer</div>
                         <div class="apd-overview-value">{{ action_plan.reviewed_by.username|default:"MENRO Admin" }}</div>
+                        </div>
                     </div>
                     {% if action_plan.review_date %}
-                    <div class="apd-info-item">
-                        <div class="apd-overview-label"><i class="fas fa-calendar-check"></i> Review Date</div>
+                    <div class="apd-info-item apd-with-icon">
+                        <div class="apd-ov-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="apd-ov-text">
+                            <div class="apd-overview-label">Review Date</div>
                         <div class="apd-overview-value">{{ action_plan.review_date|date:"M d, Y" }}</div>
+                        </div>
                     </div>
                     {% endif %}
                 </div>

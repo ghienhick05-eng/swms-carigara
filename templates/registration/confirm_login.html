@@ -10,6 +10,7 @@
 
     .menu-toggle, #sidebar, .sidebar-overlay { display: none !important; }
     .content-wrapper { padding: 0 !important; max-width: none !important; }
+    .main-container { margin-left: 0 !important; }
 
     .auth-wrapper {
         min-height: calc(100vh - 72px);
@@ -88,24 +89,49 @@
         text-align: left;
     }
 
+    .code-label {
+        display: block;
+        text-align: left;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
     .auth-card input[type="text"] {
         width: 100%;
-        padding: 0.9rem 1rem;
-        margin-bottom: 1rem;
+        max-width: 260px;
+        margin: 0 auto 1.25rem;
+        display: block;
+        padding: 0.85rem 0.5rem;
         border: 1.5px solid var(--border-color);
         border-radius: 0.75rem;
-        font-size: 1.4rem;
+        font-size: 1.75rem;
         font-weight: 700;
-        letter-spacing: 0.5em;
+        letter-spacing: 0.6em;
+        text-indent: 0.3em;
         text-align: center;
+        font-family: "Courier New", monospace;
         background: var(--bg-primary);
         color: var(--text-primary);
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .auth-card input[type="text"]::placeholder {
+        letter-spacing: normal;
+        font-weight: 400;
+        font-size: 0.85rem;
+        font-family: inherit;
+        color: var(--text-secondary);
+        opacity: 0.6;
     }
 
     .auth-card input[type="text"]:focus {
         outline: none;
         border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
     }
 
     .auth-card .btn {
@@ -152,14 +178,15 @@
 
         {% if messages %}
             {% for message in messages %}
-                <div class="{% if message.tags == 'error' %}auth-error{% else %}auth-success{% endif %}">
-                    {{ message }}
-                </div>
+                {% if message.tags == 'error' %}
+                    <div class="auth-error">{{ message }}</div>
+                {% endif %}
             {% endfor %}
         {% endif %}
 
         <form method="post">
             {% csrf_token %}
+            <label for="{{ form.code.id_for_label }}" class="code-label">Enter the code</label>
             {{ form.code }}
             <button type="submit" class="btn btn-primary btn-block">
                 <i class="fas fa-check"></i> Confirm &amp; Log In

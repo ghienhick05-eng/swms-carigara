@@ -1,43 +1,170 @@
 {% extends "base.html" %}
-{% block title %}File Complaint - SWMS Carigara{% endblock %}
+{% block title %}Create Complaint - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cf-wrap { max-width: 1100px; margin: 0 auto; }
+    .cf-back { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-secondary); text-decoration: none; margin-bottom: var(--spacing-md); }
+    .cf-back:hover { color: var(--green-700); }
+    .cf-header { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg); flex-wrap: wrap; }
+    .cf-title { display: flex; align-items: center; gap: 14px; }
+    .cf-title-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--green-700); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .cf-title h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    .cf-title p { margin: 2px 0 0; font-size: .85rem; color: var(--text-secondary); }
+    .cf-notice { display: flex; gap: 10px; align-items: flex-start; background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); padding: 10px 14px; font-size: .8rem; color: var(--green-900); max-width: 380px; }
+    .cf-notice i { color: var(--green-700); margin-top: 2px; }
+
+    .cf-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--spacing-lg); align-items: start; }
+    @media (max-width: 900px) { .cf-layout { grid-template-columns: 1fr; } }
+
+    .cf-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    .cf-card-head { display: flex; align-items: center; gap: 12px; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--gray-200); }
+    .cf-num { width: 32px; height: 32px; border-radius: 50%; background: var(--green-800); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cf-card-head h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+    .cf-card-head p { margin: 0; font-size: .75rem; color: var(--text-tertiary); }
+    .cf-card-body { padding: var(--spacing-lg); }
+
+    .cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); }
+    .cf-grid .full { grid-column: span 2; }
+    @media (max-width: 640px) { .cf-grid { grid-template-columns: 1fr; } .cf-grid .full { grid-column: auto; } }
+    .cf-card .form-group { margin-bottom: 0; }
+    .cf-card label { font-size: .8rem; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .cf-card label i { color: var(--green-800); width: 14px; text-align: center; }
+    .cf-card label .req { color: #dc2626; }
+    .cf-card .barangay-locked-display { margin: 0; }
+    .cf-hint { display: block; margin-top: 4px; font-size: .72rem; color: var(--text-tertiary); }
+    .cf-count { display: block; text-align: right; font-size: .7rem; color: var(--text-tertiary); margin-top: 2px; }
+    .cf-err { color: #dc2626; font-size: .78rem; margin-top: 4px; }
+    .cf-card textarea { resize: vertical; }
+
+    .cf-review { position: sticky; top: 16px; }
+    .cf-review .cf-card-body { padding: var(--spacing-md) var(--spacing-lg); }
+    .cf-review h3 { margin: 0; font-size: .95rem; font-weight: 700; color: var(--green-800); }
+    .cf-review .sub { font-size: .75rem; color: var(--text-tertiary); margin: 2px 0 0; }
+    .cf-rev-row { display: grid; grid-template-columns: 18px 1fr 1.2fr; gap: 8px; align-items: start; padding: 9px 0; border-bottom: 1px solid var(--gray-100); font-size: .78rem; }
+    .cf-rev-row:last-of-type { border-bottom: 0; }
+    .cf-rev-row i { color: var(--green-800); margin-top: 2px; }
+    .cf-rev-row .k { color: var(--text-secondary); }
+    .cf-rev-row .v { font-weight: 600; word-break: break-word; }
+    .cf-rev-row .v.empty { color: var(--gray-300); font-weight: 400; }
+    .cf-track { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); padding: 10px 12px; font-size: .75rem; color: var(--green-900); }
+    .cf-track i { color: var(--green-600); font-size: 1.1rem; margin-top: 2px; }
+
+    .cf-footer { display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="entity-card">
-    <div class="entity-banner">
-        <div class="entity-banner-icon"><i class="fas fa-exclamation-circle"></i></div>
-        <h2>File a Complaint / Report</h2>
-        <p>Let us know about a waste management concern in your barangay.</p>
+<div class="cf-wrap">
+    <a href="{% url 'complaint_list' %}" class="cf-back"><i class="fas fa-arrow-left"></i> Back to Complaints List</a>
+
+    <div class="cf-header">
+        <div class="cf-title">
+            <div class="cf-title-icon"><i class="fas fa-exclamation"></i></div>
+            <div>
+                <h2>Create Complaint</h2>
+                <p>Report waste management issues in your barangay. Your complaint will be reviewed by MENRO Admin.</p>
+            </div>
+        </div>
+        <div class="cf-notice">
+            <i class="fas fa-circle-info"></i>
+            <div>Your complaint will be reviewed by <strong>MENRO Admin</strong> for proper action and resolution.</div>
+        </div>
     </div>
-    <div class="entity-body">
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
-                    {% if form.locked_barangay %}
-                        <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ form.locked_barangay }}</div>
-                        <span class="barangay-locked-hint">Automatically set to your assigned barangay.</span>
-                        {{ form.barangay }}
-                    {% else %}
-                        {{ form.barangay }}
-                    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="cf-layout">
+            <section class="cf-card">
+                <div class="cf-card-head">
+                    <span class="cf-num">1</span>
+                    <div><h3>Complaint Information</h3><p>Please provide the necessary details about the issue.</p></div>
                 </div>
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> Resident Name</label>
-                    {{ form.resident_name }}
+                <div class="cf-card-body">
+                    {% if form.non_field_errors %}<div class="cf-err" style="margin-bottom:12px;">{{ form.non_field_errors|striptags }}</div>{% endif %}
+                    <div class="cf-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-building"></i> Barangay <span class="req">*</span></label>
+                            {% if form.locked_barangay %}
+                                <div class="barangay-locked-display" id="cf-barangay-locked"><i class="fas fa-lock"></i> {{ form.locked_barangay }}</div>
+                                <span class="cf-hint">Automatically set from your assigned barangay.</span>
+                                {{ form.barangay }}
+                            {% else %}
+                                {{ form.barangay }}
+                            {% endif %}
+                            {% if form.barangay.errors %}<div class="cf-err">{{ form.barangay.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.resident_name.id_for_label }}"><i class="fas fa-user"></i> Resident Name <span class="req">*</span></label>
+                            {{ form.resident_name }}
+                            {% if form.resident_name.errors %}<div class="cf-err">{{ form.resident_name.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="form-group full">
+                            <label for="{{ form.contact_number.id_for_label }}"><i class="fas fa-phone"></i> Contact Number</label>
+                            {{ form.contact_number }}
+                            <span class="cf-hint">Enter a valid mobile number.</span>
+                            {% if form.contact_number.errors %}<div class="cf-err">{{ form.contact_number.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="form-group full">
+                            <label for="{{ form.issue.id_for_label }}"><i class="fas fa-file-lines"></i> Issue Description <span class="req">*</span></label>
+                            {{ form.issue }}
+                            <span class="cf-count"><span id="cf-issue-count">0</span>/1000</span>
+                            {% if form.issue.errors %}<div class="cf-err">{{ form.issue.errors|striptags }}</div>{% endif %}
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-phone"></i> Contact Number</label>
-                {{ form.contact_number }}
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-align-left"></i> Issue Description</label>
-                {{ form.issue }}
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-add"><i class="fas fa-paper-plane"></i> Submit Complaint</button>
-            </div>
-        </form>
-    </div>
+            </section>
+
+            <aside class="cf-card cf-review">
+                <div class="cf-card-head" style="border-bottom:0; padding-bottom:0;">
+                    <i class="fas fa-file-lines" style="color:var(--green-700); font-size:1.2rem;"></i>
+                    <div><h3>Submission Review</h3><p class="sub">Review your complaint details before submitting.</p></div>
+                </div>
+                <div class="cf-card-body">
+                    <div class="cf-rev-row"><i class="fas fa-building"></i><span class="k">Barangay</span><span class="v" id="rv-barangay">{% if form.locked_barangay %}{{ form.locked_barangay }}{% else %}&mdash;{% endif %}</span></div>
+                    <div class="cf-rev-row"><i class="fas fa-user"></i><span class="k">Resident Name</span><span class="v empty" id="rv-name">&mdash;</span></div>
+                    <div class="cf-rev-row"><i class="fas fa-phone"></i><span class="k">Contact Number</span><span class="v empty" id="rv-contact">&mdash;</span></div>
+                    <div class="cf-rev-row"><i class="fas fa-file-lines"></i><span class="k">Issue</span><span class="v empty" id="rv-issue">&mdash;</span></div>
+                    <div class="cf-track"><i class="fas fa-circle-check"></i><span>After submission, you will be able to track the status of your complaint in the <strong>Complaints</strong> section.</span></div>
+                </div>
+            </aside>
+        </div>
+
+        <div class="cf-footer">
+            <a href="{% url 'complaint_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-add"><i class="fas fa-paper-plane"></i> Submit Complaint</button>
+        </div>
+    </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var f = function (id) { return document.getElementById(id); };
+    var name = f('{{ form.resident_name.id_for_label }}'), contact = f('{{ form.contact_number.id_for_label }}'),
+        issue = f('{{ form.issue.id_for_label }}'), brgy = f('{{ form.barangay.id_for_label }}');
+    if (name) name.placeholder = "Enter resident's full name";
+    if (contact) contact.placeholder = 'e.g. 09XXXXXXXXX';
+    if (issue) { issue.placeholder = 'Provide a detailed description of the issue...'; issue.setAttribute('maxlength', 1000); }
+
+    function put(id, val) {
+        var el = f(id); if (!el) return;
+        val = (val || '').trim();
+        el.textContent = val ? (val.length > 60 ? val.slice(0, 57) + '...' : val) : '\u2014';
+        el.classList.toggle('empty', !val);
+    }
+    function sync() {
+        put('rv-name', name && name.value);
+        put('rv-contact', contact && contact.value);
+        put('rv-issue', issue && issue.value);
+        if (issue) f('cf-issue-count').textContent = issue.value.length;
+        if (brgy && brgy.tagName === 'SELECT' && !document.getElementById('cf-barangay-locked')) {
+            put('rv-barangay', brgy.options[brgy.selectedIndex] ? brgy.options[brgy.selectedIndex].text : '');
+        }
+    }
+    [name, contact, issue, brgy].forEach(function (el) { if (el) { el.addEventListener('input', sync); el.addEventListener('change', sync); } });
+    sync();
+})();
+</script>
 {% endblock %}

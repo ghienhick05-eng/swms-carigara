@@ -10,6 +10,8 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("register/", waste_views.register, name="register"),
+    path("confirm-login/", waste_views.confirm_login_view, name="confirm_login"),
+    path("resend-code/", waste_views.resend_code_view, name="resend_code"),
     path("", include("waste.urls")),
 ]
 

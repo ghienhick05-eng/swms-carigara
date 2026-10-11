@@ -8,54 +8,63 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 import os
+from decimal import Decimal
 
+from .pdf_convert import convert_field_to_pdf
+
+
+ZERO_DECIMAL = Decimal("0")
 
 BARANGAY_CHOICES = [
     ("Bagong Lipunan", "Bagong Lipunan"),
     ("Balilit", "Balilit"),
     ("Barayong", "Barayong"),
+    ("Barugohay Central", "Barugohay Central"),
     ("Barugohay Norte", "Barugohay Norte"),
     ("Barugohay Sur", "Barugohay Sur"),
-    ("Barugohay Central", "Barugohay Central"),
-    ("Baybay (Poblacion)", "Baybay (Poblacion)"),
+    ("Baybay", "Baybay"),
     ("Binibihan", "Binibihan"),
     ("Bislig", "Bislig"),
     ("Caghalo", "Caghalo"),
     ("Camansi", "Camansi"),
     ("Canal", "Canal"),
+    ("Candigahub", "Candigahub"),
+    ("Canfabi", "Canfabi"),
+    ("Canlampay", "Canlampay"),
     ("Cogon", "Cogon"),
     ("Cutay", "Cutay"),
+    ("East Guindapunan", "East Guindapunan"),
     ("East Visoria", "East Visoria"),
-    ("West Visoria", "West Visoria"),
-    ("Guindapunan East", "Guindapunan East"),
-    ("Guindapunan West", "Guindapunan West"),
     ("Hiluctogan", "Hiluctogan"),
-    ("Jugaban (Poblacion)", "Jugaban (Poblacion)"),
-    ("Libong", "Libong"),
+    ("Jugaban", "Jugaban"),
+    ("Libo", "Libo"),
     ("Lower Hiraan", "Lower Hiraan"),
-    ("Upper Hiraan", "Upper Hiraan"),
+    ("Lower Sogod", "Lower Sogod"),
     ("Macalpi", "Macalpi"),
     ("Manloy", "Manloy"),
-    ("Naugisan", "Naugisan"),
+    ("Nauguisan", "Nauguisan"),
     ("Paglaum", "Paglaum"),
     ("Pangna", "Pangna"),
     ("Parag-um", "Parag-um"),
     ("Parina", "Parina"),
     ("Piloro", "Piloro"),
-    ("Ponong (Poblacion)", "Ponong (Poblacion)"),
-    ("Rizal (Tagak East)", "Rizal (Tagak East)"),
+    ("Ponong", "Ponong"),
+    ("Rizal", "Rizal"),
     ("Sagkahan", "Sagkahan"),
     ("San Isidro", "San Isidro"),
-    ("San Mateo (Poblacion)", "San Mateo (Poblacion)"),
-    ("Santa Fe", "Santa Fe"),
-    ("Sawang (Poblacion)", "Sawang (Poblacion)"),
+    ("San Juan", "San Juan"),
+    ("San Mateo", "San Mateo"),
+    ("Sawang", "Sawang"),
+    ("Sta. Fe", "Sta. Fe"),
     ("Tagak", "Tagak"),
     ("Tangnan", "Tangnan"),
     ("Tigbao", "Tigbao"),
     ("Tinaguban", "Tinaguban"),
+    ("Upper Hiraan", "Upper Hiraan"),
+    ("Upper Sogod", "Upper Sogod"),
     ("Uyawan", "Uyawan"),
-
-
+    ("West Guindapunan", "West Guindapunan"),
+    ("West Visoria", "West Visoria"),
 ]
 
 WASTE_TYPE_CHOICES = [
@@ -76,6 +85,28 @@ COLLECTION_STATUS_CHOICES = [
     ("Ongoing", "Ongoing"),
     ("Completed", "Completed"),
 ]
+
+COLLECTION_FREQUENCY_CHOICES = [
+    ("Weekly", "Weekly"),
+    ("Monthly", "Monthly"),
+]
+
+WEEKDAY_CHOICES = [
+    (0, "Monday"),
+    (1, "Tuesday"),
+    (2, "Wednesday"),
+    (3, "Thursday"),
+    (4, "Friday"),
+    (5, "Saturday"),
+    (6, "Sunday"),
+]
+
+
+def week_bounds(day):
+    """Monday and Sunday (both dates) of the week that contains `day`."""
+    monday = day - timedelta(days=day.weekday())
+    return monday, monday + timedelta(days=6)
+
 
 ROLE_CHOICES = [
     ("admin", "Administrator (MENRO)"),
@@ -151,10 +182,26 @@ class Profile(models.Model):
         help_text="Required for Barangay User accounts. Ignored for Admin/Staff.",
     )
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    phone_number = models.CharField(
+        max_length=20, blank=True, null=True,
+        help_text="Optional contact number, e.g. 09171234567.",
+    )
     email_verified = models.BooleanField(
         default=False,
         help_text="True once the user has confirmed the OTP code sent at registration.",
     )
+
+    def clean(self):
+        # One Barangay User account per barangay (enforced here so the Django
+        # admin and any ModelForm reject duplicates, same as the register page).
+        super().clean()
+        if self.role == "user" and self.barangay:
+            dupes = Profile.objects.filter(role="user", barangay=self.barangay)
+            if self.pk:
+                dupes = dupes.exclude(pk=self.pk)
+            if dupes.exists():
+                from django.core.exceptions import ValidationError
+                raise ValidationError({"barangay": "An account for this barangay already exists."})
 
     def __str__(self):
         if self.role == "user" and self.barangay:
@@ -178,6 +225,19 @@ class Collection(models.Model):
     date_collected = models.DateTimeField(
         null=True, blank=True,
         help_text="Set automatically once the collection is marked Completed.",
+    )
+    frequency = models.CharField(
+        max_length=10, choices=COLLECTION_FREQUENCY_CHOICES, blank=True, default="",
+        help_text="Weekly or Monthly. Filled in automatically when the collection comes from a recurring schedule.",
+    )
+    notes = models.TextField(
+        blank=True, default="",
+        help_text="Optional notes from the barangay about this collection.",
+    )
+    schedule = models.ForeignKey(
+        "RecurringCollectionSchedule", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="collections",
+        help_text="The recurring schedule that auto-created this collection (if any).",
     )
     logged_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="collections_scheduled",
@@ -263,6 +323,11 @@ class Accomplishment(models.Model):
 
     class Meta:
         ordering = ["-date_accomplished"]
+
+    def save(self, *args, **kwargs):
+        # Uploaded DOC/DOCX reports are converted to PDF when they are submitted.
+        convert_field_to_pdf(self, "report_file")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title} - {self.barangay or 'Municipal-wide'} ({self.date_accomplished})"
@@ -359,6 +424,11 @@ class ActionPlan(models.Model):
 
     class Meta:
         ordering = ["target_date"]
+
+    def save(self, *args, **kwargs):
+        # Uploaded DOC/DOCX reports are converted to PDF when they are submitted.
+        convert_field_to_pdf(self, "file")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title} - {self.barangay or 'Municipal-wide'} ({self.status})"
@@ -541,6 +611,11 @@ class SCMAR(models.Model):
         verbose_name = "SCMAR"
         verbose_name_plural = "SCMARs"
 
+    def save(self, *args, **kwargs):
+        # Uploaded DOC/DOCX reports are converted to PDF when they are submitted.
+        convert_field_to_pdf(self, "evidence_document")
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"SCMAR - {self.barangay or 'Municipal-wide'} ({self.reporting_period}) - {self.status}"
 
@@ -629,15 +704,69 @@ class SCMAR(models.Model):
         schedules = sorted({
             c for c in qs.exclude(collector="").values_list("waste_type", flat=True).distinct()
         })
+
+        # Waste collected per waste type, computed from the Collection records
+        # (weight_kg is filled in by the Barangay when it marks a pickup
+        # Completed). Nothing here is typed in on the SCMAR itself.
+        type_colors = {
+            "Biodegradable": "#65A30D",
+            "Non-biodegradable": "#64748B",
+            "Recyclable": "#2563EB",
+            "Hazardous": "#DC2626",
+        }
+        grand = total_weight or 0
+        by_type = []
+        for key, label in WASTE_TYPE_CHOICES:
+            t_qs = qs.filter(waste_type=key)
+            t_weight = t_qs.aggregate(total=models.Sum("weight_kg"))["total"] or 0
+            by_type.append({
+                "waste_type": label,
+                "color": type_colors.get(key, "#94A3B8"),
+                "count": t_qs.count(),
+                "completed": t_qs.filter(status="Completed").count(),
+                "weight_kg": t_weight,
+                "pct": (float(t_weight) / float(grand) * 100) if grand else 0,
+            })
+
         return {
             "queryset": qs,
             "total": total,
             "scheduled": scheduled,
             "ongoing": ongoing,
             "completed": completed,
+            "not_completed": scheduled + ongoing,
             "total_weight_kg": total_weight,
             "waste_types_covered": schedules,
+            "by_type": by_type,
+            "by_week": self._collections_by_week(qs),
         }
+
+    def _collections_by_week(self, qs):
+        """
+        Week-by-week (Monday-Sunday) breakdown of the collections in this
+        SCMAR's period. Barangays see their collections weekly in the
+        Collections module; this rolls those same weekly records up into
+        the monthly SCMAR so nothing has to be typed in twice.
+        A collection is counted in the week it was scheduled for (or, if it
+        has no scheduled date, the week it was actually collected).
+        """
+        weeks = {}
+        for c in qs:
+            when = c.scheduled_date or c.date_collected
+            if not when:
+                continue
+            day = timezone.localtime(when).date()
+            monday, sunday = week_bounds(day)
+            row = weeks.setdefault(monday, {
+                "week_start": monday, "week_end": sunday,
+                "total": 0, "completed": 0, "weight_kg": ZERO_DECIMAL,
+            })
+            row["total"] += 1
+            if c.status == "Completed":
+                row["completed"] += 1
+            if c.weight_kg:
+                row["weight_kg"] += c.weight_kg
+        return [weeks[k] for k in sorted(weeks)]
 
     @property
     def action_plans_summary(self):
@@ -692,32 +821,53 @@ class SCMAR(models.Model):
 
 class RecurringCollectionSchedule(models.Model):
     """
-    Set up once by MENRO Admin: "collect this waste type from this barangay
-    every month, around this day". Each month, a new Collection row is
-    auto-generated from every active schedule (see generate_due_collections()
-    below) so the Admin doesn't have to add the same monthly collection by
-    hand every time.
+    Set up once by MENRO Admin for a barangay: "collect this waste type from
+    this barangay every WEEK (on this weekday) or every MONTH (on this day)".
+    Collection rows are auto-generated from every active schedule (see
+    generate_due_collections() below), so the Admin doesn't have to add the
+    same collection by hand every time.
+
+    Barangay Users only ever see their own barangay's collections, week by
+    week. At the end of the month those weekly records roll up into the
+    barangay's monthly SCMAR (see SCMAR.collections_summary).
     """
     barangay = models.CharField(max_length=50, choices=BARANGAY_CHOICES)
     waste_type = models.CharField(max_length=30, choices=WASTE_TYPE_CHOICES)
     collector = models.CharField(max_length=100, help_text="Collector name or truck ID")
+    frequency = models.CharField(
+        max_length=10, choices=COLLECTION_FREQUENCY_CHOICES, default="Monthly",
+        help_text="Weekly = every week on the chosen weekday. Monthly = once a month on the chosen day.",
+    )
+    day_of_week = models.PositiveSmallIntegerField(
+        choices=WEEKDAY_CHOICES, null=True, blank=True,
+        help_text="Weekday for Weekly schedules.",
+    )
     day_of_month = models.PositiveSmallIntegerField(
         default=1,
-        help_text="Day of the month collections should be scheduled for (1-28, to stay valid in every month).",
+        help_text="Day of the month for Monthly schedules (1-28, to stay valid in every month).",
     )
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     last_generated_for = models.DateField(
         null=True, blank=True,
-        help_text="The month (1st of month stored) this schedule last auto-created a Collection for. Prevents duplicates.",
+        help_text="Monthly schedules: the month (1st of month stored) this schedule last auto-created a Collection for.",
     )
 
     class Meta:
         ordering = ["barangay", "waste_type"]
 
     def __str__(self):
-        return f"{self.barangay} - {self.waste_type} (every month, day {self.day_of_month})"
+        return f"{self.barangay} - {self.waste_type} ({self.when_label})"
+
+    @property
+    def when_label(self):
+        """Human-readable cadence, e.g. 'every Monday' or 'every month, day 5'."""
+        if self.frequency == "Weekly":
+            if self.day_of_week is None:
+                return "every week"
+            return f"every {self.get_day_of_week_display()}"
+        return f"every month, day {self.day_of_month}"
 
     def month_already_generated(self, today=None):
         if today is None:
@@ -726,52 +876,193 @@ class RecurringCollectionSchedule(models.Model):
             self.last_generated_for.year == today.year and self.last_generated_for.month == today.month
         )
 
+    def occurrence_dates(self, window_start, window_end):
+        """Every date this schedule falls on between window_start and window_end (inclusive)."""
+        dates = []
+        if self.frequency == "Weekly":
+            if self.day_of_week is None:
+                return dates
+            # Never back-fill weeks from before the schedule existed.
+            created_on = timezone.localtime(self.date_created).date() if self.date_created else window_start
+            day = max(window_start, created_on)
+            day += timedelta(days=(self.day_of_week - day.weekday()) % 7)
+            while day <= window_end:
+                dates.append(day)
+                day += timedelta(days=7)
+        else:
+            year, month = window_start.year, window_start.month
+            while date(year, month, 1) <= window_end:
+                last_day = calendar.monthrange(year, month)[1]
+                occurrence = date(year, month, min(self.day_of_month, last_day))
+                if window_start <= occurrence <= window_end:
+                    dates.append(occurrence)
+                month += 1
+                if month > 12:
+                    year, month = year + 1, 1
+        return dates
+
+    def make_collections(self, window_start, window_end):
+        """
+        Creates a Scheduled Collection for every occurrence of this schedule
+        in the window that doesn't have one yet. Returns the new Collections.
+        Safe to call repeatedly - existing ones are never duplicated.
+        """
+        if not self.is_active:
+            return []
+        created = []
+        for day in self.occurrence_dates(window_start, window_end):
+            if self.frequency == "Monthly" and self.last_generated_for is not None and (
+                self.last_generated_for.year == day.year and self.last_generated_for.month == day.month
+            ):
+                continue
+            if self.frequency == "Monthly":
+                # One collection per month, even if the admin later moves the day.
+                already = Collection.objects.filter(
+                    schedule=self, scheduled_date__year=day.year, scheduled_date__month=day.month,
+                ).exists()
+            else:
+                already = Collection.objects.filter(schedule=self, scheduled_date__date=day).exists()
+            if already:
+                continue
+            naive_dt = datetime.combine(day, datetime.min.time())
+            scheduled_date = timezone.make_aware(naive_dt, timezone.get_current_timezone())
+            created.append(Collection.objects.create(
+                barangay=self.barangay,
+                waste_type=self.waste_type,
+                collector=self.collector,
+                status="Scheduled",
+                scheduled_date=scheduled_date,
+                frequency=self.frequency,
+                schedule=self,
+                logged_by=self.created_by,
+            ))
+            if self.frequency == "Monthly":
+                self.last_generated_for = date(day.year, day.month, 1)
+                self.save(update_fields=["last_generated_for"])
+        return created
+
     def make_collection_for_current_month(self, today=None):
-        """
-        Creates this month's Collection from this schedule, if one hasn't
-        already been generated for the current month. Returns the created
-        Collection, or None if it was already generated or the schedule is
-        inactive.
-        """
+        """Kept for older callers: generate what is due for this schedule right now."""
         if today is None:
             today = timezone.localdate()
-        if not self.is_active or self.month_already_generated(today):
-            return None
+        window_start, window_end = generation_window(today)
+        created = self.make_collections(window_start, window_end)
+        return created[0] if created else None
 
-        last_day_of_month = calendar.monthrange(today.year, today.month)[1]
-        safe_day = min(self.day_of_month, last_day_of_month)
-        naive_dt = datetime.combine(date(today.year, today.month, safe_day), datetime.min.time())
-        scheduled_date = timezone.make_aware(naive_dt, timezone.get_current_timezone())
 
-        collection = Collection.objects.create(
-            barangay=self.barangay,
-            waste_type=self.waste_type,
-            collector=self.collector,
-            status="Scheduled",
-            scheduled_date=scheduled_date,
-            logged_by=self.created_by,
-        )
-        self.last_generated_for = date(today.year, today.month, 1)
-        self.save(update_fields=["last_generated_for"])
-        return collection
+def generation_window(today=None):
+    """
+    The date range schedules are generated for: the whole current month,
+    stretched to at least 14 days ahead so next week's collections are
+    already visible near the end of a month. Weekly schedules never
+    back-fill dates from before the schedule was created.
+    """
+    if today is None:
+        today = timezone.localdate()
+    window_start = date(today.year, today.month, 1)
+    month_end = date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+    window_end = max(month_end, today + timedelta(days=14))
+    return window_start, window_end
 
 
 def generate_due_collections(today=None):
     """
-    Runs through every active RecurringCollectionSchedule and auto-creates
-    this month's Collection for any schedule that hasn't been generated yet
-    this month. Safe to call repeatedly (e.g. every time the Collections
-    page loads, or from a scheduled/cron management command) - it's a no-op
-    for schedules already generated this month.
+    Runs through every active RecurringCollectionSchedule (weekly and
+    monthly) and auto-creates the Collections that are due and don't exist
+    yet. Safe to call repeatedly (e.g. every time the Collections page
+    loads, or from a scheduled/cron management command) - it's a no-op for
+    anything already generated.
     """
     if today is None:
         today = timezone.localdate()
+    window_start, window_end = generation_window(today)
     created = []
     for schedule in RecurringCollectionSchedule.objects.filter(is_active=True):
-        collection = schedule.make_collection_for_current_month(today)
-        if collection is not None:
-            created.append(collection)
+        created.extend(schedule.make_collections(window_start, window_end))
     return created
+
+
+# ---------------------------------------------------------------------------
+# Weekly collection input -> automatic monthly SCMAR
+#
+# Each week the Barangay records its collections (status + weight). Once
+# 4 weeks of the month are complete - or every collection scheduled for the
+# month is complete - that month's SCMAR is created automatically for the
+# barangay, with its period filled in. The collection figures themselves are
+# never copied: the SCMAR keeps pulling them live (see SCMAR.collections_summary).
+# ---------------------------------------------------------------------------
+WEEKS_NEEDED_FOR_SCMAR = 4
+
+
+def month_collection_progress(barangay, month_start, today=None):
+    """
+    Weekly progress of a barangay's collections in one month.
+
+    A week (Monday-Sunday) is "complete" when it has at least one collection
+    and every one of them is Completed. The month is ready for its SCMAR when
+    at least WEEKS_NEEDED_FOR_SCMAR weeks are complete, or - once the month
+    is over - when every week that has collections is complete (e.g.
+    barangays on a monthly schedule, or ones that only recorded a few weeks).
+    """
+    if today is None:
+        today = timezone.localdate()
+    month_end = date(month_start.year, month_start.month, calendar.monthrange(month_start.year, month_start.month)[1])
+    qs = Collection.objects.filter(barangay=barangay).filter(
+        models.Q(scheduled_date__date__gte=month_start, scheduled_date__date__lte=month_end) |
+        models.Q(scheduled_date__isnull=True, date_collected__date__gte=month_start, date_collected__date__lte=month_end)
+    )
+    weeks = {}
+    for c in qs:
+        when = c.scheduled_date or c.date_collected
+        monday, _sunday = week_bounds(timezone.localtime(when).date())
+        row = weeks.setdefault(monday, [0, 0])
+        row[0] += 1
+        if c.status == "Completed":
+            row[1] += 1
+    total_weeks = len(weeks)
+    complete_weeks = sum(1 for total, done in weeks.values() if total == done)
+    all_done = total_weeks > 0 and complete_weeks == total_weeks
+    return {
+        "total_weeks": total_weeks,
+        "complete_weeks": complete_weeks,
+        "weeks_needed": WEEKS_NEEDED_FOR_SCMAR,
+        "ready": complete_weeks >= WEEKS_NEEDED_FOR_SCMAR or (all_done and today > month_end),
+    }
+
+
+def ensure_month_scmar(barangay, month_start, user=None):
+    """
+    Creates the barangay's SCMAR for `month_start`'s month if the month is
+    ready (see month_collection_progress) and none exists yet.
+
+    The new SCMAR is a Draft owned by the Barangay: the collection figures
+    are already in it, and the Barangay only has to add its assessment and
+    save, which submits it to MENRO Admin as usual.
+
+    Returns (scmar, created). Safe to call repeatedly - it never duplicates.
+    """
+    month_start = date(month_start.year, month_start.month, 1)
+    existing = SCMAR.objects.filter(barangay=barangay, period_start=month_start).first()
+    if existing:
+        return existing, False
+    if not month_collection_progress(barangay, month_start)["ready"]:
+        return None, False
+
+    owner = user
+    if owner is None or not hasattr(owner, "profile") or owner.profile.role != "user":
+        owner = User.objects.filter(profile__role="user", profile__barangay=barangay).first() or owner
+    month_end = date(month_start.year, month_start.month, calendar.monthrange(month_start.year, month_start.month)[1])
+    scmar = SCMAR.objects.create(
+        barangay=barangay,
+        reporting_period=month_start.strftime("%B %Y"),
+        period_start=month_start,
+        period_end=month_end,
+        date_prepared=timezone.localdate(),
+        prepared_by=(owner.get_full_name() or owner.username) if owner else "",
+        status="Draft",
+        created_by=owner,
+    )
+    return scmar, True
 
 
 class LoginVerification(models.Model):
@@ -798,3 +1089,15 @@ class LoginVerification(models.Model):
     @staticmethod
     def generate_code():
         return str(random.randint(100000, 999999))
+class ReminderLog(models.Model):
+    """Remembers which reminder emails were already sent, so nobody gets duplicates."""
+    model = models.CharField(max_length=50)
+    object_id = models.PositiveIntegerField()
+    stage = models.CharField(max_length=20)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("model", "object_id", "stage")
+
+    def __str__(self):
+        return f"{self.model} #{self.object_id} - {self.stage}"

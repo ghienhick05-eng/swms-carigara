@@ -3,58 +3,54 @@
 
 {% block extra_css %}
 <style>
-    .scl-intro {
+    .scl-wrapper { max-width: 1250px; margin: 0 auto; }
+
+    /* ============ STATUS TILES ============ */
+    .scl-tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .scl-tile {
+        display: block;
+        text-decoration: none;
         background: var(--white);
         border: 1px solid var(--gray-200);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-sm);
-        padding: var(--spacing-xl);
-        margin-bottom: var(--spacing-lg);
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: var(--spacing-lg);
-        flex-wrap: wrap;
+        padding: var(--spacing-md) var(--spacing-lg);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
     }
 
-    .scl-intro-eyebrow {
+    .scl-tile:hover { border-color: var(--green-600); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .scl-tile.is-active { border-color: var(--green-600); background: var(--green-50); }
+
+    .scl-tile-label {
+        font-size: 0.7rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: var(--green-700);
-        margin-bottom: 4px;
-    }
-
-    .scl-intro h1 {
-        font-family: 'Poppins', sans-serif;
-        font-size: 1.7rem;
-        font-weight: 700;
-        margin: 0 0 4px 0;
-        color: var(--text-primary);
-    }
-
-    .scl-intro-sub {
-        font-size: 0.75rem;
-        font-weight: 600;
+        letter-spacing: 0.05em;
         color: var(--text-tertiary);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        margin-bottom: var(--spacing-sm);
     }
 
-    .scl-intro p {
-        max-width: 640px;
-        color: var(--text-secondary);
-        margin: 0;
+    .scl-tile-count {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.65rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
     }
 
+    /* ============ FILTER BAR ============ */
     .scl-filter-card {
         background: var(--white);
         border: 1px solid var(--gray-200);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-sm);
-        padding: var(--spacing-lg) var(--spacing-xl);
+        padding: var(--spacing-md) var(--spacing-lg);
         margin-bottom: var(--spacing-lg);
     }
 
@@ -70,13 +66,20 @@
 
     .scl-filter-field label {
         display: block;
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: var(--spacing-xs);
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-tertiary);
+        margin-bottom: 4px;
         text-transform: uppercase;
-        letter-spacing: 0.03em;
+        letter-spacing: 0.05em;
     }
+
+    .scl-search-wrap { position: relative; }
+    .scl-search-wrap i {
+        position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+        color: var(--text-tertiary); font-size: 0.85rem; pointer-events: none;
+    }
+    .scl-search-wrap input { padding-left: 2.2rem; width: 100%; }
 
     .scl-filter-actions { display: flex; gap: var(--spacing-sm); flex: 0 0 auto; }
 
@@ -87,21 +90,39 @@
         .scl-filter-actions .btn { flex: 1; }
     }
 
+    /* ============ NO HORIZONTAL SCROLLBAR ============ */
+    /* The shared .ap-table forces a 1180px minimum width, which caused a
+       scrollbar under this 6-column table. Let it fit its card instead. */
+    .scl-table { min-width: 0; table-layout: auto; width: 100%; }
+    .scl-table th, .scl-table td { white-space: normal; }
+    .scl-table-wrap { overflow-x: hidden; }
+
+    /* ============ TABLE CARD ============ */
     .scl-table-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: var(--spacing-lg) var(--spacing-xl);
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-xl);
         border-bottom: 1px solid var(--gray-100);
     }
 
     .scl-table-card-header h3 {
         font-family: 'Poppins', sans-serif;
-        font-size: 1.05rem;
+        font-size: 1rem;
         font-weight: 600;
         color: var(--text-primary);
         margin: 0;
     }
+
+    .scl-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+        background: var(--gray-100); border-radius: 999px; padding: 3px 10px;
+    }
+
+    .scl-period { font-weight: 600; color: var(--text-primary); }
+    .scl-muted { color: var(--text-tertiary); }
 
     .scl-footer {
         display: flex;
@@ -114,151 +135,160 @@
     }
 
     .scl-footer-count { font-size: 0.82rem; color: var(--text-tertiary); }
+    .scl-pager { display: flex; align-items: center; gap: var(--spacing-sm); font-size: 0.85rem; color: var(--text-secondary); }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="scl-wrapper">
 
-<!-- LANDING INTRO -->
-<div class="scl-intro">
-    <div>
-        <div class="scl-intro-eyebrow">SCMAR</div>
-        <h1>Solid Waste Collection and Management Assessment Report</h1>
-        <div class="scl-intro-sub">
-            {% if my_barangay %}Prepare and submit your Barangay's assessment for MENRO Admin review.{% else %}Formal assessments submitted by each Barangay for MENRO Admin review.{% endif %}
+    <!-- HEADER -->
+    <div class="page-toolbar">
+        <div class="page-toolbar-heading">
+            <div class="page-icon-badge"><i class="fas fa-clipboard-check"></i></div>
+            <div>
+                <h2 class="page-title">SCMAR</h2>
+                <p class="page-subtitle">
+                    {% if my_barangay %}
+                    Solid Waste Collection and Management Assessment Report &mdash; a summary of your barangay's collections, complaints, action plans and accomplishments.
+                    {% else %}
+                    Solid Waste Collection and Management Assessment Reports submitted by each barangay for your review.
+                    {% endif %}
+                </p>
+            </div>
         </div>
-        <p>
-            {% if my_barangay %}
-            Complete the sections below to report on your barangay's solid waste collection, composition, practices, problems, budget, and recommendations - then submit it to MENRO Admin.
-            {% else %}
-            Review each Barangay's submitted assessment, add remarks, and approve or return it for revision.
-            {% endif %}
-        </p>
     </div>
-    {% if my_barangay %}
-    <a href="{% url 'scmar_add' %}" class="btn btn-add"><i class="fas fa-plus"></i> Create SCMAR</a>
-    {% endif %}
-</div>
 
-<!-- FILTERS -->
-<div class="scl-filter-card">
-    <form method="get" class="scl-filter-form">
-        <div class="scl-filter-field scl-search">
-            <label for="scl-q">Search</label>
-            <input type="text" id="scl-q" name="q" placeholder="Search by reporting period or prepared by&hellip;" value="{{ selected_search }}">
+    <!-- STATUS TILES (click to filter) -->
+    <div class="scl-tiles">
+        <a href="{% url 'scmar_list' %}{% if selected_barangay and not my_barangay %}?barangay={{ selected_barangay|urlencode }}{% endif %}" class="scl-tile {% if not selected_status %}is-active{% endif %}">
+            <div class="scl-tile-label">All SCMARs</div>
+            <div class="scl-tile-count">{{ total_count }}</div>
+        </a>
+        {% for t in status_tiles %}
+        <a href="?status={{ t.value|urlencode }}{% if selected_barangay and not my_barangay %}&barangay={{ selected_barangay|urlencode }}{% endif %}" class="scl-tile {% if selected_status == t.value %}is-active{% endif %}">
+            <div class="scl-tile-label">{{ t.label }}</div>
+            <div class="scl-tile-count">{{ t.count }}</div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- FILTERS -->
+    <div class="scl-filter-card">
+        <form method="get" class="scl-filter-form">
+            <div class="scl-filter-field scl-search">
+                <label for="scl-q"><i class="fas fa-magnifying-glass"></i> Search</label>
+                <div class="scl-search-wrap">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" id="scl-q" name="q" placeholder="Reporting period or prepared by&hellip;" value="{{ selected_search }}">
+                </div>
+            </div>
+            {% if my_barangay %}
+            <input type="hidden" name="barangay" value="{{ my_barangay }}">
+            <div class="scl-filter-field">
+                <label><i class="fas fa-location-dot"></i> Barangay</label>
+                <div class="barangay-locked-display"><i class="fas fa-landmark"></i> {{ my_barangay }}</div>
+            </div>
+            {% else %}
+            <div class="scl-filter-field">
+                <label for="scl-barangay"><i class="fas fa-location-dot"></i> Barangay</label>
+                <select name="barangay" id="scl-barangay">
+                    <option value="">All Barangays</option>
+                    {% for value, label in barangay_choices %}
+                    <option value="{{ value }}" {% if value == selected_barangay %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="scl-filter-field">
+                <label for="scl-status"><i class="fas fa-file-lines"></i> Status</label>
+                <select name="status" id="scl-status">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                    {% if my_barangay or value != "Draft" %}
+                    <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="scl-filter-actions">
+                <button type="submit" class="btn btn-add"><i class="fas fa-filter"></i> Apply</button>
+                {% if selected_status or selected_search or querystring %}
+                <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- SCMAR TABLE -->
+    <div class="card" style="padding:0; overflow:hidden;">
+        {% if scmars %}
+        <div class="scl-table-card-header">
+            <h3>SCMAR Submissions</h3>
+            <span class="scl-chip"><i class="fas fa-list"></i> {{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }}</span>
         </div>
-        {% if my_barangay %}
-        <input type="hidden" name="barangay" value="{{ my_barangay }}">
-        <div class="scl-filter-field">
-            <label>Barangay</label>
-            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ my_barangay }}</div>
+        <div class="table-responsive scl-table-wrap">
+            <table class="ap-table scl-table">
+                <thead>
+                    <tr>
+                        {% if not my_barangay %}<th>Barangay</th>{% endif %}
+                        <th>Reporting Period</th>
+                        <th>Date Submitted</th>
+                        <th>Status</th>
+                        <th>Reviewed By</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in scmars %}
+                    <tr class="row-clickable" tabindex="0" role="link" aria-label="Open SCMAR details" onclick="window.location='{% url 'scmar_detail' s.id %}'" onkeydown="if(event.key==='Enter'){window.location='{% url 'scmar_detail' s.id %}';}">
+                        {% if not my_barangay %}<td data-label="Barangay"><span class="scl-period">{{ s.barangay|default:"Municipal-wide" }}</span></td>{% endif %}
+                        <td data-label="Reporting Period">{% if my_barangay %}<span class="scl-period">{{ s.reporting_period }}</span>{% else %}{{ s.reporting_period }}{% endif %}</td>
+                        <td data-label="Date Submitted">{% if s.submission_date %}{{ s.submission_date|date:"M d, Y" }}{% else %}<span class="scl-muted">Not yet submitted</span>{% endif %}</td>
+                        <td data-label="Status"><span class="status-badge status-{{ s.status|slugify }}">{{ s.status }}</span></td>
+                        <td data-label="Reviewed By">{% if s.reviewed_by %}{{ s.reviewed_by.username }}{% else %}<span class="scl-muted">&mdash;</span>{% endif %}</td>
+                        <td data-label="Last Updated">{{ s.date_updated|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="scl-footer">
+            <span class="scl-footer-count">
+                Showing {{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ page_obj.paginator.count }} SCMARs
+            </span>
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="scl-pager">
+                {% if page_obj.has_previous %}
+                <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}">&laquo; Prev</a>
+                {% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}">Next &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         {% else %}
-        <div class="scl-filter-field">
-            <label for="scl-barangay">Barangay</label>
-            <select name="barangay" id="scl-barangay">
-                <option value="">All Barangays</option>
-                {% for value, label in barangay_choices %}
-                <option value="{{ value }}" {% if value == selected_barangay %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        {% endif %}
-        <div class="scl-filter-field">
-            <label for="scl-status">Status</label>
-            <select name="status" id="scl-status">
-                <option value="">All Statuses</option>
-                {% for value, label in status_choices %}
-                {% if my_barangay or value != "Draft" %}
-                <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+        <div class="empty-state">
+            <i class="fas fa-clipboard-check"></i>
+            <div class="empty-state-title">No SCMARs found</div>
+            <div class="empty-state-text">
+                {% if selected_status or selected_search or querystring %}
+                    There are no SCMARs matching your current filters.
+                {% elif my_barangay %}
+                    No SCMAR reports are available for your barangay yet.
+                {% else %}
+                    No SCMARs have been submitted by any barangay yet.
                 {% endif %}
-                {% endfor %}
-            </select>
-        </div>
-        <div class="scl-filter-actions">
-            <button type="submit" class="btn btn-add"><i class="fas fa-magnifying-glass"></i> Apply</button>
-            {% if selected_status or selected_search %}
-            <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Reset</a>
-            {% endif %}
-        </div>
-    </form>
-</div>
-
-<!-- SCMAR TABLE -->
-<div class="card" style="padding:0; overflow:hidden;">
-    {% if scmars %}
-    <div class="scl-table-card-header">
-        <h3>SCMAR Submissions</h3>
-    </div>
-    <div class="table-responsive">
-        <table class="ap-table">
-            <thead>
-                <tr>
-                    {% if not my_barangay %}<th>Barangay</th>{% endif %}
-                    <th>Reporting Period</th>
-                    <th>Date Submitted</th>
-                    <th>Status</th>
-                    <th>Reviewed By</th>
-                    <th>Last Updated</th>
-                    <th class="actions-col">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in scmars %}
-                <tr class="row-clickable" onclick="window.location='{% url 'scmar_detail' s.id %}'">
-                    {% if not my_barangay %}<td data-label="Barangay">{{ s.barangay|default:"Municipal-wide" }}</td>{% endif %}
-                    <td data-label="Reporting Period">{{ s.reporting_period }}</td>
-                    <td data-label="Date Submitted">{{ s.submission_date|date:"M d, Y"|default:"Not yet submitted" }}</td>
-                    <td data-label="Status"><span class="status-badge status-{{ s.status|slugify }}">{{ s.status }}</span></td>
-                    <td data-label="Reviewed By">{{ s.reviewed_by.username|default:"-" }}</td>
-                    <td data-label="Last Updated">{{ s.date_updated|date:"M d, Y" }}</td>
-                    <td class="actions-col" data-label="Action">
-                        {% if my_barangay and s.barangay == my_barangay and s.is_editable %}
-                        <a href="{% url 'scmar_edit' s.id %}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();"><i class="fas fa-pen"></i> {% if s.status == "Draft" %}Continue{% else %}Revise{% endif %}</a>
-                        {% else %}
-                        <a href="{% url 'scmar_detail' s.id %}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();"><i class="fas fa-eye"></i> View</a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="scl-footer">
-        <span class="scl-footer-count">
-            Showing {{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ page_obj.paginator.count }} SCMARs
-        </span>
-        {% if page_obj.paginator.num_pages > 1 %}
-        <div style="display:flex; align-items:center; gap: var(--spacing-sm);">
-            {% if page_obj.has_previous %}
-            <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_search %}&q={{ selected_search }}{% endif %}">&laquo; Prev</a>
-            {% endif %}
-            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}
-            <a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_search %}&q={{ selected_search }}{% endif %}">Next &raquo;</a>
-            {% endif %}
+            </div>
+            <div style="margin-top: var(--spacing-md);">
+                {% if selected_status or selected_search or querystring %}
+                <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
     </div>
-    {% else %}
-    <div class="empty-state">
-        <i class="fas fa-clipboard-check"></i>
-        <div class="empty-state-title">No SCMARs found</div>
-        <div class="empty-state-text">
-            {% if selected_status or selected_search %}
-                There are no SCMARs matching your current filters.
-            {% elif my_barangay %}
-                Create your Barangay's SCMAR to report on solid waste collection and management - then submit it to MENRO Admin for review.
-            {% else %}
-                No SCMARs have been submitted by any Barangay yet.
-            {% endif %}
-        </div>
-        {% if selected_status or selected_search %}
-        <div style="margin-top: var(--spacing-md);">
-            <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Clear Filters</a>
-        </div>
-        {% endif %}
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

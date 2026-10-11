@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import Collection, Complaint, Profile, Accomplishment, ActionPlan
+from .models import Collection, Complaint, Profile, Accomplishment, ActionPlan, RecurringCollectionSchedule
 
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ("id", "barangay", "waste_type", "status", "scheduled_date", "weight_kg", "collector", "date_collected")
-    list_filter = ("barangay", "waste_type")
+    list_display = ("id", "barangay", "waste_type", "frequency", "status", "scheduled_date", "weight_kg", "collector", "date_collected")
+    list_filter = ("barangay", "waste_type", "frequency", "status")
     search_fields = ("collector",)
 
 
@@ -34,3 +34,10 @@ class ActionPlanAdmin(admin.ModelAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "role", "barangay")
     list_filter = ("role", "barangay")
+
+
+@admin.register(RecurringCollectionSchedule)
+class RecurringCollectionScheduleAdmin(admin.ModelAdmin):
+    list_display = ("barangay", "waste_type", "frequency", "day_of_week", "day_of_month", "collector", "is_active")
+    list_filter = ("frequency", "barangay", "waste_type", "is_active")
+    search_fields = ("barangay", "collector")

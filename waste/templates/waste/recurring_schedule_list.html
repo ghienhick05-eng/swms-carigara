@@ -1,12 +1,108 @@
 {% extends "base.html" %}
 {% block title %}Recurring Collection Schedules - SWMS Carigara{% endblock %}
+{% block extra_css %}
+<style>
+    /* Stops words breaking mid-word ("Biodegra / dable", "ACTI / VE",
+       "COLLECT / OR") and keeps Edit / Delete side by side. The table
+       scrolls sideways inside its card on narrow screens instead of
+       squeezing the columns. */
+    @media (min-width: 641px) {
+        #rs-table { min-width: 900px; }
+
+        #rs-table th,
+        #rs-table td {
+            white-space: nowrap;
+            vertical-align: middle;
+            padding: var(--spacing-md);
+        }
+
+        #rs-table th:first-child,
+        #rs-table td:first-child { padding-left: var(--spacing-lg); }
+
+        #rs-table .status-badge { white-space: nowrap; flex-shrink: 0; }
+
+        #rs-table td.actions-col,
+        #rs-table th.actions-col {
+            width: 1%;
+            padding-right: var(--spacing-lg);
+        }
+
+        #rs-table .action-buttons {
+            flex-wrap: nowrap;
+            gap: var(--spacing-xs);
+        }
+    }
+
+    /* Compact icon buttons - same look as the Collections list */
+    .rs-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        background: var(--white);
+        color: var(--text-secondary);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        font-size: 0.85rem;
+        position: relative;
+    }
+
+    .rs-icon-btn:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .rs-icon-btn.edit:hover {
+        background: #EFF6FF;
+        border-color: #BFDBFE;
+        color: #1D4ED8;
+    }
+
+    .rs-icon-btn.delete:hover {
+        background: #FEF2F2;
+        border-color: #FECACA;
+        color: #B91C1C;
+    }
+
+    .rs-icon-btn[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        background: #166534;
+        color: #fff;
+        font-size: 0.72rem;
+        padding: 0.3rem 0.55rem;
+        border-radius: var(--radius-sm);
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: all var(--transition-fast);
+        z-index: 5;
+    }
+
+    .rs-icon-btn[data-tooltip]:hover::after,
+    .rs-icon-btn[data-tooltip]:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .rs-actions { display: flex; gap: var(--spacing-xs); justify-content: flex-end; flex-wrap: nowrap; }
+</style>
+{% endblock %}
 {% block content %}
 <div class="page-toolbar">
     <div class="page-toolbar-heading">
         <div class="page-icon-badge"><i class="fas fa-repeat"></i></div>
         <div>
             <h2 class="page-title">Recurring Collection Schedules</h2>
-            <p class="page-subtitle">Set these up once - a new Collection is auto-created every month for each active schedule.</p>
+            <p class="page-subtitle">Set these up once per barangay - Collections are auto-created every week or every month for each active schedule.</p>
         </div>
     </div>
     <div style="display:flex; gap: var(--spacing-sm);">
@@ -18,16 +114,17 @@
 <div class="card">
     {% if schedules %}
     <div class="table-responsive">
-        <table>
+        <table id="rs-table">
             <thead>
-                <tr><th>Barangay</th><th>Waste Type</th><th>Day of Month</th><th>Collector</th><th>Active</th><th>Last Generated</th><th class="actions-col"></th></tr>
+                <tr><th>Barangay</th><th>Waste Type</th><th>Frequency</th><th>Day</th><th>Collector</th><th>Active</th><th>Collections Created</th><th class="actions-col"></th></tr>
             </thead>
             <tbody>
                 {% for s in schedules %}
                 <tr>
                     <td data-label="Barangay">{{ s.barangay }}</td>
                     <td data-label="Waste Type">{{ s.waste_type }}</td>
-                    <td data-label="Day of Month">{{ s.day_of_month }}</td>
+                    <td data-label="Frequency"><span class="status-badge {% if s.frequency == 'Weekly' %}status-ongoing{% else %}status-scheduled{% endif %}">{{ s.frequency }}</span></td>
+                    <td data-label="Day">{% if s.frequency == "Weekly" %}{{ s.get_day_of_week_display|default:"-" }}{% else %}Day {{ s.day_of_month }}{% endif %}</td>
                     <td data-label="Collector">{{ s.collector }}</td>
                     <td data-label="Active">
                         {% if s.is_active %}
@@ -36,11 +133,11 @@
                         <span class="status-badge status-scheduled">Paused</span>
                         {% endif %}
                     </td>
-                    <td data-label="Last Generated">{% if s.last_generated_for %}{{ s.last_generated_for|date:"F Y" }}{% else %}Not yet{% endif %}</td>
+                    <td data-label="Collections Created">{{ s.collections.count }}</td>
                     <td class="actions-col">
-                        <div class="action-buttons">
-                            <a href="{% url 'recurring_schedule_edit' s.id %}" class="btn btn-md btn-edit"><i class="fas fa-pen"></i> Edit</a>
-                            <a href="{% url 'recurring_schedule_delete' s.id %}" class="btn btn-md btn-delete"><i class="fas fa-trash"></i> Delete</a>
+                        <div class="rs-actions">
+                            <a href="{% url 'recurring_schedule_edit' s.id %}" class="rs-icon-btn edit" data-tooltip="Edit" aria-label="Edit schedule for {{ s.barangay }}"><i class="fas fa-pen"></i></a>
+                            <a href="{% url 'recurring_schedule_delete' s.id %}" class="rs-icon-btn delete" data-tooltip="Delete" aria-label="Delete schedule for {{ s.barangay }}"><i class="fas fa-trash"></i></a>
                         </div>
                     </td>
                 </tr>
@@ -52,7 +149,7 @@
     <div class="empty-state">
         <i class="fas fa-repeat"></i>
         <div class="empty-state-title">No recurring schedules yet</div>
-        <div class="empty-state-text">Create one so Collections for a barangay and waste type are auto-generated every month.</div>
+        <div class="empty-state-text">Create one so Collections for a barangay and waste type are auto-generated every week or month.</div>
     </div>
     {% endif %}
 </div>

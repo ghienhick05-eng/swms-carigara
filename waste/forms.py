@@ -1,7 +1,10 @@
+import hmac
+
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Collection, Complaint, Accomplishment, ActionPlan, SCMAR, Profile, BARANGAY_CHOICES, RecurringCollectionSchedule
+from .models import Collection, Complaint, Accomplishment, ActionPlan, SCMAR, Profile, BARANGAY_CHOICES, WEEKDAY_CHOICES, RecurringCollectionSchedule
 
 
 class BarangayLockedFormMixin:
@@ -31,10 +34,9 @@ class CollectionForm(BarangayLockedFormMixin, forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ["barangay", "waste_type", "scheduled_date", "collector"]
+        fields = ["barangay", "scheduled_date", "collector"]
         widgets = {
             "barangay": forms.Select(attrs={"class": "form-control"}),
-            "waste_type": forms.Select(attrs={"class": "form-control"}),
             "scheduled_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}, format="%Y-%m-%d"),
             "collector": forms.TextInput(attrs={"class": "form-control"}),
         }
@@ -61,31 +63,50 @@ class CollectionStatusForm(forms.ModelForm):
 
 class RecurringCollectionScheduleForm(forms.ModelForm):
     """
-    Used by MENRO Admin to set up a monthly recurring collection: pick a
-    barangay + waste type + day of month, and a Collection gets auto-created
-    for that combination every month going forward.
+    Used by MENRO Admin to set up a recurring collection for a barangay:
+    pick the barangay (every waste type is scheduled together), then either
+      - Weekly  -> a weekday (e.g. every Monday), or
+      - Monthly -> a day of the month (1-28).
+    Collections are then auto-created for that barangay on those dates.
     """
 
     class Meta:
         model = RecurringCollectionSchedule
-        fields = ["barangay", "waste_type", "collector", "day_of_month", "is_active"]
+        fields = ["barangay", "collector", "frequency", "day_of_week", "day_of_month", "is_active"]
         widgets = {
             "barangay": forms.Select(attrs={"class": "form-control"}),
-            "waste_type": forms.Select(attrs={"class": "form-control"}),
             "collector": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. LGU Truck"}),
+            "frequency": forms.Select(attrs={"class": "form-control", "id": "id_frequency"}),
+            "day_of_week": forms.Select(attrs={"class": "form-control"}),
             "day_of_month": forms.NumberInput(attrs={"class": "form-control", "min": 1, "max": 28}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         help_texts = {
+            "day_of_week": "Collections repeat on this weekday every week.",
             "day_of_month": "1-28, so it stays valid even in February.",
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only the field that matches the chosen frequency is required.
+        self.fields["day_of_week"].required = False
+        self.fields["day_of_month"].required = False
+        self.fields["day_of_week"].choices = [("", "Select weekday")] + list(WEEKDAY_CHOICES)
+
     def clean(self):
         cleaned_data = super().clean()
-        status = cleaned_data.get("status")
-        weight_kg = cleaned_data.get("weight_kg")
-        if status == "Completed" and weight_kg in (None, ""):
-            self.add_error("weight_kg", "Enter the actual weight collected before marking this as Completed.")
+        frequency = cleaned_data.get("frequency")
+        if frequency == "Weekly":
+            if cleaned_data.get("day_of_week") is None:
+                self.add_error("day_of_week", "Choose the weekday this barangay is collected on.")
+            cleaned_data["day_of_month"] = cleaned_data.get("day_of_month") or 1
+        elif frequency == "Monthly":
+            day = cleaned_data.get("day_of_month")
+            if day is None:
+                self.add_error("day_of_month", "Enter the day of the month (1-28).")
+            elif not 1 <= day <= 28:
+                self.add_error("day_of_month", "Day of month must be between 1 and 28.")
+            cleaned_data["day_of_week"] = None
         return cleaned_data
 
 
@@ -117,6 +138,7 @@ class AccomplishmentForm(BarangayLockedFormMixin, forms.ModelForm):
             "title": forms.TextInput(attrs={
                 "class": "form-control",
                 "list": "accomplishment-suggestions",
+                "autocomplete": "off",
                 "placeholder": "e.g. Establishment of MRF, HAPAG, Desilting, BARKADA Day",
             }),
             "barangay": forms.Select(attrs={"class": "form-control"}),
@@ -148,6 +170,7 @@ class ActionPlanForm(BarangayLockedFormMixin, forms.ModelForm):
             "title": forms.TextInput(attrs={
                 "class": "form-control",
                 "list": "action-plan-suggestions",
+                "autocomplete": "off",
                 "placeholder": "e.g. Establishment of MRF, HAPAG, Desilting, BARKADA Day",
             }),
             "barangay": forms.Select(attrs={"class": "form-control"}),
@@ -307,14 +330,38 @@ class ReviewForm(forms.Form):
     )
 
 
+class TakenAwareSelect(forms.Select):
+    """Select that shows barangays which already have an account as disabled."""
+    taken = set()
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
+        if value in self.taken:
+            option["attrs"]["disabled"] = True
+            option["label"] = f"{label} (already has an account)"
+        return option
+
+
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={"class": "auth-input", "autocomplete": "email"}),
-        help_text="You'll use this to log in and to receive login notifications.",
+        help_text="You'll use this to log in and to receive login notifications. A personal email is fine.",
+    )
+    phone_number = forms.CharField(
+        max_length=20,
+        required=True,
+        label="Mobile number",
+        widget=forms.TextInput(attrs={
+            "class": "auth-input",
+            "autocomplete": "tel",
+            "inputmode": "tel",
+            "placeholder": "e.g. 09171234567",
+        }),
     )
     barangay = forms.ChoiceField(
         choices=BARANGAY_CHOICES,
+        required=True,
         widget=forms.Select(attrs={"class": "auth-input"}),
         help_text="Select the barangay this account will manage.",
     )
@@ -328,12 +375,36 @@ class RegisterForm(UserCreationForm):
         self.fields["username"].widget.attrs.update({"class": "auth-input"})
         self.fields["password1"].widget.attrs.update({"class": "auth-input"})
         self.fields["password2"].widget.attrs.update({"class": "auth-input"})
+        # One account per barangay: grey out barangays that already have one.
+        taken = set(
+            Profile.objects.filter(role="user", barangay__isnull=False)
+            .exclude(barangay="")
+            .values_list("barangay", flat=True)
+        )
+        widget = TakenAwareSelect(attrs={"class": "auth-input"})
+        widget.taken = taken
+        self.fields["barangay"].widget = widget
+        # Re-attach the choices, otherwise the swapped-in widget renders empty.
+        self.fields["barangay"].widget.choices = self.fields["barangay"].choices
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip().lower()
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("An account with this email already exists.")
         return email
+
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get("phone_number", "").strip()
+        digits = phone.replace(" ", "").replace("-", "").lstrip("+")
+        if not digits.isdigit() or not (7 <= len(digits) <= 15):
+            raise forms.ValidationError("Enter a valid mobile number.")
+        return phone
+
+    def clean_barangay(self):
+        barangay = self.cleaned_data.get("barangay")
+        if barangay and Profile.objects.filter(role="user", barangay=barangay).exists():
+            raise forms.ValidationError("An account for this barangay already exists.")
+        return barangay
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -343,8 +414,10 @@ class RegisterForm(UserCreationForm):
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.role = "user"
             profile.barangay = self.cleaned_data["barangay"]
+            profile.phone_number = self.cleaned_data["phone_number"]
             profile.save()
         return user
+
 
 class ProfileAvatarForm(forms.ModelForm):
     class Meta:
@@ -361,7 +434,9 @@ class ProfileEditForm(forms.Form):
     Profile page: username, full name, and avatar.
 
     SECURITY: this form intentionally has NO fields for role, barangay,
-    account status (is_active), or date_joined. Those are protected
+    account status (is_active), or date_joined. Email can be edited here, but
+    a changed email is NOT saved directly: the profile view emails a code to
+    the new address and only applies it after the code is confirmed. Those other fields are protected
     server-side - they are never read from this form and never written
     to the User/Profile objects in the profile view, regardless of what
     a tampered client request might contain.
@@ -379,10 +454,36 @@ class ProfileEditForm(forms.Form):
         required=False,
         widget=forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/*"}),
     )
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}),
+    )
+    phone_number = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "autocomplete": "tel",
+            "placeholder": "e.g. 09171234567",
+        }),
+    )
 
     def __init__(self, *args, user=None, **kwargs):
         self.user = user
         super().__init__(*args, **kwargs)
+        # Every logged-in account (Barangay User, MENRO Admin, Staff) can
+        # edit username, full name, avatar, email, and phone number here.
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip().lower()
+        if not email:
+            raise forms.ValidationError("Email cannot be blank.")
+        qs = User.objects.filter(email__iexact=email)
+        if self.user is not None:
+            qs = qs.exclude(pk=self.user.pk)
+        if qs.exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
 
     def clean_username(self):
         username = self.cleaned_data.get("username", "").strip()
@@ -395,6 +496,15 @@ class ProfileEditForm(forms.Form):
             raise forms.ValidationError("This username is already taken.")
         return username
 
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get("phone_number", "").strip()
+        if not phone:
+            return ""
+        digits = phone.replace(" ", "").replace("-", "").lstrip("+")
+        if not digits.isdigit() or not (7 <= len(digits) <= 15):
+            raise forms.ValidationError("Enter a valid phone number.")
+        return phone
+
 
 class ConfirmCodeForm(forms.Form):
     """
@@ -405,8 +515,35 @@ class ConfirmCodeForm(forms.Form):
         max_length=6,
         widget=forms.TextInput(attrs={
             "class": "auth-input",
-            "placeholder": "6-digit code",
             "autocomplete": "one-time-code",
             "inputmode": "numeric",
+            "maxlength": "6",
+            "aria-label": "6-digit confirmation code",
         })
     )
+
+
+class EmailChangeForm(forms.Form):
+    """
+    New email address for any logged-in account. A confirmation code is sent
+    to this new address and must be entered before the change is applied -
+    see waste.views.change_email().
+    """
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}),
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip().lower()
+        if self.user is not None and email == (self.user.email or "").lower():
+            raise forms.ValidationError("That is already your email.")
+        qs = User.objects.filter(email__iexact=email)
+        if self.user is not None:
+            qs = qs.exclude(pk=self.user.pk)
+        if qs.exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email

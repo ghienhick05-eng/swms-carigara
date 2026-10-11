@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Weekly Collection Input - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wi-card {
+        max-width: 980px;
+        margin: 0 auto;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+    .wi-banner {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: #fff;
+    }
+    .wi-banner-icon {
+        flex: 0 0 52px; width: 52px; height: 52px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        font-size: 1.35rem;
+    }
+    .wi-banner h2 { margin: 0 0 2px; font-size: 1.3rem; font-weight: 700; color: #fff; }
+    .wi-banner p { margin: 0; font-size: 0.88rem; opacity: 0.92; }
+    .wi-body { padding: var(--spacing-xl); }
+    .wi-nav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+    .wi-range { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.05rem; color: var(--text-primary); }
+    .wi-range small { display: block; font-family: inherit; font-weight: 500; font-size: 0.78rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .wi-nav-btns { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+    .wi-table { width: 100%; }
+    .wi-table th, .wi-table td { vertical-align: middle; padding: var(--spacing-md); }
+    .wi-table td.wi-weight { min-width: 170px; }
+    .wi-table .form-control { min-height: 42px; }
+    .wi-done { color: var(--green-800); font-weight: 600; }
+    .wi-err { display: block; margin-top: 4px; font-size: 0.78rem; color: #B91C1C; }
+    .wi-row-error .form-control { border-color: #DC2626; }
+    .wi-hint { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+    @media (max-width: 640px) {
+        .wi-body { padding: var(--spacing-lg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wi-card">
+    <div class="wi-banner">
+        <div class="wi-banner-icon"><i class="fas fa-clipboard-list"></i></div>
+        <div>
+            <h2>Weekly Collection Input</h2>
+            <p>{{ my_barangay }} &middot; record your waste collected this week</p>
+        </div>
+    </div>
+    <div class="wi-body">
+        <div class="wi-nav">
+            <div class="wi-range">
+                <small>{% if is_current_week %}This week{% else %}Week of{% endif %}</small>
+                {{ week_start|date:"M d" }} &ndash; {{ week_end|date:"M d, Y" }}
+            </div>
+            <div class="wi-nav-btns">
+                <a class="btn btn-secondary btn-sm" href="?week={{ prev_week|date:'Y-m-d' }}"><i class="fas fa-chevron-left"></i> Previous week</a>
+                {% if not is_current_week %}<a class="btn btn-secondary btn-sm" href="{% url 'collection_week_input' %}">This week</a>{% endif %}
+                <a class="btn btn-secondary btn-sm" href="?week={{ next_week|date:'Y-m-d' }}">Next week <i class="fas fa-chevron-right"></i></a>
+            </div>
+        </div>
+
+        <p class="wi-hint">Enter how much waste your barangay collected this week, for each waste type, depending on your own trash. Leave a type blank if you had none. Once 4 weeks of the month are recorded, your SCMAR for that month is created automatically.</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+            <div class="form-grid-2" style="margin-bottom: var(--spacing-lg);">
+                <div class="form-group">
+                    <label for="wi-date"><i class="fas fa-calendar-day"></i> Date collected</label>
+                    <input type="date" id="wi-date" name="collected_on" value="{{ collected_on|date:'Y-m-d' }}" min="{{ min_date|date:'Y-m-d' }}" max="{{ max_date|date:'Y-m-d' }}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="wi-collector"><i class="fas fa-truck"></i> Collector / Truck ID</label>
+                    <input type="text" id="wi-collector" name="collector" value="{{ collector_value }}" maxlength="100" class="form-control" placeholder="e.g. LGU Truck 2">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="wi-table">
+                    <thead>
+                        <tr><th>Waste Type</th><th>Recorded this week</th><th>Weight collected (kg)</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rows %}
+                        <tr {% if r.error %}class="wi-row-error"{% endif %}>
+                            <td data-label="Waste Type"><strong>{{ r.label }}</strong>{% if r.pending %}<span class="wi-err" style="color: var(--text-tertiary);">Scheduled by MENRO{% if r.pending.scheduled_date %} &middot; {{ r.pending.scheduled_date|date:"D, M d" }}{% endif %}</span>{% endif %}</td>
+                            <td data-label="Recorded this week">
+                                {% if r.done_count %}<span class="wi-done"><i class="fas fa-check"></i> {{ r.done_weight|floatformat:2 }} kg</span>{% else %}<span class="cl-weight-empty">&ndash;</span>{% endif %}
+                            </td>
+                            <td data-label="Weight collected (kg)" class="wi-weight">
+                                {% if r.locked %}
+                                {% if r.upcoming and not r.done_count %}<span class="cl-weight-empty">View only until {{ r.upcoming.scheduled_date|date:"D, M d" }}</span>{% else %}<span class="wi-done">Completed</span>{% endif %}
+                                {% else %}
+                                <input type="number" name="weight_{{ r.key }}" value="{{ r.weight }}" step="0.01" min="0" class="form-control" placeholder="e.g. 125.50">
+                                {% if r.error %}<span class="wi-err">{{ r.error }}</span>{% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-group" style="margin-top: var(--spacing-lg);">
+                <label for="wi-notes"><i class="fas fa-note-sticky"></i> Notes <span style="font-weight: 400; color: var(--text-tertiary);">(optional)</span></label>
+                <textarea id="wi-notes" name="notes" rows="3" maxlength="1000" class="form-control" placeholder="Anything worth noting about this week's collection, e.g. missed route, truck breakdown, extra waste after an event.">{{ notes_value }}</textarea>
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'collection_list' %}?week={{ week_start|date:'Y-m-d' }}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+                {% if can_save %}
+                <button type="submit" class="btn btn-add"><i class="fas fa-check"></i> Save this week</button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -79,7 +79,11 @@
     }
     .scd-item-value { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
     .scd-item-value small { display: block; font-weight: 400; color: var(--text-tertiary); font-size: 0.78rem; }
-    .scd-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); font-family: 'Poppins', sans-serif; }
+    .scd-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); font-family: 'Poppins', sans-serif; font-variant-numeric: tabular-nums; }
+    .scd-grid-4 > div {
+        background: var(--gray-50); border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg);
+    }
 
     .scd-text-block { margin-bottom: var(--spacing-lg); }
     .scd-text-block:last-child { margin-bottom: 0; }
@@ -143,25 +147,83 @@
 
     .scd-review-form textarea { width: 100%; margin-bottom: var(--spacing-sm); }
     .scd-actions { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+    .scd-header-side { display: flex; align-items: center; gap: var(--spacing-sm); flex-wrap: wrap; }
+
+
+    /* ---------- Waste received & processed (mirrors the paper MRF form) ---------- */
+    .wd-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+    @media (max-width: 760px) { .wd-stats { grid-template-columns: repeat(2, 1fr); } }
+    .wd-stat { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); }
+    .wd-stat.primary { background: #F0FDF4; border-color: var(--green-100); }
+    .wd-stat-value { font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1.2; }
+    .wd-stat.primary .wd-stat-value { color: var(--green-700); }
+    .wd-stat-value small { font-size: 0.8rem; font-weight: 600; color: var(--text-tertiary); margin-left: 3px; }
+    .wd-stat-sub { font-size: 0.74rem; color: var(--text-tertiary); margin-top: 2px; }
+    .wd-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--gray-200); }
+    .wd-bar div { height: 100%; }
+    .wd-legend { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--spacing-sm) var(--spacing-lg); margin: var(--spacing-md) 0 var(--spacing-xl); }
+    @media (max-width: 900px) { .wd-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px) { .wd-legend { grid-template-columns: 1fr; } }
+    .wd-chip { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-secondary); min-width: 0; }
+    .wd-chip i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .wd-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wd-chip b { margin-left: auto; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .wd-chip em { font-style: normal; width: 44px; text-align: right; color: var(--text-tertiary); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+    .wd-table-wrap { overflow-x: auto; border: 1px solid var(--gray-200); border-radius: var(--radius-md); }
+    table.wd-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 560px; }
+    .wd-table th, .wd-table td { padding: 8px 14px; border-bottom: 1px solid var(--gray-100); }
+    .wd-table thead th { background: #166534; color: #fff; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; text-align: right; white-space: nowrap; border-bottom: none; }
+    .wd-table thead th:first-child { text-align: left; }
+    .wd-table tr.wd-sec th { background: #FEF3C7; color: #78350F; text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 14px; border-left: 4px solid var(--sec-color); }
+    .wd-table tr.wd-group th { background: var(--gray-50); color: var(--text-tertiary); text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 5px 14px; }
+    .wd-table tbody th { text-align: left; font-weight: 500; color: var(--text-primary); width: 100%; }
+    .wd-table .wd-hint { display: block; font-weight: 400; font-size: 0.74rem; color: var(--text-tertiary); }
+    .wd-table td { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-primary); white-space: nowrap; }
+    .wd-table td.zero { color: var(--gray-300); }
+    .wd-table tr.wd-sub th, .wd-table tr.wd-sub td { background: #DCFCE7; color: #14532D; font-weight: 700; border-bottom: 1px solid var(--green-100); }
+    .wd-table tr.wd-sub th { text-align: right; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .wd-table tr.wd-total th, .wd-table tr.wd-total td { background: #166534; color: #fff; font-weight: 700; font-size: 0.95rem; border-bottom: none; }
+    .wd-table tr.wd-total th { text-align: right; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.05em; }
+    .wd-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--spacing-sm); }
+    .wd-photo { padding: 0; border: 1px solid var(--gray-200); border-radius: var(--radius-md); overflow: hidden; background: var(--gray-100); cursor: zoom-in; aspect-ratio: 1; display: block; }
+    .wd-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s ease; }
+    .wd-photo:hover img { transform: scale(1.04); }
+    dialog.wd-lightbox { border: none; border-radius: var(--radius-lg); padding: 0; max-width: min(92vw, 1100px); background: #0F172A; }
+    dialog.wd-lightbox::backdrop { background: rgba(15, 23, 42, 0.8); }
+    .wd-lightbox img { display: block; max-width: 100%; max-height: 82vh; margin: 0 auto; }
+    .wd-lightbox-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; color: #CBD5E1; font-size: 0.82rem; }
+    .wd-lightbox-bar button { background: none; border: 1px solid #475569; color: #E2E8F0; border-radius: var(--radius-md); padding: 4px 12px; cursor: pointer; font-family: inherit; }
+    .wd-lightbox-bar button:hover { background: #1E293B; }
+    @media print {
+        .topbar, .sidebar, .menu-toggle, .no-print { display: none !important; }
+        .main-container { margin: 0 !important; }
+        .content-wrapper { padding: 0 !important; }
+        .scd-wrapper { max-width: none; }
+        .scd-section, .scd-header { box-shadow: none !important; break-inside: avoid; }
+        .scd-details > .scd-details-body { display: block; }
+        .wd-table-wrap { overflow: visible; border: none; }
+        .wd-table tr { break-inside: avoid; }
+        .wd-table thead th, .wd-table tr.wd-sec th, .wd-table tr.wd-sub th, .wd-table tr.wd-sub td, .wd-table tr.wd-total th, .wd-table tr.wd-total td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="scd-wrapper">
 
-    <nav class="scd-breadcrumb">
+    <nav class="scd-breadcrumb no-print">
         <a href="{% url 'scmar_list' %}">SCMAR</a>
         <span class="sep">/</span>
         <span class="current">{{ scmar.barangay|default:"Municipal-wide" }} &middot; {{ scmar.reporting_period }}</span>
     </nav>
 
     <div class="scd-header">
-        <a href="{% url 'scmar_list' %}" class="scd-back"><i class="fas fa-arrow-left"></i> Back to SCMAR</a>
+        <a href="{% url 'scmar_list' %}" class="scd-back no-print"><i class="fas fa-arrow-left"></i> Back to SCMAR</a>
         <div class="scd-header-row">
             <div class="scd-header-main">
                 <div class="scd-header-icon"><i class="fas fa-clipboard-check"></i></div>
                 <div>
-                    <div class="scd-eyebrow">SCMAR #{{ scmar.id }} &middot; Combined Assessment</div>
+                    <div class="scd-eyebrow">SCMAR #{{ scmar.id }} &middot; Monthly Waste Report</div>
                     <h1 class="scd-title">{{ scmar.barangay|default:"Municipal-wide" }} - {{ scmar.reporting_period }}</h1>
                     {% if scmar.period_start or scmar.period_end %}
                     <div class="scd-period-note">
@@ -171,7 +233,10 @@
                     {% endif %}
                 </div>
             </div>
-            <span class="status-badge status-{{ scmar.status|slugify }}">{{ scmar.status }}</span>
+            <div class="scd-header-side">
+                <span class="status-badge status-{{ scmar.status|slugify }}">{{ scmar.status }}</span>
+                <button type="button" class="btn btn-secondary btn-sm no-print" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+            </div>
         </div>
     </div>
 
@@ -250,10 +315,43 @@
                 <div><div class="scd-item-label">Ongoing</div><div class="scd-stat-value">{{ collections.ongoing }}</div></div>
                 <div><div class="scd-item-label">Completed</div><div class="scd-stat-value">{{ collections.completed }}</div></div>
             </div>
-            <div class="scd-grid" style="margin-top: var(--spacing-lg);">
-                <div><div class="scd-item-label">Waste Collected</div><div class="scd-item-value">{% if collections.total_weight_kg %}{{ collections.total_weight_kg }} kg{% else %}-{% endif %}</div></div>
-                <div><div class="scd-item-label">Waste Types Covered</div><div class="scd-item-value">{{ collections.waste_types_covered|join:", "|default:"-" }}</div></div>
+            <div class="wd-stats" style="margin-top: var(--spacing-lg);">
+                <div class="wd-stat primary"><div class="scd-item-label">Total waste collected</div><div class="wd-stat-value">{{ collections.total_weight_kg|default:0|floatformat:2 }}<small>kg</small></div><div class="wd-stat-sub">from completed pickups</div></div>
+                <div class="wd-stat"><div class="scd-item-label">Pickups completed</div><div class="wd-stat-value">{{ collections.completed }}<small>of {{ collections.total }}</small></div></div>
+                <div class="wd-stat"><div class="scd-item-label">Not yet completed</div><div class="wd-stat-value">{{ collections.not_completed }}</div><div class="wd-stat-sub">scheduled or ongoing</div></div>
             </div>
+            {% if collections.total_weight_kg %}
+            <div class="wd-bar" role="img" aria-label="Waste collected by type">
+                {% for t in collections.by_type %}{% if t.pct %}<div style="width: {{ t.pct|floatformat:2 }}%; background: {{ t.color }};" title="{{ t.waste_type }}: {{ t.weight_kg|floatformat:2 }} kg"></div>{% endif %}{% endfor %}
+            </div>
+            {% endif %}
+            <div class="wd-legend">
+                {% for t in collections.by_type %}
+                <div class="wd-chip"><i style="background: {{ t.color }};"></i><span>{{ t.waste_type }}</span><b>{{ t.weight_kg|floatformat:2 }} kg</b><em>{{ t.pct|floatformat:1 }}%</em></div>
+                {% endfor %}
+            </div>
+            <table class="scd-mini-table">
+                <thead><tr><th>Waste Type</th><th>Pickups</th><th>Completed</th><th>Weight (kg)</th></tr></thead>
+                <tbody>
+                    {% for t in collections.by_type %}
+                    <tr><td>{{ t.waste_type }}</td><td>{{ t.count }}</td><td>{{ t.completed }}</td><td>{{ t.weight_kg|floatformat:2 }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if collections.by_week %}
+            <div class="scd-item-label" style="margin-top: var(--spacing-lg);">Weekly breakdown (rolled up into this report)</div>
+            <table class="scd-mini-table">
+                <thead><tr><th>Week</th><th>Pickups</th><th>Completed</th><th>Weight (kg)</th></tr></thead>
+                <tbody>
+                    {% for w in collections.by_week %}
+                    <tr><td>{{ w.week_start|date:"M d" }} &ndash; {{ w.week_end|date:"M d" }}</td><td>{{ w.total }}</td><td>{{ w.completed }}</td><td>{{ w.weight_kg|floatformat:2 }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            {% if collections.not_completed %}
+            <p class="scd-text-empty" style="margin-top: var(--spacing-sm);">{{ collections.not_completed }} pickup{{ collections.not_completed|pluralize }} in this period {{ collections.not_completed|pluralize:"is,are" }} not completed yet, so no weight is counted for {{ collections.not_completed|pluralize:"it,them" }}.</p>
+            {% endif %}
             {% if collections.queryset %}
             <details class="scd-details">
                 <summary><i class="fas fa-chevron-down"></i> View {{ collections.total }} collection record{{ collections.total|pluralize }}</summary>
@@ -421,7 +519,7 @@
                     <div class="scd-file-icon"><i class="fas fa-file-lines"></i></div>
                     <div class="scd-file-name">{{ scmar.evidence_document.name|cut:"scmar_reports/" }}</div>
                     <div class="scd-file-actions">
-                        <a href="{{ scmar.evidence_document.url }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
+                        <a href="{% url 'document_view' 'scmar' scmar.pk %}" target="_blank" rel="noopener" data-doc-popup class="btn btn-success btn-sm"><i class="fas fa-eye"></i> View</a>
                         <a href="{{ scmar.evidence_document.url }}" download class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> Download</a>
                     </div>
                 </div>
@@ -481,7 +579,7 @@
     </div>
 
     <!-- ACTIONS -->
-    <div class="scd-section">
+    <div class="scd-section no-print">
         <div class="scd-section-body">
             <div class="scd-actions">
                 <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>

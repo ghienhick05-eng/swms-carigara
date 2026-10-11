@@ -28,43 +28,6 @@
         font-size: 0.95rem;
     }
 
-    .dashboard-search {
-        display: flex;
-        gap: var(--spacing-sm);
-        width: 300px;
-    }
-
-    .dashboard-search input {
-        flex: 1;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius-md);
-        background: var(--white);
-        color: var(--text-primary);
-        font-size: 0.9rem;
-        transition: border-color var(--transition-fast);
-    }
-
-    .dashboard-search input:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.14);
-    }
-
-    .search-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        background: var(--accent-primary);
-        color: white;
-        border: none;
-        border-radius: var(--radius-md);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-    }
-
-    .search-btn:hover {
-        background: var(--accent-secondary);
-    }
-
     /* KPI Grid */
     .kpi-grid {
         display: grid;
@@ -405,10 +368,6 @@
             align-items: flex-start;
         }
 
-        .dashboard-search {
-            width: 100%;
-        }
-
         .kpi-grid {
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         }
@@ -428,10 +387,6 @@
     <div class="dashboard-title">
         <h1>Dashboard</h1>
         <p>Welcome back, <strong>{{ user.first_name|default:user.username }}</strong>. Here's an overview of solid waste management activities in your assigned barangay.</p>
-    </div>
-    <div class="dashboard-search">
-        <input type="text" placeholder="Search records..." id="searchInput">
-        <button class="search-btn"><i class="fas fa-search"></i></button>
     </div>
 </div>
 
@@ -688,18 +643,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
 <script>
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
-            const query = this.value;
-            if (query.trim()) {
-                // Implement search navigation
-                console.log('Searching for:', query);
-                // You can redirect to a search results page or filter current page
-            }
-        }
-    });
-
     // Dark mode awareness for charts
     function getChartDefaults() {
         const isDark = document.documentElement.classList.contains('dark-mode');

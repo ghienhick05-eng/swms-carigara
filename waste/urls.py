@@ -1,9 +1,11 @@
 from django.urls import path
-from . import views
+from . import views, api, document_views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("collections/", views.collection_list, name="collection_list"),
+    path("collections/week/input/", views.collection_week_input, name="collection_week_input"),
+    path("collections/day/", views.collection_day_detail, name="collection_day_detail"),
     path("collections/<int:pk>/", views.collection_detail, name="collection_detail"),
     path("collections/<int:pk>/edit/", views.collection_edit, name="collection_edit"),
     path("collections/<int:pk>/delete/", views.collection_delete, name="collection_delete"),
@@ -22,6 +24,7 @@ urlpatterns = [
     path("accomplishments/<int:pk>/edit/", views.accomplishment_edit, name="accomplishment_edit"),
     path("accomplishments/<int:pk>/review/", views.accomplishment_review, name="accomplishment_review"),
     path("accomplishments/<int:pk>/delete/", views.accomplishment_delete, name="accomplishment_delete"),
+    path("documents/<str:kind>/<int:pk>/view/", document_views.document_view, name="document_view"),
     path("action-plans/", views.action_plan_list, name="action_plan_list"),
     path("action-plans/add/", views.action_plan_add, name="action_plan_add"),
     path("action-plans/<int:pk>/", views.action_plan_detail, name="action_plan_detail"),
@@ -37,4 +40,7 @@ urlpatterns = [
     path("reports/", views.reports, name="reports"),
     path("reports/export/excel/", views.reports_export_excel, name="reports_export_excel"),
     path("profile/", views.profile, name="profile"),
+    path("profile/change-email/", views.change_email, name="change_email"),
+    path("api/barangays/", api.barangay_list, name="api_barangay_list"),
+    path("api/barangays/<slug:slug>/", api.barangay_detail, name="api_barangay_detail"),
 ]

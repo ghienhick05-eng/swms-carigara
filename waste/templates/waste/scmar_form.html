@@ -3,67 +3,275 @@
 
 {% block extra_css %}
 <style>
-    .scf-section { margin-bottom: var(--spacing-xl); }
-    .scf-section-title {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        font-family: 'Poppins', sans-serif;
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-primary);
+    form.scf-form { counter-reset: scf-step; }
+    .scf-section {
         margin-bottom: var(--spacing-md);
-        padding-bottom: var(--spacing-sm);
-        border-bottom: 1px solid var(--gray-100);
+        padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        background: var(--white);
+        box-shadow: var(--shadow-sm);
+        scroll-margin-top: 150px;
+    }
+    .scf-form .form-group { margin-bottom: var(--spacing-md); }
+    .scf-form .form-group:last-child { margin-bottom: 0; }
+    .scf-form label { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    .scf-form .form-grid-2, .scf-form .form-grid-3 { gap: 0 var(--spacing-md); }
+    .scf-section-title::before {
+        counter-increment: scf-step;
+        content: counter(scf-step);
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 30px; height: 30px; flex-shrink: 0;
+        border-radius: 50%; background: var(--green-800);
+        color: #fff; font-size: 0.85rem; font-weight: 700;
+    }
+    .scf-footer {
+        position: fixed; left: 230px; right: 0; bottom: 0; z-index: 20;
+        display: flex; align-items: center; gap: var(--spacing-sm);
+        padding: 12px var(--spacing-xl);
+        background: var(--white); border-top: 1px solid var(--gray-200);
+        box-shadow: 0 -4px 14px -6px rgba(15, 23, 42, 0.18);
+        transition: left var(--transition-base);
+    }
+    .main-container.sidebar-collapsed .scf-footer { left: 72px; }
+    @media (max-width: 1023px) {
+        .scf-footer { left: 72px; }
+        .main-container.sidebar-expanded-mobile .scf-footer { left: 230px; }
+    }
+    @media (max-width: 600px) {
+        .scf-footer { padding: 10px var(--spacing-md); flex-wrap: wrap; }
+        .scf-footer .scf-live-total { width: 100%; }
+        .scf-footer .btn { flex: 1; justify-content: center; }
+    }
+    .scf-footer .scf-live-total { margin-right: auto; }
+    .scf-btn-ghost { background: transparent !important; border: 1px solid transparent !important; color: var(--text-secondary) !important; box-shadow: none !important; }
+    .scf-btn-ghost:hover { background: var(--gray-100) !important; color: var(--text-primary) !important; }
+    .scf-btn-draft { background: var(--white) !important; border: 1.5px solid var(--green-700) !important; color: var(--green-800) !important; font-weight: 600; }
+    .scf-btn-draft:hover { background: var(--green-50) !important; }
+    .scf-btn-primary { font-weight: 700; padding-left: 22px; padding-right: 22px; box-shadow: 0 2px 8px rgba(22, 101, 52, 0.28); }
+
+    /* progress / section navigation */
+    .scf-steps {
+        position: sticky; top: 72px; z-index: 15;
+        display: flex; gap: 6px; overflow-x: auto;
+        margin: 0 calc(-1 * var(--spacing-lg)) var(--spacing-md);
+        padding: 10px var(--spacing-lg);
+        background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(6px);
+        border-bottom: 1px solid var(--gray-200);
+        scrollbar-width: none;
+    }
+    .scf-steps::-webkit-scrollbar { display: none; }
+    .scf-step {
+        display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+        padding: 6px 12px 6px 6px; border-radius: 999px; text-decoration: none;
+        font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
+        border: 1px solid transparent; transition: background .15s, color .15s;
+    }
+    .scf-step b {
+        width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+        background: var(--gray-200); color: var(--gray-700); font-size: 0.72rem;
+    }
+    .scf-step:hover { background: var(--gray-100); }
+    .scf-step.active { background: var(--green-50); border-color: var(--green-100); color: var(--green-800); }
+    .scf-step.active b { background: var(--green-800); color: #fff; }
+    .scf-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--spacing-md); margin-bottom: var(--spacing-md); flex-wrap: wrap; }
+    .scf-head .scf-title { margin-bottom: 0; }
+    .scf-wrap { padding-bottom: 88px; }
+    .scf-wrap { max-width: 1100px; margin: 0 auto; }
+    .scf-back { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-secondary); text-decoration: none; margin-bottom: var(--spacing-md); }
+    .scf-back:hover { color: var(--green-700); }
+    .scf-title { display: flex; align-items: center; gap: 14px; margin-bottom: var(--spacing-lg); }
+    .scf-title-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--green-800); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .scf-title h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    .scf-title p { margin: 2px 0 0; font-size: .85rem; color: var(--text-secondary); }
+    .scf-live-total { margin-right: auto; display: flex; align-items: baseline; gap: 8px; }
+    .scf-live-total small { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--text-tertiary); }
+    .scf-live-total strong { font-family: 'Poppins', sans-serif; font-size: 1.3rem; color: var(--green-700); font-variant-numeric: tabular-nums; }
+    .scf-errors {
+        background: #FEE2E2; border: 1px solid #FECACA; color: #991B1B;
+        border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg);
+        margin-bottom: var(--spacing-lg); font-size: 0.88rem;
+    }
+    .scf-errors ul { margin: 6px 0 0; padding-left: 1.1rem; }
+    .scf-section-title {
+        display: flex; align-items: center; gap: var(--spacing-sm);
+        font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700;
+        color: var(--green-800); margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-sm); border-bottom: 1px solid var(--gray-100);
     }
     .scf-section-title i { color: var(--green-700); }
+    .scf-form textarea { min-height: 0; }
+    .scf-section-lead { margin: calc(-1 * var(--spacing-xs)) 0 var(--spacing-md); font-size: 0.9rem; color: var(--gray-600); line-height: 1.55; }
     .form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md); }
     @media (max-width: 760px) { .form-grid-3 { grid-template-columns: 1fr; } }
     .scf-note {
         display: flex; align-items: flex-start; gap: var(--spacing-sm);
         background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md);
-        padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-xl);
-        font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;
+        padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);
+        font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55;
     }
     .scf-note i { color: var(--green-700); margin-top: 2px; }
+    .scf-hint { color: var(--gray-600); font-size: 0.84rem; line-height: 1.45; display: block; margin-top: 4px; }
+
+    /* ---------- Live summary ---------- */
+    .wt-summary {
+        border: 1px solid var(--gray-200); border-radius: var(--radius-lg);
+        background: var(--gray-50); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);
+    }
+    .wt-summary-top { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--spacing-lg); flex-wrap: wrap; margin-bottom: var(--spacing-md); }
+    .wt-kicker { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--text-tertiary); }
+    .wt-grand { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; line-height: 1.1; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .wt-grand small { font-size: 0.95rem; font-weight: 600; color: var(--text-tertiary); margin-left: 4px; }
+    .wt-side-stat { text-align: right; }
+    .wt-side-stat b { font-family: 'Poppins', sans-serif; font-size: 1.15rem; color: var(--green-700); font-variant-numeric: tabular-nums; }
+    .wt-bar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--gray-200); }
+    .wt-seg { height: 100%; width: 0; transition: width 0.25s ease; }
+    .wt-legend { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--spacing-sm) var(--spacing-lg); margin-top: var(--spacing-md); }
+    @media (max-width: 900px) { .wt-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px) { .wt-legend { grid-template-columns: 1fr; } }
+    .wt-chip { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-secondary); min-width: 0; }
+    .wt-chip i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .wt-chip .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wt-chip b { margin-left: auto; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .wt-chip em { font-style: normal; color: var(--text-tertiary); width: 40px; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.75rem; }
+
+    .wt-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-md); }
+    .wt-toolbar .tip { font-size: 0.86rem; color: var(--gray-600); }
+    .wt-toolbar .tip kbd { background: var(--gray-100); border: 1px solid var(--gray-200); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: 0.72rem; font-family: inherit; }
+    .wt-toolbar-actions { display: flex; gap: var(--spacing-xs); }
+    .wt-link-btn {
+        background: none; border: 1px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;
+        padding: 6px 12px; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-family: inherit;
+    }
+    .wt-link-btn:hover { border-color: var(--green-600); color: var(--green-700); }
+
+    /* ---------- Collapsible waste sections ---------- */
+    .wt-sec { border: 1px solid var(--gray-200); border-left: 4px solid var(--sec-color); border-radius: var(--radius-md); margin-bottom: var(--spacing-md); background: var(--white); overflow: hidden; }
+    .wt-sec > summary {
+        list-style: none; cursor: pointer; display: flex; align-items: center; gap: var(--spacing-md);
+        padding: 10px var(--spacing-lg); user-select: none;
+    }
+    .wt-sec > summary::-webkit-details-marker { display: none; }
+    .wt-sec > summary:hover { background: var(--gray-50); }
+    .wt-sec-icon { width: 34px; height: 34px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--sec-color); background: color-mix(in srgb, var(--sec-color) 12%, transparent); }
+    .wt-sec-name { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
+    .wt-sec-count { display: block; font-weight: 400; font-size: 0.76rem; color: var(--text-tertiary); }
+    .wt-sec-total { margin-left: auto; text-align: right; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .wt-sec-total small { font-size: 0.7rem; font-weight: 600; color: var(--text-tertiary); }
+    .wt-sec > summary .chev { color: var(--text-tertiary); transition: transform 0.15s ease; font-size: 0.75rem; }
+    .wt-sec[open] > summary .chev { transform: rotate(180deg); }
+    .wt-sec-body { border-top: 1px solid var(--gray-100); overflow-x: auto; }
+
+    table.wt-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 340px; }
+    table.wt-table.wt-bio { min-width: 640px; }
+    .wt-table th, .wt-table td { padding: 6px 12px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+    .wt-table thead th { background: var(--gray-50); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); font-weight: 700; text-align: right; white-space: nowrap; }
+    .wt-table thead th:first-child { text-align: left; }
+    .wt-table tbody th { text-align: left; font-weight: 500; color: var(--text-primary); width: 100%; }
+    .wt-hint { display: block; font-weight: 400; font-size: 0.82rem; color: var(--gray-600); margin-top: 1px; }
+    .wt-table tr.wt-group th { background: var(--gray-50); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--text-tertiary); padding: 6px 12px; }
+    .wt-table td { text-align: right; white-space: nowrap; }
+    .wt-table td.wt-calc { color: var(--text-tertiary); font-variant-numeric: tabular-nums; min-width: 80px; }
+    .wt-table tfoot th, .wt-table tfoot td { background: #F0FDF4; font-weight: 700; color: var(--green-800); border-bottom: none; border-top: 1px solid var(--green-100); font-variant-numeric: tabular-nums; }
+    .wt-table tfoot th { text-align: right; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.05em; }
+
+    .wt-input { display: inline-flex; align-items: center; gap: 6px; }
+    .wt-input span { font-size: 0.74rem; color: var(--text-tertiary); width: 18px; text-align: left; }
+    input.wt-num {
+        width: 96px; text-align: right; padding: 7px 10px; font: inherit; font-variant-numeric: tabular-nums;
+        border: 1px solid var(--gray-300); border-radius: var(--radius-md); background: var(--white); color: var(--text-primary);
+        transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .wt-bio input.wt-num { width: 84px; }
+    input.wt-num::placeholder { color: var(--gray-300); }
+    input.wt-num:focus { outline: none; border-color: var(--green-600); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18); }
+    input.wt-num.has-value { border-color: var(--green-100); background: #F7FEF9; font-weight: 600; }
+    tr.wt-invalid input.wt-num[data-role="c"], tr.wt-invalid input.wt-num[data-role="b"], tr.wt-invalid input.wt-num[data-role="o"] { border-color: var(--accent-danger); background: #FEF2F2; }
+    tr.wt-invalid td.wt-calc { color: var(--accent-danger); font-weight: 700; }
+
+    /* ---------- Photo uploader ---------- */
+    .ph-drop {
+        display: block; border: 2px dashed var(--gray-300); border-radius: var(--radius-lg); padding: var(--spacing-lg);
+        text-align: center; cursor: pointer; background: var(--gray-50); transition: border-color 0.15s, background 0.15s;
+    }
+    .ph-drop:hover, .ph-drop.drag { border-color: var(--green-600); background: var(--green-50); }
+    .ph-drop i { font-size: 1.6rem; color: var(--green-700); margin-bottom: 6px; }
+    .ph-drop strong { display: block; color: var(--text-primary); }
+    .ph-drop span { font-size: 0.86rem; color: var(--gray-600); }
+    .ph-drop input[type=file] { display: none; }
+    .ph-meta { display: flex; justify-content: space-between; align-items: center; margin: var(--spacing-md) 0 var(--spacing-sm); font-size: 0.86rem; color: var(--gray-600); gap: var(--spacing-sm); flex-wrap: wrap; }
+    .ph-error { color: var(--accent-danger); font-size: 0.82rem; margin-top: var(--spacing-sm); display: none; }
+    .ph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--spacing-sm); }
+    .ph-item { position: relative; display: block; aspect-ratio: 1; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--gray-200); background: var(--gray-100); cursor: pointer; }
+    .ph-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ph-item .tag { position: absolute; left: 6px; bottom: 6px; background: rgba(15, 23, 42, 0.72); color: #fff; font-size: 0.66rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; letter-spacing: 0.03em; }
+    .ph-item .rm {
+        position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer;
+        background: rgba(15, 23, 42, 0.72); color: #fff; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+    }
+    .ph-item .rm:hover { background: var(--accent-danger); }
+    .ph-item.removed img { opacity: 0.25; filter: grayscale(1); }
+    .ph-item.removed .tag { background: var(--accent-danger); }
+    .ph-item.removed .rm { background: var(--green-700); }
+    .ph-item input[type=checkbox] { display: none; }
+    .ph-section-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--text-tertiary); margin: var(--spacing-lg) 0 var(--spacing-sm); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="entity-card">
-    <div class="entity-banner">
-        <div class="entity-banner-icon"><i class="fas fa-clipboard-check"></i></div>
-        <h2>{% if editing %}Edit SCMAR{% else %}Create SCMAR{% endif %}</h2>
-        <p>Solid Waste Collection and Management Assessment Report &mdash; a combined assessment built from your barangay's Complaints, Collections, Action Plans, and Accomplishments records.</p>
+<div class="scf-wrap">
+    <a href="{% url 'scmar_list' %}" class="scf-back"><i class="fas fa-arrow-left"></i> Back to SCMAR List</a>
+    <div class="scf-head">
+        <div class="scf-title">
+            <div class="scf-title-icon"><i class="fas fa-clipboard-check"></i></div>
+            <div>
+                <h2>{% if editing %}Edit SCMAR{% else %}Create SCMAR{% endif %}</h2>
+                <p>Monthly Solid Waste Collection and Management Assessment Report</p>
+            </div>
+        </div>
     </div>
-    <div class="entity-body">
+    <nav class="scf-steps" id="scfSteps" aria-label="Form sections">
+        <a class="scf-step active" href="#scf-s1"><b>1</b> Report Information</a>
+        <a class="scf-step" href="#scf-s2"><b>2</b> Assessment</a>
+        <a class="scf-step" href="#scf-s3"><b>3</b> Budget</a>
+        <a class="scf-step" href="#scf-s4"><b>4</b> Documents</a>
+    </nav>
         <div class="scf-note">
             <i class="fas fa-circle-info"></i>
             <div>
-                Complaint, collection, action plan, and accomplishment data is pulled automatically from those modules for the reporting period you set below &mdash; you don't need to re-enter it here.
-                Once you save, you'll be able to review the compiled data on the SCMAR detail page before writing your overall assessment and submitting it to MENRO Admin.
+                This report is <strong>built automatically</strong> from your barangay's Collections, Complaints, Action Plans and Accomplishments for the period you choose &mdash; you do not type those figures in here.
+                You only add the written assessment, budget and supporting documents.
+                Before you submit, make sure your pickups for the period are marked <strong>Completed</strong> with the weight recorded in <a href="{% url 'collection_list' %}">Collections</a>, because the waste totals come from there.
             </div>
         </div>
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="scf-form" id="scmarForm" novalidate>
             {% csrf_token %}
+            {% if form.errors or extra_errors %}
+            <div class="scf-errors" role="alert">
+                <strong><i class="fas fa-circle-exclamation"></i> Please fix the following before continuing:</strong>
+                <ul>
+                    {% for field in form %}{% for error in field.errors %}<li><strong>{{ field.label }}:</strong> {{ error }}</li>{% endfor %}{% endfor %}
+                    {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                    {% for error in extra_errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
 
             <!-- 1. REPORT INFORMATION -->
-            <div class="scf-section">
+            <div class="scf-section" id="scf-s1">
                 <div class="scf-section-title"><i class="fas fa-file-lines"></i> Report Information</div>
                 <div class="form-grid-3">
                     <div class="form-group">
+                        <label>Barangay</label>
                         {% if form.locked_barangay %}
-                        <label>Barangay</label>
                         <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ form.locked_barangay }}</div>
-                        {{ form.barangay }}
-                        {% else %}
-                        <label>Barangay</label>
-                        {{ form.barangay }}
                         {% endif %}
+                        {{ form.barangay }}
                     </div>
                     <div class="form-group">
-                        <label>Reporting Period Label</label>
-                        {{ form.reporting_period }}
+                        <label for="scmMonth">Reporting Month</label>
+                        <input type="month" id="scmMonth" class="form-control" value="{% if scmar %}{{ scmar.period_start|date:'Y-m' }}{% else %}{{ prefill_month }}{% endif %}">
+                        <span class="scf-hint">Pick a month and the period fields below fill in automatically.</span>
                     </div>
                     <div class="form-group">
                         <label>Date Prepared</label>
@@ -72,24 +280,28 @@
                 </div>
                 <div class="form-grid-3">
                     <div class="form-group">
+                        <label>Reporting Period Label</label>
+                        {{ form.reporting_period }}
+                        <span class="scf-hint">Shown on the report, e.g. January 2026. Edit it for a quarterly report.</span>
+                    </div>
+                    <div class="form-group">
                         <label>Period Start</label>
                         {{ form.period_start }}
-                        <small style="color: var(--text-tertiary);">Used to gather the relevant records from each module.</small>
                     </div>
                     <div class="form-group">
                         <label>Period End</label>
                         {{ form.period_end }}
                     </div>
-                    <div class="form-group">
-                        <label>Prepared By</label>
-                        {{ form.prepared_by }}
-                    </div>
+                </div>
+                <div class="form-group" style="max-width: 360px;">
+                    <label>Prepared By</label>
+                    {{ form.prepared_by }}
                 </div>
             </div>
 
-            <!-- 6. OVERALL ASSESSMENT -->
-            <div class="scf-section">
-                <div class="scf-section-title"><i class="fas fa-chart-line"></i> Overall Assessment</div>
+            <!-- 4. ASSESSMENT -->
+            <div class="scf-section" id="scf-s2">
+                <div class="scf-section-title"><i class="fas fa-chart-line"></i> Assessment &amp; Accomplishments <span style="font-weight:400; font-size:0.8rem; color: var(--text-tertiary);">(optional)</span></div>
                 <div class="form-group">
                     <label>Overall Performance Summary</label>
                     {{ form.overall_summary }}
@@ -103,24 +315,24 @@
                         <label>Areas Needing Improvement</label>
                         {{ form.improvement_areas }}
                     </div>
+                    <div class="form-group">
+                        <label>Positive Accomplishments</label>
+                        {{ form.positive_accomplishments }}
+                    </div>
+                    <div class="form-group">
+                        <label>Recommended Actions</label>
+                        {{ form.recommended_action }}
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Positive Accomplishments</label>
-                    {{ form.positive_accomplishments }}
-                </div>
-                <div class="form-group">
-                    <label>Recommended Actions</label>
-                    {{ form.recommended_action }}
-                </div>
-                <div class="form-group">
+                <div class="form-group" style="max-width: 260px;">
                     <label>Priority</label>
                     {{ form.priority }}
                 </div>
             </div>
 
-            <!-- 7. BUDGET SUMMARY -->
-            <div class="scf-section">
-                <div class="scf-section-title"><i class="fas fa-peso-sign"></i> Budget Summary</div>
+            <!-- 5. BUDGET SUMMARY -->
+            <div class="scf-section" id="scf-s3">
+                <div class="scf-section-title"><i class="fas fa-peso-sign"></i> Budget Summary <span style="font-weight:400; font-size:0.8rem; color: var(--text-tertiary);">(optional)</span></div>
                 <div class="form-group">
                     <label>Amount Spent (PHP) <span style="font-weight:400; color: var(--text-tertiary);">&mdash; allocated budget is totaled automatically from this barangay's Action Plans</span></label>
                     {{ form.amount_spent }}
@@ -131,12 +343,12 @@
                 </div>
             </div>
 
-            <!-- 8. SUPPORTING DOCUMENTS -->
-            <div class="scf-section">
-                <div class="scf-section-title"><i class="fas fa-paperclip"></i> Additional Supporting Documents</div>
+            <!-- 6. SUPPORTING DOCUMENTS -->
+            <div class="scf-section" id="scf-s4">
+                <div class="scf-section-title"><i class="fas fa-paperclip"></i> Supporting Documents <span style="font-weight:400; font-size:0.8rem; color: var(--text-tertiary);">(optional)</span></div>
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label>Photo <span style="font-weight:400; color: var(--text-tertiary);">(JPG, JPEG, PNG)</span></label>
+                        <label>Extra Photo <span style="font-weight:400; color: var(--text-tertiary);">(JPG, JPEG, PNG)</span></label>
                         {% if editing and scmar.evidence_photo %}
                         <div style="margin-bottom: var(--spacing-sm);">
                             <img src="{{ scmar.evidence_photo.url }}" alt="Current evidence photo" style="max-width: 140px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: block; margin-bottom: 4px;">
@@ -164,12 +376,75 @@
                 </div>
             </div>
 
-            <div class="form-actions">
-                <a href="{% url 'scmar_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
-                <button type="submit" name="save_draft" value="1" class="btn btn-outline"><i class="fas fa-floppy-disk"></i> Save as Draft</button>
-                <button type="submit" name="submit" value="1" class="btn btn-add"><i class="fas fa-paper-plane"></i> Submit to MENRO Admin</button>
+            <div class="scf-footer">
+                <a href="{% url 'scmar_list' %}" class="btn scf-btn-ghost">Cancel</a>
+                <button type="submit" name="submit" value="1" class="btn btn-add scf-btn-primary" onclick="return confirm('Submit this SCMAR to MENRO Admin? You will not be able to edit it unless it is returned for revision.');">Submit to MENRO Admin <i class="fas fa-arrow-right"></i></button>
             </div>
         </form>
-    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var form = document.getElementById('scmarForm');
+    if (!form) return;
+    var dirty = false;
+
+    /* ---------- reporting month -> period fields ---------- */
+    var month = document.getElementById('scmMonth');
+    var label = document.getElementById('id_reporting_period');
+    var start = document.getElementById('id_period_start');
+    var end = document.getElementById('id_period_end');
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    if (month) {
+        month.addEventListener('change', function () {
+            var m = /^(\d{4})-(\d{2})$/.exec(month.value);
+            if (!m) return;
+            var y = parseInt(m[1], 10), mo = parseInt(m[2], 10);
+            var last = new Date(y, mo, 0).getDate();
+            if (label) label.value = MONTHS[mo - 1] + ' ' + y;
+            if (start) start.value = y + '-' + pad(mo) + '-01';
+            if (end) end.value = y + '-' + pad(mo) + '-' + pad(last);
+            dirty = true;
+        });
+    }
+
+    /* ---------- replace the "---------" empty option on selects ---------- */
+    form.querySelectorAll('select').forEach(function (sel) {
+        var o = sel.options[0];
+        if (o && o.value === '' && /^-+$/.test(o.text.trim())) o.text = 'Select ' + ((sel.id || '').replace('id_', '').replace(/_/g, ' ') || 'option');
+    });
+
+    /* ---------- section progress nav ---------- */
+    var steps = Array.prototype.slice.call(document.querySelectorAll('#scfSteps .scf-step'));
+    var targets = steps.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+    steps.forEach(function (a, i) {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (targets[i]) targets[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+    function spy() {
+        var cur = 0, line = 170;
+        targets.forEach(function (t, i) { if (t && t.getBoundingClientRect().top <= line) cur = i; });
+        if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) cur = targets.length - 1;
+        steps.forEach(function (a, i) { a.classList.toggle('active', i === cur); });
+        var act = steps[cur];
+        if (act && act.parentNode.scrollWidth > act.parentNode.clientWidth) {
+            act.parentNode.scrollLeft = act.offsetLeft - 16;
+        }
+    }
+    window.addEventListener('scroll', spy, { passive: true });
+    spy();
+
+    /* ---------- warn before leaving with unsaved changes ---------- */
+    form.addEventListener('input', function () { dirty = true; });
+    form.addEventListener('submit', function () { dirty = false; });
+    window.addEventListener('beforeunload', function (e) {
+        if (dirty) { e.preventDefault(); e.returnValue = ''; }
+    });
+})();
+</script>
 {% endblock %}

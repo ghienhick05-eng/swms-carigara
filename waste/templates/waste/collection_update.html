@@ -1,36 +1,293 @@
 {% extends "base.html" %}
 {% block title %}Update Collection Status - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cu-card {
+        max-width: 760px;
+        margin: 0 auto;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+
+    /* ---------- Banner ---------- */
+    .cu-banner {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        color: #fff;
+    }
+
+    .cu-banner-icon {
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        font-size: 1.35rem;
+    }
+
+    .cu-banner-text { flex: 1 1 auto; min-width: 0; }
+
+    .cu-banner-text h2 {
+        margin: 0 0 2px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1.25;
+        color: #fff;
+    }
+
+    .cu-banner-text p {
+        margin: 0;
+        font-size: 0.88rem;
+        opacity: 0.92;
+    }
+
+    .cu-pill {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ---------- Body ---------- */
+    .cu-body { padding: var(--spacing-xl); }
+
+    .cu-section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin: 0 0 var(--spacing-md);
+        padding-bottom: var(--spacing-sm);
+        border-bottom: 1px solid var(--gray-100);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .cu-section-title i { color: var(--green-600); }
+
+    /* ---------- Details grid ---------- */
+    .cu-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg) var(--spacing-xl);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+    }
+
+    .cu-detail {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+        min-width: 0;
+    }
+
+    .cu-detail > i {
+        flex: 0 0 20px;
+        width: 20px;
+        margin-top: 2px;
+        text-align: center;
+        color: var(--green-600);
+        font-size: 1rem;
+    }
+
+    .cu-detail-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--text-tertiary);
+        margin-bottom: 2px;
+    }
+
+    .cu-detail-value {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        overflow-wrap: anywhere;
+    }
+
+    /* ---------- Form ---------- */
+    .cu-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg) var(--spacing-xl);
+        align-items: start;
+    }
+
+    .cu-fields .form-group { margin-bottom: 0; }
+
+    .cu-fields label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .cu-fields label > i { color: var(--text-primary); font-size: 0.9rem; }
+
+    .cu-required {
+        display: none;
+        color: #DC2626;
+        font-weight: 700;
+    }
+
+    .cu-required.is-on { display: inline; }
+
+    .cu-hint {
+        display: block;
+        margin-top: var(--spacing-xs);
+        font-size: 0.8rem;
+        line-height: 1.4;
+        color: var(--text-tertiary);
+    }
+
+    .cu-error {
+        display: block;
+        margin-top: var(--spacing-xs);
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: #B91C1C;
+    }
+
+    .cu-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-xl);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid var(--gray-100);
+    }
+
+    .cu-actions .btn { white-space: nowrap; }
+
+    @media (max-width: 640px) {
+        .cu-banner { flex-wrap: wrap; padding: var(--spacing-lg); }
+        .cu-body { padding: var(--spacing-lg); }
+        .cu-details,
+        .cu-fields { grid-template-columns: 1fr; }
+        .cu-actions { flex-direction: column-reverse; }
+        .cu-actions .btn { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="entity-card">
-    <div class="entity-banner">
-        <div class="entity-banner-icon"><i class="fas fa-clipboard-check"></i></div>
-        <h2>Update Collection #{{ collection.id }}</h2>
-        <p>Mark this scheduled collection as Ongoing or Completed.</p>
-    </div>
-    <div class="entity-body">
-        <div class="confirm-summary">
-            <strong>Barangay:</strong> {{ collection.barangay }}<br>
-            <strong>Waste Type:</strong> {{ collection.waste_type }}<br>
-            <strong>Scheduled:</strong> {{ collection.scheduled_date|date:"M d, Y H:i" }}<br>
-            <strong>Collector / Truck ID:</strong> {{ collection.collector }}
+<div class="cu-card">
+    <div class="cu-banner">
+        <div class="cu-banner-icon"><i class="fas fa-truck"></i></div>
+        <div class="cu-banner-text">
+            <h2>Update Collection #{{ collection.id }}</h2>
+            <p>Mark this scheduled collection as Ongoing or Completed.</p>
         </div>
-        <form method="post">
+        <span class="cu-pill"><i class="fas fa-clock"></i> {{ collection.status }}</span>
+    </div>
+
+    <div class="cu-body">
+        <h3 class="cu-section-title"><i class="fas fa-file-lines"></i> Collection Details</h3>
+
+        <div class="cu-details">
+            <div class="cu-detail">
+                <i class="fas fa-location-dot"></i>
+                <div>
+                    <span class="cu-detail-label">Barangay</span>
+                    <span class="cu-detail-value">{{ collection.barangay }}</span>
+                </div>
+            </div>
+            <div class="cu-detail">
+                <i class="fas fa-calendar-days"></i>
+                <div>
+                    <span class="cu-detail-label">Scheduled</span>
+                    <span class="cu-detail-value">{% if collection.scheduled_date %}{{ collection.scheduled_date|date:"M d, Y" }}{% else %}&ndash;{% endif %}</span>
+                </div>
+            </div>
+            <div class="cu-detail">
+                <i class="fas fa-leaf"></i>
+                <div>
+                    <span class="cu-detail-label">Waste Type</span>
+                    <span class="cu-detail-value">{{ collection.waste_type }}</span>
+                </div>
+            </div>
+            <div class="cu-detail">
+                <i class="fas fa-truck"></i>
+                <div>
+                    <span class="cu-detail-label">Collector / Truck ID</span>
+                    <span class="cu-detail-value">{{ collection.collector|default:"&ndash;" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" novalidate>
             {% csrf_token %}
-            <div class="form-group">
-                <label><i class="fas fa-list-check"></i> Status</label>
-                {{ form.status }}
+            <div class="cu-fields">
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}">
+                        <i class="fas fa-rotate"></i> Status <span class="cu-required is-on">*</span>
+                    </label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<span class="cu-error">{{ form.status.errors.0 }}</span>{% endif %}
+                    <span class="cu-hint">Update the current status of this collection.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.weight_kg.id_for_label }}">
+                        <i class="fas fa-weight-hanging"></i> Actual Weight (kg)
+                        <span class="cu-required" id="cuWeightStar">*</span>
+                    </label>
+                    {{ form.weight_kg }}
+                    {% if form.weight_kg.errors %}<span class="cu-error">{{ form.weight_kg.errors.0 }}</span>{% endif %}
+                    <span class="cu-hint" id="cuWeightHint">Required once you mark this collection as Completed.</span>
+                </div>
             </div>
-            <div class="form-group">
-                <label><i class="fas fa-weight-hanging"></i> Actual Weight Collected (kg)</label>
-                {{ form.weight_kg }}
-                {% if form.weight_kg.errors %}<span class="field-error">{{ form.weight_kg.errors.0 }}</span>{% endif %}
-                <span class="barangay-locked-hint">Required once you mark this collection as Completed.</span>
-            </div>
-            <div class="form-actions">
+
+            <div class="cu-actions">
                 <a href="{% url 'collection_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
                 <button type="submit" class="btn btn-add"><i class="fas fa-check"></i> Update Status</button>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var status = document.getElementById('{{ form.status.id_for_label }}');
+        var weight = document.getElementById('{{ form.weight_kg.id_for_label }}');
+        var star = document.getElementById('cuWeightStar');
+        var hint = document.getElementById('cuWeightHint');
+        if (!status || !weight) return;
+
+        function sync() {
+            var done = status.value === 'Completed';
+            weight.required = done;
+            star.classList.toggle('is-on', done);
+            hint.textContent = done
+                ? 'Enter the actual weight collected before saving.'
+                : 'Required once you mark this collection as Completed.';
+        }
+        status.addEventListener('change', sync);
+        sync();
+    })();
+</script>
 {% endblock %}

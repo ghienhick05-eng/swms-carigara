@@ -1,106 +1,296 @@
 {% extends "base.html" %}
 {% block title %}Action Plan - SWMS Carigara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ap-wrap { max-width: 1100px; margin: 0 auto; }
+    .ap-back { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-secondary); text-decoration: none; margin-bottom: var(--spacing-md); }
+    .ap-back:hover { color: var(--green-700); }
+    .ap-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg); flex-wrap: wrap; }
+    .ap-title { display: flex; align-items: center; gap: 14px; }
+    .ap-title-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--green-100); color: var(--green-700); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .ap-title h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    .ap-title p { margin: 2px 0 0; font-size: .85rem; color: var(--text-secondary); }
+    .ap-notice { display: flex; gap: 10px; align-items: flex-start; background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); padding: 10px 14px; font-size: .8rem; color: var(--green-900); max-width: 420px; position: relative; }
+    .ap-notice i { color: var(--green-700); margin-top: 2px; }
+    .ap-badge { position: absolute; top: 8px; right: 10px; background: var(--green-600); color: #fff; font-size: .65rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; }
+    .ap-notice-text { padding-right: 52px; }
+
+    .ap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-lg); }
+    .ap-grid .span-2 { grid-column: span 2; }
+    @media (max-width: 800px) { .ap-grid { grid-template-columns: 1fr; } .ap-grid .span-2 { grid-column: auto; } }
+
+    .ap-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--spacing-lg); box-shadow: var(--shadow-sm); }
+    .ap-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: var(--spacing-md); }
+    .ap-num { width: 26px; height: 26px; border-radius: 50%; background: var(--green-800); color: #fff; font-size: .8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ap-card-head h3 { margin: 0; font-size: 1rem; font-weight: 700; flex: 1; }
+    .ap-flag { font-size: .72rem; color: var(--text-tertiary); }
+    .ap-flag.req { color: var(--accent-danger, #dc2626); }
+    .ap-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+    .ap-row.title-row { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 640px) { .ap-row, .ap-row.title-row { grid-template-columns: 1fr; } }
+    .ap-card label { font-size: .8rem; font-weight: 600; margin-bottom: 6px; }
+    .ap-card .req-star { color: var(--accent-danger, #dc2626); }
+    .ap-card .form-group { margin-bottom: 0; }
+    .ap-hint { display: block; margin-top: 4px; font-size: .72rem; color: var(--text-tertiary); }
+    .ap-count { display: block; text-align: right; font-size: .7rem; color: var(--text-tertiary); margin-top: 2px; }
+    .ap-err { color: var(--accent-danger, #dc2626); font-size: .78rem; margin-top: 4px; }
+    .ap-card textarea { resize: vertical; }
+    .ap-card .barangay-locked-display { margin: 0; }
+    .ap-info { display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; background: var(--green-50); border: 1px solid var(--green-100); border-radius: var(--radius-md); padding: 8px 10px; font-size: .75rem; color: var(--green-900); }
+    .ap-info i { color: var(--green-700); margin-top: 2px; }
+    .ap-peso { position: relative; }
+    .ap-peso span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); font-size: .9rem; pointer-events: none; }
+    .ap-peso input { padding-left: 28px !important; }
+    .ap-resp { display: flex; gap: 12px; align-items: flex-start; }
+    .ap-resp > i { color: var(--gray-500); font-size: 1.1rem; margin-top: 28px; }
+    .ap-resp .form-group { flex: 1; }
+
+    .ap-upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); }
+    @media (max-width: 800px) { .ap-upload-grid { grid-template-columns: 1fr; } }
+    .ap-upload-label { font-size: .8rem; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .ap-upload-label small { font-weight: 400; color: var(--text-tertiary); }
+    .ap-upload-row { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+    .ap-drop { flex: 1 1 220px; border: 1.5px dashed var(--gray-300); border-radius: var(--radius-md); background: var(--gray-50); padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: border-color .15s, background .15s; margin: 0; }
+    .ap-drop:hover, .ap-drop.dragover { border-color: var(--green-600); background: var(--green-50); }
+    .ap-drop > i { font-size: 1.6rem; color: var(--green-600); }
+    .ap-drop strong { display: block; font-size: .75rem; font-weight: 500; color: var(--text-primary); }
+    .ap-drop small { font-size: .68rem; color: var(--text-tertiary); }
+    .ap-drop input[type=file] { display: none; }
+    .ap-file { flex: 1 1 180px; display: none; align-items: center; gap: 10px; border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 8px 10px; background: #fff; min-width: 0; }
+    .ap-file.show { display: flex; }
+    .ap-file .ico { width: 34px; height: 34px; border-radius: 6px; background: var(--green-100); color: var(--green-700); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+    .ap-file .ico img { width: 100%; height: 100%; object-fit: cover; }
+    .ap-file .meta { flex: 1; min-width: 0; }
+    .ap-file .meta b { display: block; font-size: .75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ap-file .meta span { font-size: .68rem; color: var(--text-tertiary); }
+    .ap-file button { background: none; border: 0; color: var(--gray-500); cursor: pointer; font-size: .9rem; padding: 4px; }
+    .ap-file button:hover { color: var(--accent-danger, #dc2626); }
+    .ap-current { margin-top: 8px; font-size: .75rem; color: var(--text-secondary); }
+
+    .ap-footer { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-md); margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color); flex-wrap: wrap; }
+    .ap-footer .note { font-size: .72rem; color: var(--text-tertiary); }
+    .ap-footer .actions { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="entity-card">
-    <div class="entity-banner">
-        <div class="entity-banner-icon"><i class="fas fa-tasks"></i></div>
-        <h2>{% if editing %}Edit Action Plan #{{ action_plan.id }}{% else %}Add Action Plan{% endif %}</h2>
-        <p>{% if editing %}Update the details for this action plan.{% else %}Plan an upcoming activity and assign responsibility.{% endif %}</p>
+<div class="ap-wrap">
+    <a href="{% url 'action_plan_list' %}" class="ap-back"><i class="fas fa-arrow-left"></i> Back to Action Plans</a>
+
+    <div class="ap-header">
+        <div class="ap-title">
+            <div class="ap-title-icon"><i class="fas fa-clipboard-list"></i></div>
+            <div>
+                <h2>{% if editing %}Edit Action Plan #{{ action_plan.id }}{% else %}Add Action Plan{% endif %}</h2>
+                <p>{% if editing %}Update the details for this action plan.{% else %}Plan an upcoming activity and assign responsibility.{% endif %}</p>
+            </div>
+        </div>
+        <div class="ap-notice">
+            <i class="fas fa-circle-info"></i>
+            <div class="ap-notice-text">This action plan will be reviewed by MENRO Admin.<br>The due date will be assigned after review.</div>
+            <span class="ap-badge">{% if editing %}EDIT{% else %}NEW{% endif %}</span>
+        </div>
     </div>
-    <div class="entity-body">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label><i class="fas fa-heading"></i> Activity / Title</label>
-                {{ form.title }}
-                <datalist id="action-plan-suggestions">
-                    <option value="Establishment of MRF">
-                    <option value="HAPAG">
-                    <option value="Desilting">
-                    <option value="BARKADA Day">
-                </datalist>
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    {% if form.locked_barangay %}
-                        <label><i class="fas fa-map-marker-alt"></i> Barangay</label>
-                        <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ form.locked_barangay }}</div>
-                        <span class="barangay-locked-hint">Automatically set to your assigned barangay.</span>
-                        {{ form.barangay }}
-                    {% else %}
-                        <label><i class="fas fa-map-marker-alt"></i> Barangay <span style="font-weight:400; color: var(--text-tertiary);">(blank = municipal-wide)</span></label>
-                        {{ form.barangay }}
-                    {% endif %}
-                </div>
-                <div class="form-group">
-                    {% if form.target_date %}
-                        <label><i class="fas fa-calendar-day"></i> Due Date <span style="font-weight:400; color: var(--text-tertiary);">(submission deadline)</span></label>
-                        {{ form.target_date }}
-                    {% else %}
-                        <label><i class="fas fa-calendar-day"></i> Due Date</label>
-                        <div class="barangay-locked-display"><i class="fas fa-lock"></i> Set by MENRO Admin</div>
-                        <span class="barangay-locked-hint">The due date is assigned by the MENRO Admin after your submission is reviewed.</span>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-align-left"></i> Description</label>
-                {{ form.description }}
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label><i class="fas fa-peso-sign"></i> Estimated Budget (PHP)</label>
-                    {{ form.budget }}
-                    <span style="font-size: 0.85rem; color: var(--text-tertiary);">Estimated cost for this activity.</span>
-                    {% if form.budget.errors %}
-                        <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.budget.errors|striptags }}</div>
-                    {% endif %}
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-list-check"></i> Status</label>
-                    {{ form.status }}
-                </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-user-tie"></i> Responsible Person / Office</label>
-                {{ form.responsible_person }}
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-note-sticky"></i> Remarks</label>
-                {{ form.remarks }}
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-file-arrow-up"></i> Action Plan Document <span style="font-weight:400; color: var(--text-tertiary);">(Allowed: PDF, DOC, DOCX)</span></label>
-                {% if editing and action_plan.file %}
-                    <div style="margin-bottom: var(--spacing-sm); font-size: 0.9rem; color: var(--text-secondary);">
-                        <i class="fas fa-file"></i> Current file:
-                        <a href="{{ action_plan.file.url }}" target="_blank" rel="noopener">{{ action_plan.file.name|cut:"action_plans/" }}</a>
-                        &mdash; choose a new file below only if you want to replace it.
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="ap-err" style="margin-bottom:12px;">{{ form.non_field_errors|striptags }}</div>{% endif %}
+
+        <div class="ap-grid">
+            <!-- 1. Activity Details -->
+            <section class="ap-card span-2">
+                <div class="ap-card-head"><span class="ap-num">1</span><h3>Activity Details</h3><span class="ap-flag req">* Required</span></div>
+                <div class="ap-row title-row">
+                    <div class="form-group">
+                        <label for="{{ form.title.id_for_label }}">Activity / Title <span class="req-star">*</span></label>
+                        {{ form.title }}
+                        <datalist id="action-plan-suggestions">
+                            <option value="Establishment of MRF">
+                            <option value="HAPAG">
+                            <option value="Desilting">
+                            <option value="BARKADA Day">
+                        </datalist>
+                        <span class="ap-count"><span data-count-for="{{ form.title.id_for_label }}">0</span>/150</span>
+                        {% if form.title.errors %}<div class="ap-err">{{ form.title.errors|striptags }}</div>{% endif %}
                     </div>
-                {% endif %}
-                {{ form.file }}
-                {% if form.file.errors %}
-                    <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.file.errors|striptags }}</div>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-image"></i> Supporting Image <span style="font-weight:400; color: var(--text-tertiary);">(Allowed: JPG, JPEG, PNG — optional)</span></label>
-                {% if editing and action_plan.supporting_image %}
-                    <div style="margin-bottom: var(--spacing-sm);">
-                        <img src="{{ action_plan.supporting_image.url }}" alt="Current supporting image" style="max-width: 140px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: block; margin-bottom: 4px;">
-                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Current image &mdash; choose a new one below only if you want to replace it.</span>
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                        <span class="ap-count"><span data-count-for="{{ form.description.id_for_label }}">0</span>/500</span>
+                        {% if form.description.errors %}<div class="ap-err">{{ form.description.errors|striptags }}</div>{% endif %}
                     </div>
+                </div>
+            </section>
+
+            <!-- 2. Assignment & Schedule -->
+            <section class="ap-card">
+                <div class="ap-card-head"><span class="ap-num">2</span><h3>Assignment &amp; Schedule</h3><span class="ap-flag req">* Required</span></div>
+                <div class="ap-row">
+                    <div class="form-group">
+                        {% if form.locked_barangay %}
+                            <label><i class="fas fa-map-marker-alt"></i> Barangay <span class="req-star">*</span></label>
+                            <div class="barangay-locked-display"><i class="fas fa-lock"></i> {{ form.locked_barangay }}</div>
+                            <span class="ap-hint">Automatically set from your assigned barangay.</span>
+                            {{ form.barangay }}
+                        {% else %}
+                            <label for="{{ form.barangay.id_for_label }}"><i class="fas fa-map-marker-alt"></i> Barangay <span class="ap-hint" style="display:inline;">(blank = municipal-wide)</span></label>
+                            {{ form.barangay }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {% if form.target_date %}
+                            <label for="{{ form.target_date.id_for_label }}"><i class="fas fa-calendar-day"></i> Due Date <span class="req-star">*</span></label>
+                            {{ form.target_date }}
+                            <span class="ap-hint">Submission deadline.</span>
+                        {% else %}
+                            <label><i class="fas fa-calendar-day"></i> Due Date <span class="req-star">*</span></label>
+                            <div class="barangay-locked-display"><i class="fas fa-calendar"></i> Set by MENRO Admin</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if not form.target_date %}
+                <div class="ap-info"><i class="fas fa-circle-info"></i><span>The due date is assigned by the MENRO Admin after your submission is reviewed.</span></div>
                 {% endif %}
-                {{ form.supporting_image }}
-                {% if form.supporting_image.errors %}
-                    <div style="color: var(--accent-danger); font-size: 0.85rem; margin-top: 4px;">{{ form.supporting_image.errors|striptags }}</div>
-                {% endif %}
-            </div>
-            <div class="form-actions">
+            </section>
+
+            <!-- 3. Budget & Status -->
+            <section class="ap-card">
+                <div class="ap-card-head"><span class="ap-num">3</span><h3>Budget &amp; Status</h3><span class="ap-flag req">* Required</span></div>
+                <div class="ap-row">
+                    <div class="form-group">
+                        <label for="{{ form.budget.id_for_label }}">Estimated Budget (PHP) <span class="req-star">*</span></label>
+                        <div class="ap-peso"><span>₱</span>{{ form.budget }}</div>
+                        <span class="ap-hint">Enter the total estimated budget for this activity.</span>
+                        {% if form.budget.errors %}<div class="ap-err">{{ form.budget.errors|striptags }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}">Status <span class="req-star">*</span></label>
+                        {{ form.status }}
+                        <span class="ap-hint">Current status of the action plan.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Responsibility -->
+            <section class="ap-card span-2">
+                <div class="ap-card-head"><span class="ap-num">4</span><h3>Responsibility</h3><span class="ap-flag req">* Required</span></div>
+                <div class="ap-resp">
+                    <i class="fas fa-user"></i>
+                    <div class="form-group">
+                        <label for="{{ form.responsible_person.id_for_label }}">Responsible Person / Office <span class="req-star">*</span></label>
+                        {{ form.responsible_person }}
+                        {% if form.responsible_person.errors %}<div class="ap-err">{{ form.responsible_person.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Remarks -->
+            <section class="ap-card span-2">
+                <div class="ap-card-head"><span class="ap-num">5</span><h3>Remarks</h3><span class="ap-flag">Optional</span></div>
+                <div class="form-group">
+                    <label for="{{ form.remarks.id_for_label }}">Remarks</label>
+                    {{ form.remarks }}
+                    <span class="ap-count"><span data-count-for="{{ form.remarks.id_for_label }}">0</span>/500</span>
+                </div>
+            </section>
+
+            <!-- 6. Attachments -->
+            <section class="ap-card span-2">
+                <div class="ap-card-head"><span class="ap-num">6</span><h3>Attachments</h3><span class="ap-flag">Optional</span></div>
+                <div class="ap-upload-grid">
+                    <div>
+                        <div class="ap-upload-label"><i class="fas fa-file-lines"></i> Action Plan Document <small>(Allowed: PDF, DOC, DOCX)</small></div>
+                        <div class="ap-upload-row" data-upload>
+                            <label class="ap-drop">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                                <span><strong>Drag and drop files here, or click to browse</strong><small>PDF, DOC, DOCX (Max 10MB per file)</small></span>
+                                <input type="file" name="file" accept=".pdf,.doc,.docx">
+                            </label>
+                            <div class="ap-file">
+                                <div class="ico"><i class="fas fa-file-pdf"></i></div>
+                                <div class="meta"><b></b><span></span></div>
+                                <button type="button" aria-label="Remove file"><i class="fas fa-xmark"></i></button>
+                            </div>
+                        </div>
+                        {% if editing and action_plan.file %}
+                            <div class="ap-current"><i class="fas fa-file"></i> Current file:
+                                <a href="{{ action_plan.file.url }}" target="_blank" rel="noopener">{{ action_plan.file.name|cut:"action_plans/" }}</a>
+                                &mdash; upload a new one only to replace it.</div>
+                        {% endif %}
+                        {% if form.file.errors %}<div class="ap-err">{{ form.file.errors|striptags }}</div>{% endif %}
+                    </div>
+                    <div>
+                        <div class="ap-upload-label"><i class="fas fa-image"></i> Supporting Image <small>(Allowed: JPG, JPEG, PNG &mdash; optional)</small></div>
+                        <div class="ap-upload-row" data-upload data-image="1">
+                            <label class="ap-drop">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                                <span><strong>Drag and drop files here, or click to browse</strong><small>JPG, JPEG, PNG (Max 10MB per file)</small></span>
+                                <input type="file" name="supporting_image" accept=".jpg,.jpeg,.png">
+                            </label>
+                            <div class="ap-file">
+                                <div class="ico"><i class="fas fa-image"></i></div>
+                                <div class="meta"><b></b><span></span></div>
+                                <button type="button" aria-label="Remove file"><i class="fas fa-xmark"></i></button>
+                            </div>
+                        </div>
+                        {% if editing and action_plan.supporting_image %}
+                            <div class="ap-current">
+                                <img src="{{ action_plan.supporting_image.url }}" alt="Current supporting image" style="max-width:100px; border-radius: var(--radius-md); border:1px solid var(--border-color); display:block; margin-bottom:4px;">
+                                Current image &mdash; upload a new one only to replace it.
+                            </div>
+                        {% endif %}
+                        {% if form.supporting_image.errors %}<div class="ap-err">{{ form.supporting_image.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="ap-footer">
+            <span class="note"><span class="req-star" style="color:#dc2626;">*</span> Required field</span>
+            <div class="actions">
                 <a href="{% url 'action_plan_list' %}" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancel</a>
-                <button type="submit" class="btn btn-add">{% if editing %}<i class="fas fa-check"></i> Update Plan{% else %}<i class="fas fa-plus"></i> Save Plan{% endif %}</button>
+                <button type="submit" class="btn btn-add"><i class="fas fa-paper-plane"></i> {% if editing %}Update Action Plan{% else %}Save Action Plan{% endif %}</button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    // character counters
+    document.querySelectorAll('[data-count-for]').forEach(function (out) {
+        var el = document.getElementById(out.dataset.countFor);
+        if (!el) return;
+        var max = parseInt(out.parentNode.textContent.split('/')[1], 10);
+        if (max) el.setAttribute('maxlength', max);
+        var update = function () { out.textContent = el.value.length; };
+        el.addEventListener('input', update); update();
+    });
+
+    // drag & drop uploads
+    function fmt(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+    document.querySelectorAll('[data-upload]').forEach(function (box) {
+        var drop = box.querySelector('.ap-drop'), input = box.querySelector('input[type=file]');
+        var chip = box.querySelector('.ap-file'), name = chip.querySelector('b'), size = chip.querySelector('.meta span');
+        var ico = chip.querySelector('.ico'), isImage = box.dataset.image, origIco = ico.innerHTML;
+        function show() {
+            var f = input.files[0];
+            if (!f) { chip.classList.remove('show'); ico.innerHTML = origIco; return; }
+            if (f.size > 10 * 1048576) { alert('File is larger than 10MB.'); input.value = ''; return; }
+            name.textContent = f.name; size.textContent = fmt(f.size); chip.classList.add('show');
+            if (isImage && f.type.indexOf('image/') === 0) {
+                var img = document.createElement('img'); img.src = URL.createObjectURL(f); ico.innerHTML = ''; ico.appendChild(img);
+            }
+        }
+        input.addEventListener('change', show);
+        chip.querySelector('button').addEventListener('click', function () { input.value = ''; show(); });
+        ['dragenter', 'dragover'].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add('dragover'); }); });
+        ['dragleave', 'drop'].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove('dragover'); }); });
+        drop.addEventListener('drop', function (ev) { if (ev.dataTransfer.files.length) { input.files = ev.dataTransfer.files; show(); } });
+    });
+})();
+</script>
 {% endblock %}
