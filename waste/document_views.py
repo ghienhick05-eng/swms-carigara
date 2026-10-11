@@ -14,6 +14,7 @@ downloaded by the browser. These views instead show the document inline:
 The separate "Download" buttons still link to the original file.
 """
 import os
+import shutil
 
 from django.conf import settings
 from django.contrib import messages
@@ -52,8 +53,10 @@ def document_view(request, kind, pk):
     try:
         src_path = f.path
     except (ValueError, NotImplementedError):
-        raise Http404
-    if not os.path.exists(src_path):
+        # Remote storage (Cloudinary) has no local path: pull a temp copy so
+        # the converter / mammoth can read it.
+        src_path = _download_temp_copy(f)
+    if not src_path or not os.path.exists(src_path):
         raise Http404("File not found.")
 
     base = os.path.splitext(os.path.basename(src_path))[0]
@@ -80,6 +83,18 @@ def document_view(request, kind, pk):
     response["Content-Disposition"] = f'inline; filename="{base}.pdf"'
     response["X-Content-Type-Options"] = "nosniff"
     return response
+
+
+def _download_temp_copy(f):
+    tmp_dir = os.path.join(settings.MEDIA_ROOT, "tmp")
+    os.makedirs(tmp_dir, exist_ok=True)
+    dest = os.path.join(tmp_dir, os.path.basename(f.name))
+    try:
+        with f.open("rb") as src, open(dest, "wb") as out:
+            shutil.copyfileobj(src, out)
+    except Exception:
+        return None
+    return dest
 
 
 def _docx_to_html_page(src_path, title, download_url):

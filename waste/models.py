@@ -10,6 +10,8 @@ from django.core.exceptions import ValidationError
 import os
 from decimal import Decimal
 
+from .storage import document_storage
+
 from .pdf_convert import convert_field_to_pdf
 
 
@@ -297,6 +299,7 @@ class Accomplishment(models.Model):
     )
     report_file = models.FileField(
         upload_to="accomplishment_reports/", blank=True, null=True,
+        storage=document_storage,
         validators=[validate_report_file],
         help_text="Upload the accomplishment report document (PDF, DOC, or DOCX).",
     )
@@ -388,6 +391,7 @@ class ActionPlan(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     file = models.FileField(
         upload_to="action_plans/", blank=True, null=True,
+        storage=document_storage,
         validators=[validate_report_file],
         help_text="Upload the Action Plan document (PDF, DOC, or DOCX).",
     )
@@ -581,6 +585,7 @@ class SCMAR(models.Model):
     )
     evidence_document = models.FileField(
         upload_to="scmar_reports/", blank=True, null=True,
+        storage=document_storage,
         validators=[validate_report_file],
         help_text="Optional additional supporting document (PDF, DOC, or DOCX).",
     )
