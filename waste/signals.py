@@ -1,4 +1,5 @@
 import logging
+import threading
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -46,13 +47,20 @@ def notify_user_of_login(sender, request, user, **kwargs):
         "- SWMS Carigara"
     )
 
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
-    except Exception:
-        logger.exception("Failed to send login notification email to %s", user.email)
+    recipient = user.email
+
+    def _send():
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [recipient],
+                fail_silently=False,
+            )
+        except Exception:
+            logger.exception("Failed to send login notification email to %s", recipient)
+
+    # Send in the background so a slow or blocked SMTP server can never hold
+    # up (or break) the login request itself.
+    threading.Thread(target=_send, daemon=True).start()
