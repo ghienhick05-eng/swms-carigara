@@ -5,6 +5,8 @@ Django settings for the Solid Waste Management System - Carigara, Leyte.
 import os
 from pathlib import Path
 
+import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- Environment-driven config -------------------------------------------
@@ -28,6 +30,16 @@ ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()] or (
     ["*"] if DEBUG else []
 )
 
+# Render injects the public hostname of the service automatically.
+_render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if _render_host:
+    ALLOWED_HOSTS.append(_render_host)
+    CSRF_TRUSTED_ORIGINS = [f"https://{_render_host}"]
+_extra_csrf = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = globals().get("CSRF_TRUSTED_ORIGINS", []) + [
+    o.strip() for o in _extra_csrf.split(",") if o.strip()
+]
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,6 +52,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -68,11 +81,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "swms.wsgi.application"
 
+# Uses DATABASE_URL (Postgres on Render) when set, else local SQLite.
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -89,9 +103,15 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# On Render, point MEDIA_ROOT at a persistent disk mount (e.g. /var/data/media).
+MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -111,12 +131,17 @@ AUTHENTICATION_BACKENDS = [
 # own Gmail address and a Gmail App Password (not your normal password) —
 # generate one at https://myaccount.google.com/apppasswords
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "ghienhick05@gmail.com"          # <-- put your Gmail address here
-EMAIL_HOST_PASSWORD = "rhjkmbpcqxkkoydf"      # <-- put your Gmail App Password here
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = "SWMS Carigara <ghienhick05@gmail.com>"
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", f"SWMS Carigara <{EMAIL_HOST_USER or 'noreply@localhost'}>"
+)
+# No credentials configured -> print emails to the console/logs instead of failing.
+if not EMAIL_HOST_USER:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 
@@ -125,11 +150,12 @@ DEFAULT_FROM_EMAIL = "SWMS Carigara <ghienhick05@gmail.com>"
 # but only if they know this code. Set it via the environment, e.g.
 #   set MENRO_ADMIN_REGISTRATION_CODE=some-long-secret   (Windows)
 # Leave it empty to disable MENRO Admin self-registration completely.
-MENRO_ADMIN_REGISTRATION_CODE = os.environ.get("MENRO_ADMIN_REGISTRATION_CODE", "10Ct9z6I7I0fxKJO3sn1BQ")
+MENRO_ADMIN_REGISTRATION_CODE = os.environ.get("MENRO_ADMIN_REGISTRATION_CODE", "")
 
 # --- Extra hardening, only enforced when DEBUG is off (i.e. production) --
 if not DEBUG:
     SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "True") == "True"
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Render terminates TLS
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -139,5 +165,3 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "0"))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
     SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
-
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

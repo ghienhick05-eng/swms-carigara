@@ -1,0 +1,31 @@
+databases:
+  - name: swms-db
+    plan: free
+    databaseName: swms
+    user: swms
+
+services:
+  - type: web
+    name: swms-carigara
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn swms.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
+    healthCheckPath: /login/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DATABASE_URL
+        fromDatabase:
+          name: swms-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: MENRO_ADMIN_REGISTRATION_CODE
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
