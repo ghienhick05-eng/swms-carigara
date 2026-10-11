@@ -140,6 +140,15 @@ ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 MAX_IMAGE_FILE_SIZE_MB = 5
 
 
+def _is_new_upload(value):
+    """Only size-check files being uploaded now.
+
+    Files already stored (e.g. on Cloudinary) would need a network HEAD request
+    just to read their size, which can fail and was causing HTTP 500 on edit.
+    """
+    return not getattr(value, "_committed", False)
+
+
 def validate_report_file(value):
     """
     Validator reused by both ActionPlan.file and Accomplishment.report_file.
@@ -151,7 +160,7 @@ def validate_report_file(value):
             "Unsupported file type. Only PDF, DOC, and DOCX files are allowed."
         )
     max_bytes = MAX_REPORT_FILE_SIZE_MB * 1024 * 1024
-    if value.size > max_bytes:
+    if _is_new_upload(value) and value.size > max_bytes:
         raise ValidationError(
             f"File is too large. Maximum allowed size is {MAX_REPORT_FILE_SIZE_MB} MB."
         )
@@ -169,7 +178,7 @@ def validate_supporting_image(value):
             "Unsupported image type. Only JPG, JPEG, and PNG files are allowed."
         )
     max_bytes = MAX_IMAGE_FILE_SIZE_MB * 1024 * 1024
-    if value.size > max_bytes:
+    if _is_new_upload(value) and value.size > max_bytes:
         raise ValidationError(
             f"Image is too large. Maximum allowed size is {MAX_IMAGE_FILE_SIZE_MB} MB."
         )

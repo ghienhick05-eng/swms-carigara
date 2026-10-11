@@ -109,11 +109,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Cloudinary: set CLOUDINARY_URL (cloudinary://API_KEY:API_SECRET@CLOUD_NAME) on
 # Render to store uploads (avatars, photos, documents) off the server's disk.
 # Without it, uploads fall back to local MEDIA_ROOT, so local dev needs no setup.
-USE_CLOUDINARY = bool(os.environ.get("CLOUDINARY_URL"))
+from waste.storage import clean_cloudinary_url  # noqa: E402
+
+USE_CLOUDINARY = bool(clean_cloudinary_url())
 STORAGES = {
     "default": {
         "BACKEND": (
-            "cloudinary_storage.storage.MediaCloudinaryStorage"
+            "waste.cloudinary_storages.SafeMediaCloudinaryStorage"
             if USE_CLOUDINARY
             else "django.core.files.storage.FileSystemStorage"
         ),

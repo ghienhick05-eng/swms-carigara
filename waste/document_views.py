@@ -13,6 +13,7 @@ downloaded by the browser. These views instead show the document inline:
 
 The separate "Download" buttons still link to the original file.
 """
+import logging
 import os
 import shutil
 
@@ -25,6 +26,8 @@ from django.shortcuts import get_object_or_404, redirect
 
 from .models import ActionPlan, Accomplishment, SCMAR
 from .pdf_convert import convert_file_cached
+
+logger = logging.getLogger(__name__)
 
 # kind -> (model, file field, list url name used for redirects on error)
 DOCUMENT_KINDS = {
@@ -86,15 +89,34 @@ def document_view(request, kind, pk):
 
 
 def _download_temp_copy(f):
+    """Fetch a remote (Cloudinary) file into MEDIA_ROOT/tmp. Returns a path or None."""
     tmp_dir = os.path.join(settings.MEDIA_ROOT, "tmp")
     os.makedirs(tmp_dir, exist_ok=True)
     dest = os.path.join(tmp_dir, os.path.basename(f.name))
     try:
         with f.open("rb") as src, open(dest, "wb") as out:
             shutil.copyfileobj(src, out)
+        return dest
     except Exception:
+        logger.warning("Direct download of %s failed, trying signed URL", f.name, exc_info=True)
+    # Cloudinary blocks public delivery of PDF/ZIP by default (HTTP 401).
+    # A signed API download works regardless of that account setting.
+    try:
+        import cloudinary.utils
+        import requests
+
+        public_id, ext = os.path.splitext(f.name)
+        url = cloudinary.utils.private_download_url(
+            f.name, "", resource_type="raw", type="upload"
+        )
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        with open(dest, "wb") as out:
+            out.write(resp.content)
+        return dest
+    except Exception:
+        logger.warning("Signed download of %s failed", f.name, exc_info=True)
         return None
-    return dest
 
 
 def _docx_to_html_page(src_path, title, download_url):
