@@ -25,6 +25,12 @@ services:
         value: "False"
       - key: MENRO_ADMIN_REGISTRATION_CODE
         sync: false
+      - key: MENRO_ADMIN_USERNAME
+        value: menroadmin
+      - key: MENRO_ADMIN_EMAIL
+        sync: false
+      - key: MENRO_ADMIN_PASSWORD
+        sync: false
       - key: EMAIL_HOST_USER
         sync: false
       - key: EMAIL_HOST_PASSWORD

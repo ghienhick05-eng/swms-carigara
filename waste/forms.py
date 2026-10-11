@@ -356,7 +356,6 @@ class RegisterForm(UserCreationForm):
             "class": "auth-input",
             "autocomplete": "tel",
             "inputmode": "tel",
-            "placeholder": "e.g. 09171234567",
         }),
     )
     barangay = forms.ChoiceField(

@@ -3,581 +3,523 @@
 {% block title %}Create Account - SWMS Carigara{% endblock %}
 {% block content %}
 <style>
-    body {
-        background: var(--gray-50);
-        min-height: 100vh;
-    }
-
-    .topbar {
-        display: none !important;
-    }
-
-    .menu-toggle,
-    #sidebar {
-        display: none !important;
-    }
-
-    .main-container {
-        margin-left: 0 !important;
-        margin-top: 0 !important;
-    }
-
-    .content-wrapper {
-        padding: 0 !important;
-        max-width: none !important;
-    }
-
-    html, body {
-        height: 100%;
-        overflow: hidden;
-    }
+    /* ---------- page chrome off: these screens stand alone ---------- */
+    .topbar, .menu-toggle, #sidebar, .sidebar-overlay { display: none !important; }
+    .main-container { margin-left: 0 !important; margin-top: 0 !important; }
+    .content-wrapper { padding: 0 !important; max-width: none !important; }
 
     .auth-split {
-        height: 100vh;
+        --auth-ring: rgba(22, 163, 74, 0.18);
+        min-height: 100vh;
+        min-height: 100dvh;
         display: flex;
-        overflow: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--gray-50);
     }
 
+    /* ---------- hero (left) ---------- */
     .auth-hero {
-        flex: 0 0 44%;
-        position: relative;
+        flex: 0 0 42%;
+        max-width: 640px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        height: 100dvh;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         gap: 2rem;
-        padding: 2.75rem 3rem;
+        padding: 2.5rem 3rem;
         color: #EAF6EE;
-        background: linear-gradient(165deg, #0B3B22 0%, #124A2B 55%, #16603A 100%);
         overflow: hidden;
         box-sizing: border-box;
+        background:
+            radial-gradient(900px 500px at 110% -10%, rgba(74, 222, 128, 0.22), transparent 60%),
+            radial-gradient(600px 400px at -20% 110%, rgba(21, 128, 61, 0.55), transparent 60%),
+            linear-gradient(165deg, #0A3320 0%, #11472A 55%, #16603A 100%);
     }
-
-    .auth-hero__waves {
+    .auth-hero::before {            /* subtle dot grid */
+        content: "";
         position: absolute;
-        left: -5%;
-        right: -5%;
-        bottom: -6%;
-        width: 110%;
-        opacity: 0.16;
+        inset: 0;
+        background-image: radial-gradient(rgba(255,255,255,0.09) 1px, transparent 1px);
+        background-size: 22px 22px;
+        mask-image: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.15) 75%);
+        -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.15) 75%);
         pointer-events: none;
     }
-
-    .auth-hero__brand {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        position: relative;
-        z-index: 1;
+    .auth-hero > * { position: relative; z-index: 1; }
+    .auth-hero::after {             /* faint seal watermark */
+        content: ""; position: absolute; right: -110px; bottom: -110px; width: 420px; height: 420px;
+        background: url("{% static 'images/carigara_seal.png' %}") center / contain no-repeat;
+        border-radius: 50%; opacity: 0.08; filter: grayscale(1) brightness(2.2); pointer-events: none; z-index: 0;
     }
+    .auth-hero__main { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; gap: 2.25rem; padding: 1.5rem 0; }
 
-    .auth-hero__brand img {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: #fff;
-        padding: 3px;
-        flex-shrink: 0;
+    .auth-brand { display: flex; align-items: center; gap: 0.8rem; }
+    .auth-brand img {
+        width: 44px; height: 44px; border-radius: 50%;
+        background: #fff; padding: 3px; flex-shrink: 0;
+        box-shadow: 0 0 0 4px rgba(255,255,255,0.12);
     }
+    .auth-brand__text { display: flex; flex-direction: column; line-height: 1.2; }
+    .auth-brand__text strong { font-family: 'Poppins', 'Inter', sans-serif; font-size: 1.05rem; letter-spacing: 0.02em; }
+    .auth-brand__text span { font-size: 0.78rem; color: rgba(234,246,238,0.7); }
 
-    .auth-hero__brand-text {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
+    .auth-hero__body { max-width: 400px; }
+    .auth-eyebrow {
+        display: inline-flex; align-items: center; gap: 0.45rem;
+        font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+        color: #86EFAC; margin-bottom: 1rem;
     }
-
-    .auth-hero__brand-text strong {
-        font-size: 0.98rem;
-        letter-spacing: 0.01em;
-    }
-
-    .auth-hero__brand-text span {
-        font-size: 0.76rem;
-        color: rgba(234, 246, 238, 0.68);
-    }
-
-    .auth-hero__body {
-        max-width: 360px;
-        position: relative;
-        z-index: 1;
-    }
-
+    .auth-eyebrow::before { content: ""; width: 22px; height: 2px; background: #4ADE80; border-radius: 2px; }
     .auth-hero__body h1 {
-        font-size: 2.05rem;
-        line-height: 1.18;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        margin: 0 0 0.9rem;
+        font-family: 'Poppins', 'Inter', sans-serif;
+        font-size: clamp(1.7rem, 2.6vw, 2.35rem);
+        line-height: 1.16; font-weight: 700; letter-spacing: -0.015em;
+        margin: 0 0 1rem; color: #fff;
     }
+    .auth-hero__body p { font-size: 0.98rem; line-height: 1.65; color: rgba(234,246,238,0.8); margin: 0; }
 
-    .auth-hero__body p {
-        font-size: 0.98rem;
-        line-height: 1.6;
-        color: rgba(234, 246, 238, 0.82);
-        margin: 0;
-    }
-
-    .auth-hero__features {
-        display: flex;
-        flex-direction: column;
-        gap: 0.65rem;
-        position: relative;
-        z-index: 1;
-    }
-
+    .auth-hero__features { display: flex; flex-direction: column; gap: 0.75rem; max-width: 400px; }
     .auth-hero__features div {
-        display: flex;
-        align-items: center;
-        gap: 0.65rem;
-        font-size: 0.85rem;
-        color: rgba(234, 246, 238, 0.85);
+        display: flex; align-items: center; gap: 0.85rem; padding: 0.8rem 1rem;
+        font-size: 0.9rem; color: rgba(234,246,238,0.92);
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+        backdrop-filter: blur(2px);
     }
-
     .auth-hero__features i {
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.12);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.78rem;
-        flex-shrink: 0;
+        width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.12);
+        display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #BBF7D0;
     }
+    .auth-hero__foot { font-size: 0.75rem; color: rgba(234,246,238,0.55); }
 
+    /* ---------- panel (right) ---------- */
     .auth-panel {
-        flex: 1 1 56%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem 2.5rem;
-        overflow-y: auto;
-        background: var(--gray-50);
+        flex: 1 1 58%;
+        display: flex; align-items: center; justify-content: center;
+        padding: 2.5rem 2rem;
         box-sizing: border-box;
+        min-width: 0;
     }
+    .auth-card { width: 100%; max-width: 420px; margin: 0 auto; }
+    .auth-card--wide { max-width: 480px; }
 
-    .auth-card {
-        width: 100%;
-        max-width: 380px;
-    }
-
-    .auth-icon {
-        display: none;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: #ffffff;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.25rem;
-        padding: 5px;
-        border: 1px solid var(--gray-200);
-    }
-
-    .auth-icon img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: 50%;
-    }
-
-    @media (max-width: 900px) {
-        .auth-hero {
-            display: none;
-        }
-
-        .auth-panel {
-            flex: 1 1 100%;
-        }
-
-        .auth-icon {
-            display: flex;
-        }
-    }
-
-    .password-field {
-        position: relative;
-    }
-
-    .password-field input {
-        padding-right: 2.75rem !important;
-    }
-
-    .password-toggle {
-        position: absolute;
-        right: 0.9rem;
-        top: 0.875rem;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--text-secondary);
-        font-size: 1rem;
-        padding: 0;
-        line-height: 1;
-    }
-
-    .password-toggle:hover {
-        color: var(--accent-primary);
-    }
+    .auth-mobile-brand { display: none; }
 
     .auth-card h2 {
-        margin: 0 0 0.5rem;
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        letter-spacing: -0.02em;
+        font-family: 'Poppins', 'Inter', sans-serif;
+        margin: 0 0 0.4rem; font-size: 1.85rem; font-weight: 700;
+        color: var(--text-primary); letter-spacing: -0.02em;
     }
+    .auth-subtitle { margin: 0 0 1.75rem; font-size: 0.95rem; line-height: 1.55; color: var(--text-secondary); }
+    .auth-subtitle strong { color: var(--text-primary); font-weight: 600; word-break: break-all; }
 
-    .auth-subtitle {
-        margin: 0 0 1.5rem;
-        font-size: 0.95rem;
-        color: var(--text-secondary);
+    /* ---------- alerts ---------- */
+    .auth-alert {
+        display: flex; align-items: flex-start; gap: 0.7rem;
+        padding: 0.85rem 1rem; margin-bottom: 1.25rem;
+        border-radius: 0.75rem; font-size: 0.88rem; line-height: 1.45;
+        border: 1px solid; animation: auth-in .25s ease;
     }
+    .auth-alert i { margin-top: 0.15rem; }
+    .auth-alert--error   { background: rgba(220,38,38,.08);  border-color: rgba(220,38,38,.28);  color: #dc2626; }
+    .auth-alert--success { background: rgba(22,163,74,.09);  border-color: rgba(22,163,74,.3);   color: #15803d; }
+    .auth-alert--info    { background: rgba(37,99,235,.08);  border-color: rgba(37,99,235,.25);  color: #2563eb; }
+    [data-theme="dark"] .auth-alert--error   { color: #fca5a5; }
+    [data-theme="dark"] .auth-alert--success { color: #86efac; }
+    [data-theme="dark"] .auth-alert--info    { color: #93c5fd; }
 
-    .auth-error {
-        background: rgba(220, 38, 38, 0.1);
-        border: 1px solid rgba(220, 38, 38, 0.3);
-        color: #dc2626;
-        font-size: 0.9rem;
-        padding: 1rem;
-        border-radius: 0.75rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
+    /* ---------- fields ---------- */
+    .auth-field { margin-bottom: 1.1rem; min-width: 0; }
+    .auth-field > label {
+        display: block; margin: 0 0 0.4rem;
+        font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
     }
+    .auth-field > label .opt { font-weight: 400; color: var(--text-tertiary); }
 
-    .auth-error::before {
-        content: "⚠";
-        font-size: 1.2rem;
-        flex-shrink: 0;
+    .auth-input-wrap { position: relative; }
+    .auth-input-wrap > .lead {
+        position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%);
+        color: var(--text-tertiary); font-size: 0.9rem; pointer-events: none; transition: color .15s;
     }
+    .auth-input-wrap:focus-within > .lead { color: var(--accent-primary); }
 
-    .auth-card form {
-        margin-bottom: 1.5rem;
-    }
-
-    .auth-card label {
-        display: block;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
-        margin-top: 1rem;
-    }
-
-    .auth-card label:first-of-type {
-        margin-top: 0;
-    }
-
-    .auth-card select {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        margin-bottom: 1rem;
-        border: 1.5px solid var(--border-color);
-        border-radius: 0.75rem;
-        font-size: 0.95rem;
+    .auth-card .auth-input,
+    .auth-card input.auth-input,
+    .auth-card select.auth-input {
+        width: 100%; box-sizing: border-box; height: 48px;
+        padding: 0 1rem 0 2.6rem; margin: 0;
+        font: inherit; font-size: 0.95rem; color: var(--text-primary);
         background: var(--bg-primary);
-        color: var(--text-primary);
-        transition: all 0.15s ease;
-        font-family: inherit;
+        border: 1.5px solid var(--border-color); border-radius: 0.8rem;
+        transition: border-color .15s, box-shadow .15s, background .15s;
+        -webkit-appearance: none; appearance: none;
     }
-
-    .auth-card select:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    .auth-card .auth-input::placeholder { color: var(--text-tertiary); opacity: .8; }
+    .auth-card .auth-input:hover { border-color: var(--gray-300); }
+    .auth-card .auth-input:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 4px var(--auth-ring); }
+    .auth-field.has-error .auth-input { border-color: var(--accent-danger); }
+    .auth-field.has-error .auth-input:focus { box-shadow: 0 0 0 4px rgba(220,38,38,.15); }
+    .auth-card select.auth-input {
+        padding-right: 2.5rem; cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2364748B' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 1rem center;
     }
+    .auth-card select.auth-input option:disabled { color: var(--text-tertiary); }
 
-    .auth-card input[type="text"],
-    .auth-card input[type="password"],
-    .auth-card input[type="email"] {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        margin-bottom: 1rem;
-        border: 1.5px solid var(--border-color);
-        border-radius: 0.75rem;
-        font-size: 0.95rem;
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        transition: all 0.15s ease;
-        font-family: inherit;
+    .auth-toggle {
+        position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%);
+        width: 38px; height: 38px; border: 0; background: none; cursor: pointer;
+        color: var(--text-tertiary); border-radius: 0.6rem; font-size: 0.95rem;
     }
+    .auth-toggle:hover { color: var(--accent-primary); background: var(--green-50); }
+    .auth-toggle:focus-visible { outline: 2px solid var(--accent-primary); }
+    .auth-input-wrap.has-toggle .auth-input { padding-right: 3rem; }
 
-    .auth-card input[type="text"]:focus,
-    .auth-card input[type="password"]:focus,
-    .auth-card input[type="email"]:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    .auth-hint { margin: 0.4rem 0 0; font-size: 0.78rem; color: var(--text-tertiary); line-height: 1.45; }
+    .auth-hint.warn { color: #b45309; font-weight: 500; }
+    .auth-error-text { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--accent-danger); display: flex; gap: .4rem; align-items: flex-start; }
+
+    /* ---------- buttons ---------- */
+    .auth-btn {
+        position: relative; width: 100%; height: 50px; margin-top: 0.4rem;
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
+        font: inherit; font-size: 0.97rem; font-weight: 600; color: #fff; cursor: pointer;
+        border: 0; border-radius: 0.85rem;
+        background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+        box-shadow: 0 8px 18px -6px rgba(21,128,61,.55), inset 0 1px 0 rgba(255,255,255,.18);
+        transition: transform .15s, box-shadow .15s, filter .15s;
     }
+    .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 24px -8px rgba(21,128,61,.6), inset 0 1px 0 rgba(255,255,255,.18); }
+    .auth-btn:active { transform: translateY(0); }
+    .auth-btn:focus-visible { outline: 3px solid var(--auth-ring); outline-offset: 2px; }
+    .auth-btn[disabled] { cursor: not-allowed; filter: grayscale(.2) brightness(.95); transform: none; }
+    .auth-btn .spin { display: none; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; animation: auth-spin .7s linear infinite; }
+    .auth-btn.is-loading .spin { display: inline-block; }
+    .auth-btn.is-loading .ico { display: none; }
 
-    .auth-card .btn {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-top: 1rem;
-        background: linear-gradient(135deg, #22c55e, #15803d);
-        box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.2);
-        border: none;
-        cursor: pointer;
-        transition: all 0.15s ease;
+    .auth-btn--ghost {
+        width: auto; flex: 0 0 auto; padding: 0 1.2rem; color: var(--text-secondary);
+        background: var(--bg-primary); border: 1.5px solid var(--border-color); box-shadow: none;
     }
+    .auth-btn--ghost:hover { color: var(--text-primary); border-color: var(--gray-300); box-shadow: none; transform: none; background: var(--gray-50); }
 
-    .auth-card .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 20px 25px -5px rgba(34, 197, 94, 0.3);
+    .auth-footer {
+        text-align: center; margin-top: 1.75rem; padding-top: 1.4rem;
+        border-top: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary);
     }
+    .auth-footer a { color: var(--accent-secondary); font-weight: 600; text-decoration: none; }
+    .auth-footer a:hover { text-decoration: underline; }
+    [data-theme="dark"] .auth-footer a { color: #86efac; }
 
-    .auth-help-text {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin: -0.75rem 0 1rem;
-    }
+    .auth-secure { margin-top: 1.25rem; text-align: center; font-size: 0.75rem; color: var(--text-tertiary); }
+    .auth-secure i { margin-right: .35rem; color: var(--accent-primary); }
 
-    .password-requirements {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin: 0.75rem 0 1rem;
-        padding: 0.75rem;
-        background: rgba(34, 197, 94, 0.05);
-        border-radius: 0.5rem;
-        border-left: 3px solid var(--accent-primary);
-    }
+    @keyframes auth-in   { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+    @keyframes auth-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .auth-split * { animation: none !important; transition: none !important; } }
 
-    .password-requirements ul {
-        margin: 0.5rem 0 0;
-        padding-left: 1.5rem;
-    }
-
-    .password-requirements li {
-        margin-bottom: 0.25rem;
-    }
-
-    .auth-footer-link {
-        text-align: center;
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--border-color);
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-
-    .auth-footer-link a {
-        color: var(--accent-primary);
-        font-weight: 600;
-        text-decoration: none;
-        transition: color 0.15s ease;
-    }
-
-    .auth-footer-link a:hover {
-        color: var(--accent-secondary);
-        text-decoration: underline;
-    }
-
-    @media (max-width: 640px) {
-        .auth-card {
-            padding: 2rem 1.5rem;
+    /* ---------- responsive ---------- */
+    @media (max-width: 900px) {
+        .auth-split { flex-direction: column; }
+        .auth-hero {
+            position: static; height: auto; max-width: none; flex: none;
+            padding: 1.1rem 1.4rem; flex-direction: row; align-items: center;
         }
-
-        .auth-card h2 {
-            font-size: 1.5rem;
-        }
-
-        .auth-subtitle {
-            font-size: 0.9rem;
-        }
+        .auth-hero__main, .auth-hero__foot, .auth-hero::after { display: none; }
+        .auth-brand img { width: 38px; height: 38px; }
+        .auth-panel { flex: 1 1 auto; padding: 1.75rem 1.25rem 2.5rem; align-items: center; justify-content: center; }
+        .auth-card, .auth-card--wide { margin: 0 auto; }
+        .auth-card h2, .auth-subtitle { text-align: center; }
+        .auth-card h2 { font-size: 1.6rem; }
     }
 
-    /* ---- Compact two-column layout so the sign-up form fits one screen ---- */
-    .auth-panel { padding: 1rem 2rem; }
-    .auth-card { max-width: 560px; }
-    .auth-card h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-    .auth-subtitle { margin-bottom: 1rem; font-size: 0.88rem; }
-    .auth-card form { margin-bottom: 0; }
+    /* ---------- page-specific ---------- */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+    .form-section { margin: 0.4rem 0 1rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); display: flex; align-items: center; gap: 0.7rem; }
+    .form-section::after { content: ""; flex: 1; height: 1px; background: var(--border-color); }
+    .auth-card--wide { max-width: 560px; }
+    .auth-card--wide .auth-btn { margin-top: 0.6rem; }
 
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0 0.875rem;
-        margin-bottom: 0.75rem;
-    }
-    .field { min-width: 0; }
+    .strength { display: flex; gap: 6px; margin-top: 0.6rem; }
+    .strength span { flex: 1; height: 5px; border-radius: 4px; background: var(--border-color); transition: background .2s; }
+    .strength[data-level="1"] span:nth-child(-n+1) { background: #ef4444; }
+    .strength[data-level="2"] span:nth-child(-n+2) { background: #f59e0b; }
+    .strength[data-level="3"] span:nth-child(-n+3) { background: #84cc16; }
+    .strength[data-level="4"] span:nth-child(-n+4) { background: #16a34a; }
+    .strength-label { font-size: 0.78rem; margin-top: 0.35rem; color: var(--text-tertiary); display: flex; justify-content: space-between; }
+    .strength-label b { color: var(--text-primary); font-weight: 600; }
 
-    .auth-card label {
-        margin: 0 0 0.3rem;
-        font-size: 0.85rem;
-    }
-    .auth-card label:first-of-type { margin-top: 0; }
-
-    .auth-card select,
-    .auth-card input[type="text"],
-    .auth-card input[type="password"],
-    .auth-card input[type="email"] {
-        margin-bottom: 0;
-        padding: 0.6rem 0.85rem;
-        font-size: 0.9rem;
-        box-sizing: border-box;
-    }
-    .password-field input { padding-right: 2.5rem !important; }
-    .password-toggle { top: 50%; transform: translateY(-50%); }
-
-    .field-error {
-        color: var(--accent-danger);
-        font-size: 0.78rem;
-        margin-top: 0.25rem;
-    }
-
-    .auth-help-text { font-size: 0.78rem; margin: -0.25rem 0 0.75rem; }
-
-    .password-requirements {
-        font-size: 0.78rem;
-        margin: 0 0 0.75rem;
-        padding: 0.5rem 0.75rem;
-    }
-
-    .auth-card .btn { margin-top: 0; padding: 0.7rem 1rem; }
-    .auth-error { padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
-    .auth-footer-link { margin-top: 0.875rem; padding-top: 0.875rem; }
-
-    @media (max-height: 720px) {
-        .auth-panel { padding: 0.5rem 2rem; }
-        .auth-subtitle { display: none; }
-        .form-row { margin-bottom: 0.5rem; }
-        .auth-footer-link { margin-top: 0.6rem; padding-top: 0.6rem; }
-    }
+    .checklist { list-style: none; margin: 0.9rem 0 1.1rem; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.8rem; }
+    .checklist li { font-size: 0.8rem; color: var(--text-tertiary); display: flex; align-items: center; gap: 0.45rem; transition: color .2s; }
+    .checklist li i { font-size: 0.7rem; width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: 1.5px solid var(--border-color); transition: all .2s; }
+    .checklist li.ok { color: var(--text-primary); }
+    .checklist li.ok i { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
 
     @media (max-width: 640px) {
         .form-row { grid-template-columns: 1fr; }
-        .auth-panel { padding: 1.5rem 1rem; }
+        .checklist { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ---------- compact spacing for phones / installed app ---------- */
+    @media (max-width: 600px), (display-mode: standalone) {
+        .auth-panel { padding: 1rem 1.25rem 1.5rem; align-items: flex-start; }
+        .auth-card h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+        .auth-subtitle { margin-bottom: 1rem; font-size: 0.9rem; line-height: 1.45; }
+        .auth-field { margin-bottom: 0.75rem; }
+        .auth-field > label { margin-bottom: 0.3rem; }
+        .auth-card .auth-input { height: 44px; }
+        .auth-btn, .auth-card--wide .auth-btn { height: 46px; margin-top: 0.25rem; }
+        .auth-footer { margin-top: 1rem; padding-top: 0.9rem; }
+        .auth-secure { margin-top: 0.75rem; }
+        .checklist { margin: 0.6rem 0 0.8rem; gap: 0.3rem 0.6rem; }
     }
 </style>
 
 <div class="auth-split">
-    <div class="auth-hero">
-        <div class="auth-hero__brand">
+    <aside class="auth-hero">
+        <div class="auth-brand">
             <img src="{% static 'images/carigara_seal.png' %}" alt="Municipality of Carigara Official Seal">
-            <div class="auth-hero__brand-text">
+            <div class="auth-brand__text">
                 <strong>SWMS</strong>
                 <span>Municipality of Carigara</span>
             </div>
         </div>
 
+        <div class="auth-hero__main">
         <div class="auth-hero__body">
+            <div class="auth-eyebrow">Solid Waste Management System</div>
             <h1>One system for every barangay's waste data.</h1>
-            <p>Carigara's 49 barangays log collections, complaints, and action plans here. Create an account to start keeping yours current.</p>
+            <p>Set up your barangay account in one quick form. It only takes a minute.</p>
         </div>
 
         <div class="auth-hero__features">
-            <div><i class="fas fa-trash"></i> Collections across 49 barangays</div>
-            <div><i class="fas fa-comment-dots"></i> Complaints logged and tracked</div>
-            <div><i class="fas fa-clipboard-check"></i> Action plans and SCMAR reporting</div>
+                <div><i class="fas fa-user"></i> Your account details</div>
+    <div><i class="fas fa-map-marker-alt"></i> Barangay and mobile number</div>
+    <div><i class="fas fa-lock"></i> Secure password, then verify your email</div>
         </div>
 
-        <svg class="auth-hero__waves" viewBox="0 0 600 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M0,60 C100,100 200,20 300,60 C400,100 500,20 600,60 L600,120 L0,120 Z" fill="#ffffff" opacity="0.5"/>
-            <path d="M0,80 C100,40 200,110 300,80 C400,40 500,110 600,80 L600,120 L0,120 Z" fill="#ffffff" opacity="0.3"/>
-        </svg>
-    </div>
-
-    <div class="auth-panel">
-    <div class="auth-card">
-        <div class="auth-icon">
-            <img src="{% static 'images/carigara_seal.png' %}" alt="Municipality of Carigara Official Seal">
         </div>
-        <h2>Create an Account</h2>
-        <p class="auth-subtitle">Register your barangay account to start managing waste collections and complaints.</p>
 
-        {% if form.errors %}
-            <div class="auth-error">Please fix the errors below and try again.</div>
-        {% endif %}
+        <div class="auth-hero__foot">Carigara, Leyte &middot; Municipal Environment and Natural Resources Office</div>
+    </aside>
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-row">
-                <div class="field">
-                    <label for="{{ form.username.id_for_label }}"><i class="fas fa-user"></i> Username</label>
+    <main class="auth-panel">
+        <div class="auth-card auth-card--wide">
+    <h2>Create your account</h2>
+    <p class="auth-subtitle">Register your barangay to log collections, file complaints and submit reports.</p>
+
+    {% if form.non_field_errors %}
+        <div class="auth-alert auth-alert--error" role="alert">
+            <i class="fas fa-circle-exclamation"></i><span>{{ form.non_field_errors.0 }}</span>
+        </div>
+    {% endif %}
+
+    <form method="post" id="register-form" data-auth-form novalidate>
+        {% csrf_token %}
+
+        <div class="form-row">
+            <div class="auth-field {% if form.username.errors %}has-error{% endif %}">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-user lead"></i>
                     {{ form.username }}
-                    {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
                 </div>
-                <div class="field">
-                    <label for="{{ form.email.id_for_label }}"><i class="fas fa-envelope"></i> Email</label>
+                {% if form.username.errors %}<p class="auth-error-text"><i class="fas fa-circle-exclamation"></i>{{ form.username.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="auth-field {% if form.email.errors %}has-error{% endif %}">
+                <label for="{{ form.email.id_for_label }}">Email address</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-envelope lead"></i>
                     {{ form.email }}
-                    {% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}
                 </div>
+                {% if form.email.errors %}<p class="auth-error-text"><i class="fas fa-circle-exclamation"></i>{{ form.email.errors.0 }}</p>{% endif %}
             </div>
-
-            <div class="form-row">
-                <div class="field">
-                    <label for="{{ form.phone_number.id_for_label }}"><i class="fas fa-phone"></i> Mobile Number</label>
-                    {{ form.phone_number }}
-                    {% if form.phone_number.errors %}<div class="field-error">{{ form.phone_number.errors.0 }}</div>{% endif %}
-                </div>
-                <div class="field" id="barangay-fields">
-                    <label for="{{ form.barangay.id_for_label }}"><i class="fas fa-map-marker-alt"></i> Barangay</label>
-                    {{ form.barangay }}
-                    {% if form.barangay.errors %}<div class="field-error">{{ form.barangay.errors.0 }}</div>{% endif %}
-                </div>
-            </div>
-            <p class="auth-help-text" id="barangay-hint">This account will only be able to manage data for the selected barangay. Only one account is allowed per barangay.</p>
-
-            <div class="form-row">
-                <div class="field">
-                    <label for="{{ form.password1.id_for_label }}"><i class="fas fa-lock"></i> Password</label>
-                    <div class="password-field">
-                        {{ form.password1 }}
-                        <button type="button" class="password-toggle" data-target="{{ form.password1.id_for_label }}" aria-label="Show password">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password1.errors %}<div class="field-error">{{ form.password1.errors.0 }}</div>{% endif %}
-                </div>
-                <div class="field">
-                    <label for="{{ form.password2.id_for_label }}"><i class="fas fa-check-circle"></i> Confirm Password</label>
-                    <div class="password-field">
-                        {{ form.password2 }}
-                        <button type="button" class="password-toggle" data-target="{{ form.password2.id_for_label }}" aria-label="Show password">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
-                </div>
-            </div>
-
-            <div class="password-requirements">
-                <strong>Password requirements:</strong>
-                At least 8 characters, mixed upper and lowercase letters, at least one number, and not a common password.
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block">
-                <i class="fas fa-user-plus"></i> Create Account
-            </button>
-        </form>
-
-        <div class="auth-footer-link">
-            Already have an account? <a href="{% url 'login' %}">Log in</a>
         </div>
+
+        <div class="form-row">
+            <div class="auth-field {% if form.barangay.errors %}has-error{% endif %}">
+                <label for="{{ form.barangay.id_for_label }}">Barangay</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-map-marker-alt lead"></i>
+                    {{ form.barangay }}
+                </div>
+                {% if form.barangay.errors %}<p class="auth-error-text"><i class="fas fa-circle-exclamation"></i>{{ form.barangay.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="auth-field {% if form.phone_number.errors %}has-error{% endif %}">
+                <label for="{{ form.phone_number.id_for_label }}">Mobile number</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-phone lead"></i>
+                    {{ form.phone_number }}
+                </div>
+                {% if form.phone_number.errors %}<p class="auth-error-text"><i class="fas fa-circle-exclamation"></i>{{ form.phone_number.errors.0 }}</p>{% endif %}
+            </div>
+        </div>
+        <p class="auth-hint" style="margin:-0.5rem 0 1rem">One account per barangay. Barangays that already have one can't be selected. We'll email a verification code to the address above.</p>
+
+        <div class="form-row">
+            <div class="auth-field {% if form.password1.errors %}has-error{% endif %}">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                <div class="auth-input-wrap has-toggle">
+                    <i class="fas fa-lock lead"></i>
+                    {{ form.password1 }}
+                    <button type="button" class="auth-toggle" data-target="{{ form.password1.id_for_label }}" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                </div>
+                {% if form.password1.errors %}<p class="auth-error-text"><i class="fas fa-circle-exclamation"></i>{{ form.password1.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="auth-field {% if form.password2.errors %}has-error{% endif %}">
+                <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+                <div class="auth-input-wrap has-toggle">
+                    <i class="fas fa-check-double lead"></i>
+                    {{ form.password2 }}
+                    <button type="button" class="auth-toggle" data-target="{{ form.password2.id_for_label }}" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                </div>
+                {% if form.password2.errors %}<p class="auth-error-text"><i class="fas fa-circle-exclamation"></i>{{ form.password2.errors.0 }}</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="strength" id="strength" data-level="0" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div class="strength-label"><span>Password strength: <b id="strength-text">&mdash;</b></span></div>
+        <ul class="checklist" id="checklist">
+            <li data-rule="len"><i class="fas fa-check"></i> At least 8 characters</li>
+            <li data-rule="case"><i class="fas fa-check"></i> Upper &amp; lowercase</li>
+            <li data-rule="num"><i class="fas fa-check"></i> At least one number</li>
+            <li data-rule="match"><i class="fas fa-check"></i> Passwords match</li>
+        </ul>
+
+        <button type="submit" class="auth-btn">
+            <span class="spin" aria-hidden="true"></span>
+            <i class="fas fa-user-plus ico"></i><span>Create account</span>
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Log in</a>
     </div>
-    </div>
+</div>
+    </main>
 </div>
 
 <script>
-    document.querySelectorAll('.password-toggle').forEach(function (btn) {
+(function () {
+    /* show / hide password */
+    document.querySelectorAll('.auth-toggle').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            const input = document.getElementById(btn.getAttribute('data-target'));
-            const icon = btn.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-                btn.setAttribute('aria-label', 'Hide password');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-                btn.setAttribute('aria-label', 'Show password');
-            }
+            var input = document.getElementById(btn.getAttribute('data-target'));
+            if (!input) return;
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.querySelector('i').className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+            btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
         });
     });
+
+    /* caps-lock warning on password inputs */
+    document.querySelectorAll('input[data-capslock]').forEach(function (input) {
+        var hint = document.getElementById(input.getAttribute('data-capslock'));
+        if (!hint) return;
+        function check(e) {
+            if (!e.getModifierState) return;
+            hint.hidden = !e.getModifierState('CapsLock');
+        }
+        input.addEventListener('keydown', check);
+        input.addEventListener('keyup', check);
+        input.addEventListener('blur', function () { hint.hidden = true; });
+    });
+
+    /* loading state on submit (prevents double-submits) */
+    document.querySelectorAll('form[data-auth-form]').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            if (e.defaultPrevented) return;
+            var btn = form.querySelector('button[type="submit"]');
+            if (!btn) return;
+            btn.classList.add('is-loading');
+            setTimeout(function () { btn.disabled = true; }, 0);
+        });
+    });
+    /* bfcache: restore the button if the user navigates back */
+    window.addEventListener('pageshow', function (e) {
+        if (!e.persisted) return;
+        document.querySelectorAll('.auth-btn.is-loading').forEach(function (b) { b.classList.remove('is-loading'); b.disabled = false; });
+    });
+})();
+</script>
+<script>
+(function () {
+    var form = document.getElementById('register-form');
+    var F = {
+        username: document.getElementById('{{ form.username.id_for_label }}'),
+        email: document.getElementById('{{ form.email.id_for_label }}'),
+        barangay: document.getElementById('{{ form.barangay.id_for_label }}'),
+        phone: document.getElementById('{{ form.phone_number.id_for_label }}'),
+        p1: document.getElementById('{{ form.password1.id_for_label }}'),
+        p2: document.getElementById('{{ form.password2.id_for_label }}')
+    };
+    F.p1.setAttribute('data-capslock', 'caps-reg');
+    F.p1.closest('.auth-field').insertAdjacentHTML('beforeend', '<p class="auth-hint warn" id="caps-reg" hidden><i class="fas fa-arrow-up"></i> Caps Lock is on</p>');
+    F.username.setAttribute('autocapitalize', 'none');
+
+    function setError(input, msg) {
+        var field = input.closest('.auth-field');
+        field.classList.toggle('has-error', !!msg);
+        var old = field.querySelector('.js-err');
+        if (old) old.remove();
+        if (msg) {
+            var p = document.createElement('p');
+            p.className = 'auth-error-text js-err';
+            p.innerHTML = '<i class="fas fa-circle-exclamation"></i>';
+            p.appendChild(document.createTextNode(msg));
+            field.appendChild(p);
+        }
+        return !msg;
+    }
+
+    function validate() {
+        var bad = [];
+        function check(input, msg) { if (!setError(input, msg)) bad.push(input); }
+        check(F.username, F.username.value.trim().length < 3 ? 'Choose a username with at least 3 characters.' : '');
+        check(F.email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(F.email.value.trim()) ? '' : 'Enter a valid email address.');
+        check(F.barangay, F.barangay.value ? '' : 'Select your barangay.');
+        var digits = F.phone.value.replace(/[\s-]/g, '').replace(/^\+/, '');
+        check(F.phone, /^\d{7,15}$/.test(digits) ? '' : 'Enter a valid mobile number.');
+        var v = F.p1.value;
+        check(F.p1, (v.length >= 8 && /[a-z]/.test(v) && /[A-Z]/.test(v) && /\d/.test(v)) ? '' : 'Use 8+ characters with upper and lowercase letters and a number.');
+        check(F.p2, F.p2.value && F.p2.value === v ? '' : 'Passwords do not match.');
+        return bad;
+    }
+
+    form.addEventListener('submit', function (e) {
+        var bad = validate();
+        if (bad.length) { e.preventDefault(); bad[0].focus(); }
+    }, true);
+    form.addEventListener('input', function (e) {
+        var f = e.target.closest('.auth-field');
+        if (f && f.classList.contains('has-error')) { f.classList.remove('has-error'); var j = f.querySelector('.js-err'); if (j) j.remove(); }
+    });
+
+    /* password strength + checklist */
+    var meter = document.getElementById('strength'), label = document.getElementById('strength-text');
+    var names = ['\u2014', 'Weak', 'Fair', 'Good', 'Strong'];
+    function evaluate() {
+        var v = F.p1.value;
+        var has = { len: v.length >= 8, case: /[a-z]/.test(v) && /[A-Z]/.test(v), num: /\d/.test(v), match: v.length > 0 && v === F.p2.value };
+        document.querySelectorAll('#checklist li').forEach(function (li) { li.classList.toggle('ok', has[li.dataset.rule]); });
+        var score = 0;
+        if (v) {
+            score = (has.len ? 1 : 0) + (has.case ? 1 : 0) + (has.num ? 1 : 0) + ((/[^A-Za-z0-9]/.test(v) || v.length >= 12) ? 1 : 0);
+            if (score < 1) score = 1;
+        }
+        meter.dataset.level = score;
+        label.textContent = names[score];
+    }
+    F.p1.addEventListener('input', evaluate);
+    F.p2.addEventListener('input', evaluate);
+
+    /* if the server returned errors, jump to the first one */
+    var firstErr = form.querySelector('.has-error input, .has-error select');
+    (firstErr || F.username).focus({ preventScroll: !firstErr });
+})();
 </script>
 {% endblock %}
