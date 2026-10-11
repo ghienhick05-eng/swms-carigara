@@ -1610,13 +1610,20 @@ def register(request):
             # New accounts must confirm their email via OTP before they can
             # reach the dashboard. Don't log them in yet - send the code and
             # route through the same confirm_login_view used for that step.
-            send_login_code(user)
+            sent = send_login_code(user)
             request.session["pending_user_id"] = user.id
-            messages.info(
-                request,
-                f"We've sent a confirmation code to {user.email}. "
-                f"Enter it below to activate your account.",
-            )
+            if sent:
+                messages.info(
+                    request,
+                    f"We've sent a confirmation code to {user.email}. "
+                    f"Enter it below to activate your account.",
+                )
+            else:
+                messages.error(
+                    request,
+                    "We couldn't send the confirmation code right now. "
+                    "Please press Resend code in a moment.",
+                )
             return redirect("confirm_login")
     else:
         form = RegisterForm()
@@ -1953,15 +1960,22 @@ def send_login_code(user, email=None):
     LoginVerification.objects.filter(user=user, is_used=False).delete()
     code = LoginVerification.generate_code()
     LoginVerification.objects.create(user=user, code=code)
-    send_mail(
-        subject="Your SWMS Carigara confirmation code",
-        message=(
-            f"Your confirmation code is {code}. It expires in 10 minutes.\n\n"
-            f"If you didn't request this, you can safely ignore this email."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[email or user.email],
-    )
+    try:
+        send_mail(
+            subject="Your SWMS Carigara confirmation code",
+            message=(
+                f"Your confirmation code is {code}. It expires in 10 minutes.\n\n"
+                f"If you didn't request this, you can safely ignore this email."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email or user.email],
+        )
+        return True
+    except Exception:
+        # Never turn a mail problem into a 500 page.
+        import logging
+        logging.getLogger(__name__).exception("Could not send confirmation code to %s", email or user.email)
+        return False
 
 
 MAX_CODE_ATTEMPTS = 5

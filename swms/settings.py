@@ -153,7 +153,11 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL", f"SWMS Carigara <{EMAIL_HOST_USER or 'noreply@localhost'}>"
 )
 # No credentials configured -> print emails to the console/logs instead of failing.
-if not EMAIL_HOST_USER:
+# Render's free plan blocks SMTP, so on Render send through Brevo's HTTPS API.
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+if BREVO_API_KEY:
+    EMAIL_BACKEND = "waste.brevo_backend.BrevoEmailBackend"
+elif not EMAIL_HOST_USER:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 

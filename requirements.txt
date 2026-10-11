@@ -11,3 +11,4 @@ psycopg[binary]>=3.1
 # Media storage (Cloudinary)
 cloudinary>=1.40
 django-cloudinary-storage>=0.3.0
+requests>=2.31
