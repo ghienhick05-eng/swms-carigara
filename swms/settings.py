@@ -106,12 +106,17 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-# Cloudinary: set CLOUDINARY_URL (cloudinary://API_KEY:API_SECRET@CLOUD_NAME) on
-# Render to store uploads (avatars, photos, documents) off the server's disk.
-# Without it, uploads fall back to local MEDIA_ROOT, so local dev needs no setup.
-from waste.storage import clean_cloudinary_url  # noqa: E402
 
-USE_CLOUDINARY = bool(clean_cloudinary_url())
+# Cloudinary: set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and
+# CLOUDINARY_API_SECRET (or the single CLOUDINARY_URL) on Render to store
+# uploads (avatars, photos, documents) off the server's disk.
+# Without them, uploads fall back to local MEDIA_ROOT, so local dev needs no setup.
+from waste.storage import cloudinary_credentials, cloudinary_enabled  # noqa: E402
+
+_cloudinary_creds = cloudinary_credentials()
+if _cloudinary_creds:
+    CLOUDINARY_STORAGE = _cloudinary_creds
+USE_CLOUDINARY = cloudinary_enabled()
 STORAGES = {
     "default": {
         "BACKEND": (
@@ -161,7 +166,6 @@ if BREVO_API_KEY:
     EMAIL_BACKEND = "waste.brevo_backend.BrevoEmailBackend"
 elif not EMAIL_HOST_USER:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 
 
 # --- MENRO Admin self-registration ----------------------------------------
